@@ -2,7 +2,7 @@ package com.burukeyou.demo.annotation;
 
 
 import com.burukeyou.demo.config.MeituanApiChannelHandler;
-import com.burukeyou.uniapi.annotation.HttpApi;
+import com.burukeyou.uniapi.http.annotation.HttpApi;
 import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;

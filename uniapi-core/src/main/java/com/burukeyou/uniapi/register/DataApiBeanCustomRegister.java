@@ -1,6 +1,6 @@
 package com.burukeyou.uniapi.register;
 
-import com.burukeyou.uniapi.annotation.DataApiScan;
+import com.burukeyou.uniapi.annotation.UniAPIScan;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
@@ -17,7 +17,7 @@ public class DataApiBeanCustomRegister implements ImportBeanDefinitionRegistrar 
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
                                         BeanDefinitionRegistry registry) {
 
-        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(DataApiScan.class.getName());
+        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(UniAPIScan.class.getName());
         if (annotationAttributes == null){
             return;
         }

@@ -3,14 +3,14 @@ package com.burukeyou.demo.api.meituan;
 
 import com.burukeyou.demo.annotation.MetuanDataApi;
 import com.burukeyou.demo.entity.*;
-import com.burukeyou.uniapi.annotation.ResponseFile;
-import com.burukeyou.uniapi.annotation.param.*;
-import com.burukeyou.uniapi.annotation.request.DeleteHttpInterface;
-import com.burukeyou.uniapi.annotation.request.GetHttpInterface;
-import com.burukeyou.uniapi.annotation.request.PostHttpInterface;
-import com.burukeyou.uniapi.annotation.request.PutHttpInterface;
-import com.burukeyou.uniapi.core.response.HttpBinaryResponse;
-import com.burukeyou.uniapi.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.annotation.ResponseFile;
+import com.burukeyou.uniapi.http.annotation.param.*;
+import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
+import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
+import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
+import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
+import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 
 import java.io.File;
 

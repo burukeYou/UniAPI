@@ -1,8 +1,8 @@
 package com.burukeyou.demo.entity;
 
-import com.burukeyou.uniapi.annotation.param.BodyJsonParam;
-import com.burukeyou.uniapi.annotation.param.HeaderParam;
-import com.burukeyou.uniapi.annotation.param.UrlParam;
+import com.burukeyou.uniapi.http.annotation.param.BodyJsonParam;
+import com.burukeyou.uniapi.http.annotation.param.HeaderParam;
+import com.burukeyou.uniapi.http.annotation.param.UrlParam;
 import lombok.Data;
 
 import java.io.Serializable;

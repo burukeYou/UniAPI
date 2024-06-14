@@ -1,10 +1,10 @@
 package com.burukeyou.demo;
 
-import com.burukeyou.uniapi.annotation.DataApiScan;
+import com.burukeyou.uniapi.annotation.UniAPIScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@DataApiScan("com.burukeyou.demo.api")
+@UniAPIScan("com.burukeyou.demo.api")
 @SpringBootApplication
 public class DemoApplication {
 
