@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.burukeyou.uniapi.config.DataApiStarterConfiguration
+com.burukeyou.uniapi.config.UniApiStarterConfiguration

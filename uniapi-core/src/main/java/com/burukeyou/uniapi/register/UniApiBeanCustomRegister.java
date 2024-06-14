@@ -11,7 +11,7 @@ import java.util.Map;
  * 通过DataApiScan注册Bean定义
  * @author caizhihao
  */
-public class DataApiBeanCustomRegister implements ImportBeanDefinitionRegistrar {
+public class UniApiBeanCustomRegister implements ImportBeanDefinitionRegistrar {
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
@@ -22,7 +22,7 @@ public class DataApiBeanCustomRegister implements ImportBeanDefinitionRegistrar 
             return;
         }
         String[] values = (String[])annotationAttributes.get("value");
-        DataApiScanner scanner = new DataApiScanner(registry);
+        UniApiScanner scanner = new UniApiScanner(registry);
         scanner.doScan(values);
     }
 }

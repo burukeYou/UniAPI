@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan("com.burukeyou.uniapi")
-public class DataApiStarterConfiguration {
+public class UniApiStarterConfiguration {
 
 
 }

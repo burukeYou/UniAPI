@@ -19,7 +19,7 @@ import java.util.Optional;
 /**
  * @author caizhihao
  */
-public class DataApiFactoryBean extends BaseSpringAware implements FactoryBean<Object> {
+public class UniApiFactoryBean extends BaseSpringAware implements FactoryBean<Object> {
 
     private Object lazyProxy;
 
@@ -29,10 +29,10 @@ public class DataApiFactoryBean extends BaseSpringAware implements FactoryBean<O
     private List<ApiProxyFactory> proxyFactoryList;
 
 
-    public DataApiFactoryBean() {
+    public UniApiFactoryBean() {
     }
 
-    public DataApiFactoryBean(Class<?> targetClass) {
+    public UniApiFactoryBean(Class<?> targetClass) {
         this.targetClass = targetClass;
     }
     private void init() {

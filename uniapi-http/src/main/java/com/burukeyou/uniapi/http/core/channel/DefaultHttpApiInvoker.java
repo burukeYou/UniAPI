@@ -5,8 +5,6 @@ import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.request.*;
-import com.burukeyou.uniapi.core.request.*;
-import com.burukeyou.uniapi.core.response.*;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;

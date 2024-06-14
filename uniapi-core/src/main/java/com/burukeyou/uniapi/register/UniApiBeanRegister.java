@@ -8,17 +8,17 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 /** 注册默认的apiPackages下的Bean定义
  * @author caizhihao
  */
-public class DataApiBeanRegister implements BeanDefinitionRegistryPostProcessor {
+public class UniApiBeanRegister implements BeanDefinitionRegistryPostProcessor {
 
     private String[] apiPackages;
 
-    public DataApiBeanRegister(String[] apiPackages) {
+    public UniApiBeanRegister(String[] apiPackages) {
         this.apiPackages = apiPackages;
     }
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        new DataApiScanner(registry).doScan(apiPackages);
+        new UniApiScanner(registry).doScan(apiPackages);
     }
 
     @Override

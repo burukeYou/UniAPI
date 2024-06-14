@@ -1,11 +1,11 @@
 package com.burukeyou;
 
 import com.alibaba.fastjson.JSON;
-import com.burukeyou.data.core.response.HttpBinaryResponse;
-import com.burukeyou.data.core.response.HttpResponse;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.meituan.MeituanApi;
 import com.burukeyou.demo.entity.*;
+import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
