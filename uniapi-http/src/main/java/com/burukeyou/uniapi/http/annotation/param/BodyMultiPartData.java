@@ -7,4 +7,5 @@ import java.lang.annotation.*;
 @Documented
 public @interface BodyMultiPartData {
 
+    String value() default "";
 }

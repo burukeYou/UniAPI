@@ -71,6 +71,11 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
+            CookieString annotation = param.getAnnotation(CookieString.class);
+            if (annotation == null){
+                continue;
+            }
+
             if (argValue instanceof Cookie){
                 cookies.add((Cookie)argValue);
                 continue;
@@ -92,22 +97,23 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            CookieString annotation = param.getAnnotation(CookieString.class);
-            if (annotation != null){
-                if (String.class.equals(param.getType())){
-                    cookies.addAll(parseCookie(argValue.toString()));
-                }else if (param.isCollection(String.class)){
-                    for (String cookieStr : param.castListValue(String.class)) {
-                        cookies.addAll(parseCookie(cookieStr));
-                    }
+            if (StringUtils.isNotBlank(annotation.value())){
+                // 指定了name 当成单个cookie处理
+                if (isBaseType(param.getType())){
+                    cookies.add(new Cookie(annotation.value(),argValue.toString()));
+                    continue;
                 }
-                continue;
             }
 
-            CookiePair cookiePairAnno = param.getAnnotation(CookiePair.class);
-            if (cookiePairAnno != null){
-                cookies.add(new Cookie(cookiePairAnno.value(),argValue.toString()));
+            // 为指定name当成cookies string 处理
+            if (String.class.equals(param.getType())){
+                cookies.addAll(parseCookie(argValue.toString()));
+            }else if (param.isCollection(String.class)){
+                for (String cookieStr : param.castListValue(String.class)) {
+                    cookies.addAll(parseCookie(cookieStr));
+                }
             }
+
         }
 
         return cookies;
@@ -192,11 +198,25 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             if (stringFormParam != null){
                 if (isObjOrMap(argValue.getClass())){
                     return new HttpBodyFormData(objToMap(argValue));
+                }else if (StringUtils.isNotBlank(stringFormParam.value())){
+                    // 单个
+                    return new HttpBodyFormData(Collections.singletonMap(stringFormParam.value(),argValue.toString()));
                 }
             }
+
             BodyMultiPartData multipartParam = methodArg.getAnnotation(BodyMultiPartData.class);
             if (multipartParam != null) {
-                return getHttpBodyMultipartFormData(argValue, methodArg.getType());
+                boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
+                if (nameExistFlag && File.class.isAssignableFrom(methodArg.getType())){
+                    MultipartFormDataItem dataItem = new MultipartFormDataItem(multipartParam.value(),null,(File)argValue,true);
+                    return new HttpBodyMultipartFormData(Collections.singletonList(dataItem));
+                } else if (isObjOrMap(methodArg.getType())){
+                    return getHttpBodyMultipartFormData(argValue, methodArg.getType());
+                }else if (nameExistFlag){
+                    // 单个
+                    MultipartFormDataItem dataItem = new MultipartFormDataItem(multipartParam.value(),argValue.toString(),null,false);
+                    return new HttpBodyMultipartFormData(Collections.singletonList(dataItem));
+                }
             }
         }
         return null;
@@ -205,9 +225,6 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
     private HttpBodyMultipartFormData getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
         List<MultipartFormDataItem> dataItems = new ArrayList<>();
-        if (!isObjOrMap(argClass)){
-            return null;
-        }
 
         ArgList argList = autoGetArgList(argValue);
         for (Param param : argList) {
@@ -504,6 +521,11 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             return  argValue.toString();
         }
         return argValue;
+    }
+
+
+    public boolean isBaseType(Class<?> valueClass){
+        return !isObjOrMap(valueClass) && !isObjOrArr(valueClass);
     }
 
 

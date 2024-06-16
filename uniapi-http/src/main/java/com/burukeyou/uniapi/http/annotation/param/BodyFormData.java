@@ -7,5 +7,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface BodyFormData {
 
-    boolean required() default true;
+    String value() default "";
+
 }
