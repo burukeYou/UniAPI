@@ -13,27 +13,10 @@ import java.util.List;
  */
 public class ClassFieldArgList extends ArgList {
 
-    private final List<Param> paramsList = new ArrayList<>();
-
     public ClassFieldArgList(Object targetObj) {
         for (FiledParam param : new ClassFieldIterable(targetObj)) {
             paramsList.add(param);
         }
-    }
-
-    @Override
-    public Param get(int index) {
-        return paramsList.get(index);
-    }
-
-    @Override
-    public Iterator<Param> iterator() {
-        return paramsList.iterator();
-    }
-
-    @Override
-    public int size() {
-        return paramsList.size();
     }
 
     private static class ClassFieldIterable implements Iterable<FiledParam>{

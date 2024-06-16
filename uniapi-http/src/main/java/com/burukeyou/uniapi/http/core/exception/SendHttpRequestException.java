@@ -1,8 +1,8 @@
 package com.burukeyou.uniapi.http.core.exception;
 
-import com.burukeyou.uniapi.exception.BaseDataApiException;
+import com.burukeyou.uniapi.exception.BaseUniApiException;
 
-public class SendHttpRequestException extends BaseDataApiException {
+public class SendHttpRequestException extends BaseUniApiException {
 
     public SendHttpRequestException() {
     }

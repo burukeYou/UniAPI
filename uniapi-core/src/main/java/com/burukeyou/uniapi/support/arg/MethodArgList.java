@@ -12,28 +12,10 @@ import java.util.List;
  */
 public class MethodArgList extends ArgList {
 
-    private final List<Param> paramsList = new ArrayList<>();
-
     public MethodArgList(Method method, Object[] args) {
         for (MethodParam param : new MethodArgIterable(method,args)) {
             paramsList.add(param);
         }
-    }
-
-
-    @Override
-    public Param get(int index) {
-        return paramsList.get(index);
-    }
-
-    @Override
-    public Iterator<Param> iterator() {
-        return paramsList.iterator();
-    }
-
-    @Override
-    public int size() {
-        return paramsList.size();
     }
 
     private static class MethodArgIterable implements Iterable<MethodParam>{

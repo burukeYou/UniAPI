@@ -2,7 +2,7 @@ package com.burukeyou.uniapi.http.core.channel;
 
 
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.exception.BaseDataApiException;
+import com.burukeyou.uniapi.exception.BaseUniApiException;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import java.lang.reflect.Method;
@@ -21,7 +21,7 @@ public abstract class AnnotationConfigCacheInvoker {
         if (httpInterface == null){
             httpInterface = AnnotatedElementUtils.getMergedAnnotation(method, HttpInterface.class);
             if (httpInterface == null) {
-                throw new BaseDataApiException("please mask @HttpInterface in this method " + method.getName() + "and config http path");
+                throw new BaseUniApiException("please mask @HttpInterface in this method " + method.getName() + "and config http path");
             }
             httpInterfaceCache.put(method,httpInterface);
         }

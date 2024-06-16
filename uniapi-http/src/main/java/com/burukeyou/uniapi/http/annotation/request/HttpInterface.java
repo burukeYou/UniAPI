@@ -14,6 +14,11 @@ import java.lang.annotation.*;
 public @interface HttpInterface {
 
     /**
+     *  接口url
+     */
+    String url() default "";
+
+    /**
      * 接口路径
      */
     @AliasFor("value")

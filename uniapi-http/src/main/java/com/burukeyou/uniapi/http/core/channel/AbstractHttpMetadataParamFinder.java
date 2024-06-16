@@ -7,10 +7,8 @@ import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.annotation.param.*;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.support.Cookie;
-import com.burukeyou.uniapi.support.arg.ArgList;
-import com.burukeyou.uniapi.support.arg.ClassFieldArgList;
-import com.burukeyou.uniapi.support.arg.MethodArgList;
-import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.support.arg.*;
+import com.burukeyou.uniapi.util.ListsUtil;
 import lombok.Data;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
@@ -192,7 +190,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
             BodyFormData stringFormParam = methodArg.getAnnotation(BodyFormData.class);
             if (stringFormParam != null){
-                if (isObj(argValue.getClass())){
+                if (isObjOrMap(argValue.getClass())){
                     return new HttpBodyFormData(objToMap(argValue));
                 }
             }
@@ -207,11 +205,12 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
     private HttpBodyMultipartFormData getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
         List<MultipartFormDataItem> dataItems = new ArrayList<>();
-        if (!isObj(argClass)){
+        if (!isObjOrMap(argClass)){
             return null;
         }
 
-        for (Param param : new ClassFieldArgList(argValue)) {
+        ArgList argList = autoGetArgList(argValue);
+        for (Param param : argList) {
             Object fieldValue = param.getValue();
             com.alibaba.fastjson.annotation.JSONField jsonField = param.getAnnotation(com.alibaba.fastjson.annotation.JSONField.class);
             com.alibaba.fastjson2.annotation.JSONField jsonField2 = param.getAnnotation(com.alibaba.fastjson2.annotation.JSONField.class);
@@ -224,7 +223,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             }
 
             boolean isFile = isFileField(param);
-            if (!isFile && isObj(param.getType())){
+            if (!isFile && isObjOrMap(param.getType())){
                 // 非File的其他对象不处理
                 continue;
             }
@@ -300,7 +299,10 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
     public Map<String, String> findHeaders(ArgList argList) {
         String[] headers = httpInterface.headers();
-        Map<String, String> fixHeaders = Arrays.stream(headers).filter(e -> e.contains("=")).collect(Collectors.toMap(e -> e.split("=")[0], e -> e.split("=")[1]));
+        Map<String, String> fixHeaders = Arrays.stream(headers)
+                .filter(e -> e.contains("=") || e.contains(":"))
+                .collect(Collectors.toMap(e -> e.split("[=:]")[0].trim(), e -> e.split("[=:]")[1].trim()));
+
         for (Param methodArg : argList) {
             HeaderParam annotation = methodArg.getAnnotation(HeaderParam.class);
             if (annotation == null){
@@ -309,7 +311,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
             Object argValue = methodArg.getValue();
             String tmpFiledName = annotation.value();
-            boolean isObjFlag = isObj(methodArg.getType());
+            boolean isObjFlag = isObjOrMap(methodArg.getType());
             if (StringUtils.isBlank(tmpFiledName) && !isObjFlag){
                 throw new IllegalArgumentException("use @HeaderParam please specify parameter name");
             }
@@ -335,11 +337,11 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
     public Map<String,String> getHeaderParamForObj(Object obj){
         Map<String,String> map = new HashMap<>();
-        for (Param param : new ClassFieldArgList(obj)) {
+        for (Param param : autoGetArgList(obj)) {
             Object fieldValue = getArgFillValue(param.getValue());
             String fileName = param.getName();
 
-            if (fieldValue != null && isObj(param.getType())){
+            if (fieldValue != null && isObjOrMap(param.getType())){
                 fieldValue = null;
             }
             HeaderParam annotation = param.getAnnotation(HeaderParam.class);
@@ -352,8 +354,11 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
     public Map<String,Object> findQueryParam(ArgList argList) {
-        String[] headers = httpInterface.params();
-        Map<String, String> queryParam = Arrays.stream(headers).filter(e-> e.contains("=")).collect(Collectors.toMap(e -> e.split("=")[0], e -> e.split("=")[1]));
+        String[] params = httpInterface.params();
+        Map<String, String> queryParam = Arrays.stream(params)
+                .filter(e-> e.contains("=") || e.contains(":"))
+                .collect(Collectors.toMap(e -> e.split("[=:]")[0], e -> e.split("[=:]")[1]));
+
         Map<String,Object> queryMap = new HashMap<>(queryParam);
         for (Param param : argList) {
             UrlParam annotation = param.getAnnotation(UrlParam.class);
@@ -362,7 +367,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             }
 
             String tmpFiledName = annotation.value();
-            boolean isObjFlag = isObj(param.getType());
+            boolean isObjFlag = isObjOrMap(param.getType());
             if (!isObjFlag && StringUtils.isBlank(tmpFiledName)){
                 throw new IllegalArgumentException("use @UrlParam please specify parameter name");
             }
@@ -395,7 +400,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            if (isObj(methodArg.getType())){
+            if (isObjOrMap(methodArg.getType())){
                 continue;
             }
 
@@ -411,13 +416,31 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
 
+    public ArgList autoGetArgList(Object obj){
+        if (obj == null){
+            return ListsUtil.emptyArgList();
+        }
+
+        if (!isObjOrMap(obj.getClass())){
+            return ListsUtil.emptyArgList();
+        }
+
+        ArgList argList;
+        if (Map.class.isAssignableFrom(obj.getClass())){
+            argList = new MapArgList((Map<?,?>)obj);
+        }else {
+            argList = new ClassFieldArgList(obj);
+        }
+        return argList;
+    }
+
     public Map<String,Object> getQueryParamForObj(Object obj){
         Map<String,Object> map = new HashMap<>();
-        for (Param param : new ClassFieldArgList(obj)) {
+        for (Param param : autoGetArgList(obj)) {
             Object fieldValue = getArgFillValue(param.getValue());
             String fileName = param.getName();
 
-            if (fieldValue != null && isObj(param.getType())){
+            if (fieldValue != null && isObjOrMap(param.getType())){
                 fieldValue = null;
             }
 
@@ -444,7 +467,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             }
 
             CombineParam annotation = methodArg.getAnnotation(CombineParam.class);
-            if (annotation == null || !isObj(argValueClass)){
+            if (annotation == null || !isObjOrMap(argValueClass)){
                 continue;
             }
             fillHttpMetadata(httpMetadata, new ClassFieldArgList(argValue));
@@ -484,7 +507,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
 
-    public  boolean isObj(Class<?> valueClass){
+    public  boolean isObjOrMap(Class<?> valueClass){
         ClassLoader classLoader = valueClass.getClassLoader();
         if (valueClass.isPrimitive() || valueClass.isEnum()){
             return false;
@@ -495,11 +518,15 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         if (classLoader == this.getClass().getClassLoader()){
             return true;
         }
+
+        if (Map.class.isAssignableFrom(valueClass)){
+            return true;
+        }
         return false;
     }
 
     public  boolean isObjOrArr(Class<?> valueClass){
-        if (isObj(valueClass)){
+        if (isObjOrMap(valueClass)){
             return true;
         }
 
@@ -515,9 +542,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         if (value == null){
             return null;
         }
-        if (value.getClass().getClassLoader() == this.getClass().getClassLoader()
-                || value.getClass().isArray()
-                || List.class.isAssignableFrom(value.getClass())){
+        if (isObjOrArr(argValue.getClass()) || Map.class.isAssignableFrom(argValue.getClass())){
            return JSON.toJSONString(value);
         }
         return value;

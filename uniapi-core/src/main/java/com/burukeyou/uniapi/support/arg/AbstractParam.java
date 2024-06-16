@@ -2,10 +2,7 @@ package com.burukeyou.uniapi.support.arg;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author caizhihao
@@ -45,6 +42,7 @@ public abstract class AbstractParam implements Param {
         }
 
         if (Collection.class.isAssignableFrom(clz)) {
+            // 能拿到泛型
             Type genericType = getGenericType();
             if (genericType instanceof ParameterizedType) {
                 ParameterizedType paramType = (ParameterizedType) genericType;
@@ -56,8 +54,28 @@ public abstract class AbstractParam implements Param {
                     }
                 }
             }
+
+            // 拿不到泛型根据具体值
+            Object value = getValue();
+            if (value != null){
+                Object elementValue = getCollectionFirstValue((Collection<?>) value);
+                if (elementValue != null && elementClass.isAssignableFrom(elementValue.getClass())){
+                    return true;
+                }
+            }
         }
+
         return false;
+    }
+
+
+    private Object getCollectionFirstValue(Collection<?> value) {
+        Object elementValue = null;
+        Iterator<?> iterator = value.iterator();
+        if (iterator.hasNext()){
+            elementValue = iterator.next();
+        }
+        return elementValue;
     }
 
     @Override
