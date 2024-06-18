@@ -1,21 +1,21 @@
 package com.burukeyou.uniapi.http.core.channel;
 
+import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
-import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
+import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.DataApiConstant;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
-import com.burukeyou.uniapi.support.*;
+import com.burukeyou.uniapi.http.util.HttpUtil;
+import com.burukeyou.uniapi.support.BaseUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
-import com.burukeyou.uniapi.http.util.HttpUtil;
 import com.burukeyou.uniapi.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -149,10 +149,11 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
             AbstractHttpResponse httpResponse = null;
             Class<?> returnType = methodInvocation.getMethod().getReturnType();
-            String contentType = response.header("Content-Type");
-            if (MediaTypeEnum.APPLICATION_OCTET_STREAM.equalsMediaType(contentType)){
+            if (isFileDownloadResponse(response)){
                 if (File.class.isAssignableFrom(returnType)){
                     httpResponse =  doWithHttpFileResponse(response);
+                }else if (InputStream.class.isAssignableFrom(returnType)){
+                    httpResponse = new HttpInputStreamResponse(response.body().byteStream(),getFileResponseName(response));
                 }else {
                     httpResponse =  doWithHttpBinaryResponse(response);
                 }
@@ -244,6 +245,21 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         String fileName = getFileResponseName(response);
         byte[] bytes = responseBody.bytes();
         return new HttpBinaryResponse(fileName, bytes);
+    }
+
+
+    protected boolean isFileDownloadResponse(Response response){
+        String contentType = response.header("Content-Type");
+        if (MediaTypeEnum.isFileDownLoadType(contentType)){
+            return true;
+        }
+
+        // Content-Disposition: attachment; filename=xxx.txt
+        String disposition = response.header("Content-Disposition");
+        if(StringUtils.isNotBlank(disposition) && disposition.contains("attachment")){
+            return true;
+        }
+        return false;
     }
 
     protected String getFileResponseName(Response response){

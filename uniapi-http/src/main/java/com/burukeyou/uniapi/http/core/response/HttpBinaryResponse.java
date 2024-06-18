@@ -16,6 +16,6 @@ public class HttpBinaryResponse extends AbstractHttpResponse {
 
     @Override
     public Object getReturnObj() {
-        return this;
+        return ifReturnOriginalResponse() ? this : file;
     }
 }
