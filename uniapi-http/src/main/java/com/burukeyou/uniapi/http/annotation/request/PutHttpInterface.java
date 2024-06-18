@@ -13,6 +13,9 @@ import java.lang.annotation.*;
 public @interface PutHttpInterface {
 
     @AliasFor(annotation = HttpInterface.class)
+    String url() default "";
+
+    @AliasFor(annotation = HttpInterface.class)
     String path() default "";
 
     @AliasFor(annotation = HttpInterface.class)

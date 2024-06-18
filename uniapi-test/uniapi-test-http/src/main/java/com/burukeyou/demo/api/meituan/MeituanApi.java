@@ -5,10 +5,7 @@ import com.burukeyou.demo.annotation.MetuanDataApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.param.*;
-import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
-import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
-import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
-import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
+import com.burukeyou.uniapi.http.annotation.request.*;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 

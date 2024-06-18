@@ -33,11 +33,20 @@ public @interface HttpInterface {
     /**
      *  请求方式
      */
-    RequestMethod method();
+    RequestMethod method() default RequestMethod.GET;
 
+    /**
+     *  请求头
+     */
     String[] headers() default {};
 
+    /**
+     * 请求参数
+     */
     String[] params() default {};
 
+    /**
+     *  请求Cookie
+     */
     String cookie() default "";
 }

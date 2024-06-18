@@ -15,6 +15,9 @@ import java.lang.annotation.*;
 @HttpInterface(method = RequestMethod.POST)
 public @interface PostHttpInterface {
 
+    @AliasFor(annotation = HttpInterface.class)
+    String url() default "";
+
     /**
      * 接口路径
      */

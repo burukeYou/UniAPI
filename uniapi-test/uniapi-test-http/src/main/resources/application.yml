@@ -1,0 +1,9 @@
+server:
+  port: 8999
+
+
+channel:
+  meituan:
+    url: http://127.0.0.1:8999
+    appId: UUU-asd-01
+    loginCookie: xxxx=11
