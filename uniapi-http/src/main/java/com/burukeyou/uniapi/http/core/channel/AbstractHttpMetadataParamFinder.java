@@ -49,9 +49,14 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     @Override
     public HttpMetadata find(Method method, Object[] args) {
         HttpUrl httpUrl = HttpUrl.builder()
-                .url(environment.resolvePlaceholders(api.url()))
                 .path(httpInterface.path())
                 .build();
+
+        if (StringUtils.isNotBlank(httpInterface.url())){
+            httpUrl.setUrl(getEnvironmentValue(httpInterface.url()));
+        }else {
+            httpUrl.setUrl(getEnvironmentValue(api.url()));
+        }
 
         HttpMetadata httpMetadata = new HttpMetadata();
         httpMetadata.setRequestMethod(httpInterface.method());
@@ -63,8 +68,18 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         return httpMetadata;
     }
 
+    public <T> T getEnvironmentValue(T value){
+        if (value == null){
+            return null;
+        }
+        if(value.getClass() != String.class){
+            return value;
+        }
+        return (T)environment.resolvePlaceholders(value.toString());
+    }
+
     private List<Cookie> findCookies(ArgList argList) {
-        List<Cookie> cookies = new ArrayList<>(parseCookie(httpInterface.cookie()));
+        List<Cookie> cookies = new ArrayList<>(parseCookie(getEnvironmentValue(httpInterface.cookie())));
         for (Param param : argList) {
             Object argValue = param.getValue();
             if (argValue == null){

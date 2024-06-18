@@ -94,7 +94,6 @@ public class HttpUrl implements Serializable {
         if (queryParam == null){
             queryParam = new HashMap<>();
         }
-
         return queryParam;
     }
 

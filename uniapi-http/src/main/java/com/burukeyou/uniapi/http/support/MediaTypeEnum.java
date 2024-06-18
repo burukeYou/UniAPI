@@ -12,8 +12,7 @@ public enum MediaTypeEnum {
     MULTIPART_FORM_DATA("multipart/form-data"),
 
     ;
-
-    private String type;
+    private final String type;
 
     MediaTypeEnum(String mediaType) {
         this.type = mediaType;
