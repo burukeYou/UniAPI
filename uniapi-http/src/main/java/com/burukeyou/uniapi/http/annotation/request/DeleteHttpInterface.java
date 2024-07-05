@@ -22,11 +22,15 @@ public @interface DeleteHttpInterface {
     String value() default "";
 
     @AliasFor(annotation = HttpInterface.class)
-    String[] params() default {};
-
-    @AliasFor(annotation = HttpInterface.class)
     String[] headers() default {};
 
     @AliasFor(annotation = HttpInterface.class)
+    String[] params() default {};
+
+    @AliasFor(annotation = HttpInterface.class)
+    String paramStr() default "";
+
+    @AliasFor(annotation = HttpInterface.class)
     String cookie() default "";
+
 }

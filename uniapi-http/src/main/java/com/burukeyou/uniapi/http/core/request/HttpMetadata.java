@@ -41,7 +41,7 @@ public class HttpMetadata {
     }
 
     public void putUrlParam(String key,Object value){
-        this.httpUrl.putUrlParam(key,value);
+        this.httpUrl.putQueryParam(key,value);
     }
 
     public void putPathParam(String key, Object value) {
@@ -80,11 +80,5 @@ public class HttpMetadata {
 
     public String getCookie(){
         return cookies.stream().map(e -> e.getName() + "=" + e.getValue()).collect(Collectors.joining(";"));
-    }
-
-    public String toHttpString(){
-        // 打印Http报文
-        //
-        return null;
     }
 }

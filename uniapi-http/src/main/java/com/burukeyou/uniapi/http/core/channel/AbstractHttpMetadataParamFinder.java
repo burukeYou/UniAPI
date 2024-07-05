@@ -86,7 +86,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            CookieString annotation = param.getAnnotation(CookieString.class);
+            CookieStrPar annotation = param.getAnnotation(CookieStrPar.class);
             if (annotation == null){
                 continue;
             }
@@ -146,26 +146,6 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         return cookieList;
     }
 
-
-
-   /* private HttpCookie cookieAnno2HttpCookie(CookiePair annotation, String value) {
-        HttpCookie httpCookie = new HttpCookie(annotation.value(),value);
-        httpCookie.setComment(annotation.comment());
-        httpCookie.setCommentURL(annotation.commentURL());
-        httpCookie.setDiscard(annotation.toDiscard());
-        httpCookie.setDomain(annotation.domain());
-        httpCookie.setHttpOnly(annotation.httpOnly());
-        httpCookie.setMaxAge(annotation.maxAge());
-        httpCookie.setPath(annotation.path());
-        httpCookie.setPortlist(annotation.portlist());
-        httpCookie.setValue(value);
-        httpCookie.setSecure(annotation.secure());
-        httpCookie.setVersion(annotation.version());
-        return httpCookie;
-    }*/
-
-
-
     public HttpMetadata find(MethodInvocation methodInvocation){
         Method method = methodInvocation.getMethod();
         Object[] args = methodInvocation.getArguments();
@@ -199,17 +179,17 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             }
 
             Object argValue = methodArg.getValue();
-            BodyJsonParam annotation = methodArg.getAnnotation(BodyJsonParam.class);
+            BodyJsonPar annotation = methodArg.getAnnotation(BodyJsonPar.class);
             if (annotation != null){
                 return new HttpBodyJSON(getArgFillValue(argValue).toString());
             }
 
-            BodyBinaryParam binaryParam = methodArg.getAnnotation(BodyBinaryParam.class);
+            BodyBinaryPar binaryParam = methodArg.getAnnotation(BodyBinaryPar.class);
             if (binaryParam != null){
                 return getHttpBodyBinaryForValue(argValue);
             }
 
-            BodyFormData stringFormParam = methodArg.getAnnotation(BodyFormData.class);
+            BodyFormPar stringFormParam = methodArg.getAnnotation(BodyFormPar.class);
             if (stringFormParam != null){
                 if (isObjOrMap(argValue.getClass())){
                     return new HttpBodyFormData(objToMap(argValue));
@@ -219,7 +199,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 }
             }
 
-            BodyMultiPartData multipartParam = methodArg.getAnnotation(BodyMultiPartData.class);
+            BodyMultiPartPar multipartParam = methodArg.getAnnotation(BodyMultiPartPar.class);
             if (multipartParam != null) {
                 boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
                 if (nameExistFlag && File.class.isAssignableFrom(methodArg.getType())){
@@ -336,7 +316,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 .collect(Collectors.toMap(e -> e.split("[=:]")[0].trim(), e -> e.split("[=:]")[1].trim()));
 
         for (Param methodArg : argList) {
-            HeaderParam annotation = methodArg.getAnnotation(HeaderParam.class);
+            HeaderPar annotation = methodArg.getAnnotation(HeaderPar.class);
             if (annotation == null){
                 continue;
             }
@@ -376,7 +356,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             if (fieldValue != null && isObjOrMap(param.getType())){
                 fieldValue = null;
             }
-            HeaderParam annotation = param.getAnnotation(HeaderParam.class);
+            HeaderPar annotation = param.getAnnotation(HeaderPar.class);
             if (annotation != null){
                 fileName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : fileName;
             }
@@ -391,31 +371,46 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 .filter(e-> e.contains("=") || e.contains(":"))
                 .collect(Collectors.toMap(e -> e.split("[=:]")[0], e -> e.split("[=:]")[1]));
 
+        String paramStr = httpInterface.paramStr();
+        if (StringUtils.isNotBlank(paramStr) && paramStr.contains("=")){
+            for (String item  :paramStr.split("&")){
+                String[] itemArr = item.split("=");
+                queryParam.put(itemArr[0],itemArr[1]);
+            }
+        }
+
         Map<String,Object> queryMap = new HashMap<>(queryParam);
         for (Param param : argList) {
-            UrlParam annotation = param.getAnnotation(UrlParam.class);
+            QueryPar annotation = param.getAnnotation(QueryPar.class);
             if (annotation == null){
                 continue;
             }
 
             String tmpFiledName = annotation.value();
-            boolean isObjFlag = isObjOrMap(param.getType());
-            if (!isObjFlag && StringUtils.isBlank(tmpFiledName)){
-                throw new IllegalArgumentException("use @UrlParam please specify parameter name");
+            boolean needFlag = isObjOrMap(param.getType());
+            if ((!needFlag || param.isCollection()) && StringUtils.isBlank(tmpFiledName)){
+                throw new IllegalArgumentException("use @QueryParam please specify parameter name");
             }
 
             Object argValue = param.getValue();
             Object value = getActualArgValue(argValue);
             if (value == null){
-                if (!isObjFlag){
+                if (!needFlag){
                     queryMap.put(tmpFiledName,null);
                 }
-                // 为对象直接忽略
+                // 为复杂对象直接忽略
                 continue;
             }
 
-            if (!isObjFlag){
-                queryMap.put(tmpFiledName, getArgFillValue(argValue));
+            if (!needFlag){
+                if (param.isCollection()){
+                    value = param.castListValue(Object.class)
+                            .stream()
+                            .map(Object::toString)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.joining(","));
+                }
+                queryMap.put(tmpFiledName, value);
             }else {
                 queryMap.putAll(getQueryParamForObj(value));
             }
@@ -427,7 +422,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     public Map<String,String> findPathParam(ArgList argList) {
         Map<String,String> queryMap = new HashMap<>();
         for (Param methodArg : argList) {
-            PathParam annotation = methodArg.getAnnotation(PathParam.class);
+            PathPar annotation = methodArg.getAnnotation(PathPar.class);
             if (annotation == null){
                 continue;
             }
@@ -476,7 +471,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 fieldValue = null;
             }
 
-            UrlParam annotation = param.getAnnotation(UrlParam.class);
+            QueryPar annotation = param.getAnnotation(QueryPar.class);
             if (annotation != null){
                 fileName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : fileName;
             }
@@ -498,7 +493,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            CombineParam annotation = methodArg.getAnnotation(CombineParam.class);
+            ComposePar annotation = methodArg.getAnnotation(ComposePar.class);
             if (annotation == null || !isObjOrMap(argValueClass)){
                 continue;
             }
@@ -562,6 +557,13 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         return false;
     }
 
+    public  boolean isArr(Class<?> valueClass){
+        if (valueClass.isArray() || Collection.class.isAssignableFrom(valueClass)){
+            return true;
+        }
+        return true;
+    }
+
     public  boolean isObjOrArr(Class<?> valueClass){
         if (isObjOrMap(valueClass)){
             return true;
@@ -571,6 +573,10 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             return true;
         }
         return false;
+    }
+
+    public  boolean isObjOrArrOrMap(Class<?> valueClass){
+        return isObjOrArr(valueClass) || isObjOrMap(valueClass);
     }
 
 

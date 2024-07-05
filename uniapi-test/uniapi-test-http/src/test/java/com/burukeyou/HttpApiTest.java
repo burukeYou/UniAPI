@@ -16,12 +16,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 
 @SpringBootTest(classes = DemoApplication.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class AppTest {
+public class HttpApiTest {
 
     @Autowired
     private MeituanApi meituanApi;
@@ -59,6 +60,12 @@ public class AppTest {
     @Test
     public void test4(){
         BaseRsp<Add4DTO> rsp = meituanApi.add4(new Add4DTO(1L, "jay"));
+        System.out.println(JSON.toJSONString(rsp));
+    }
+
+    @Test
+    public void test44(){
+        BaseRsp<String> rsp = meituanApi.add41("jay");
         System.out.println(JSON.toJSONString(rsp));
     }
 
@@ -148,6 +155,12 @@ public class AppTest {
         HttpResponse httpResponse = meituanApi.update2(cookie);
         List<String> setCookies = httpResponse.getSetCookiesString();
         List<Cookie> httpSetCookies = httpResponse.getSetCookies();
+        System.out.println();
+    }
+
+    @Test
+    public void testUpdate3(){
+        BaseRsp<String> stringBaseRsp = meituanApi.update3(Arrays.asList(7,8,9));
         System.out.println();
     }
 }

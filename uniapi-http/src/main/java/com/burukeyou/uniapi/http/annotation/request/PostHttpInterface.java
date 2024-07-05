@@ -18,15 +18,9 @@ public @interface PostHttpInterface {
     @AliasFor(annotation = HttpInterface.class)
     String url() default "";
 
-    /**
-     * 接口路径
-     */
     @AliasFor(annotation = HttpInterface.class)
     String path() default "";
 
-    /**
-     * 接口路径
-     */
     @AliasFor(annotation = HttpInterface.class)
     String value() default "";
 
@@ -35,6 +29,9 @@ public @interface PostHttpInterface {
 
     @AliasFor(annotation = HttpInterface.class)
     String[] params() default {};
+
+    @AliasFor(annotation = HttpInterface.class)
+    String paramStr() default "";
 
     @AliasFor(annotation = HttpInterface.class)
     String cookie() default "";

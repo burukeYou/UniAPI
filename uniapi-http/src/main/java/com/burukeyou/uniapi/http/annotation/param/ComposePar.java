@@ -9,7 +9,6 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface CombineParam {
+public @interface ComposePar {
 
-    boolean required() default true;
 }

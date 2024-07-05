@@ -46,6 +46,11 @@ public @interface HttpInterface {
     String[] params() default {};
 
     /**
+     * 请求参数-字符串
+     */
+    String paramStr() default "";
+
+    /**
      *  请求Cookie
      */
     String cookie() default "";

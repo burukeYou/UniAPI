@@ -50,10 +50,17 @@ public class TestDataController {
 
     @PostMapping("/add4")
     @ResponseBody
-    public BaseRsp<Add4DTO> add3(@RequestBody Add4DTO req){
+    public BaseRsp<Add4DTO> add4(@RequestBody Add4DTO req){
         log.info("收到请求4- req:{}", JSON.toJSONString(req));
         req.setName("牛逼");
         return BaseRsp.ok(req);
+    }
+
+    @PostMapping("/add41")
+    @ResponseBody
+    public BaseRsp<String> add41(@RequestBody String req){
+        log.info("收到请求4- req:{}", JSON.toJSONString(req));
+        return BaseRsp.ok(req + "-3");
     }
 
     @GetMapping("/add5/{userId}")
@@ -112,7 +119,9 @@ public class TestDataController {
     public BaseRsp<String> update(@RequestParam("name") String name,
                                   @RequestParam("age") Integer age,
                                   @RequestHeader("clientType") String clientType,
-                                  @RequestHeader("userId") Long userId){
+                                  @RequestHeader("userId") Long userId,
+                                  @RequestParam("d") String d,
+                                  @RequestParam("e") String e,HttpServletRequest request){
         log.info("收到请求1- name:{} age:{} clientType:{} userId:{}",name,age,clientType,userId);
         return BaseRsp.ok(name + "-1");
     }
@@ -144,4 +153,10 @@ public class TestDataController {
     }
 
 
+    @PostMapping("/update3")
+    @ResponseBody
+    public BaseRsp<String> update3(@RequestParam("ids") int[] arr){
+        log.info("收到请求1- arr:{} ",arr);
+        return BaseRsp.ok(  "-1");
+    }
 }

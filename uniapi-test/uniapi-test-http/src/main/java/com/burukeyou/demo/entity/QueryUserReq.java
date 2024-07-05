@@ -1,23 +1,23 @@
 package com.burukeyou.demo.entity;
 
-import com.burukeyou.uniapi.http.annotation.param.BodyJsonParam;
-import com.burukeyou.uniapi.http.annotation.param.HeaderParam;
-import com.burukeyou.uniapi.http.annotation.param.UrlParam;
+import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
+import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
+import com.burukeyou.uniapi.http.annotation.param.QueryPar;
 import lombok.Data;
 
 @Data
 public class QueryUserReq {
 
-    @UrlParam
+    @QueryPar
     private String userId;
 
-    @HeaderParam
+    @HeaderPar
     private String token;
 
-    @UrlParam("cityIdSSS")
+    @QueryPar("cityIdSSS")
     private Integer cityId;
 
-    @BodyJsonParam
+    @BodyJsonPar
     private CategoryBody categoryBody;
 
     private String name1;

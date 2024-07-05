@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ *
  * @author caizhihao
  */
 @Data
@@ -24,11 +25,29 @@ public class HttpUrl implements Serializable {
 
     private static Pattern PATH_REGREX = Pattern.compile("\\{\\w+\\}");
 
+    /**
+     *   Root address
+     */
     private String url = "";
+
+    /**
+     * Path address
+     */
     private String path = "";
 
+    /**
+     *  Anchor address
+     */
+    private String anchor = "";
+
+    /**
+     *  Query param
+     */
     private Map<String,Object> queryParam = new HashMap<>();
 
+    /**
+     *  Path Variable param
+     */
     private Map<String,String> pathParam = new HashMap<>();
 
     public HttpUrl() {
@@ -36,7 +55,59 @@ public class HttpUrl implements Serializable {
         this.pathParam = new HashMap<>();
     }
 
-    public String fillPath(){
+    /**
+     * Construct a complete HTTP request address
+     */
+    public String toUrl(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(url).append(fillPath());
+        if (queryParam != null && !queryParam.isEmpty()){
+            String urlParam = queryParam.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).reduce((a, b) -> a + "&" + b).orElse("");
+            sb.append("?").append(urlParam);
+        }
+        return sb.toString();
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void putQueryParam(String key, Object value) {
+        queryParam.put(key,value);
+    }
+
+    public void putIfAbsentQueryParam(String key, Object value) {
+        queryParam.putIfAbsent(key,value);
+    }
+
+    public void putPathParam(String key, Object value) {
+        pathParam.put(key,value == null ? "null" :value.toString());
+    }
+
+    public void putIfAbsentPathParam(String key, Object value) {
+        pathParam.putIfAbsent(key,value == null ? "null" :value.toString());
+    }
+
+    @Override
+    public String toString() {
+        return toUrl();
+    }
+
+    public Map<String, Object> getQueryParam() {
+        if (queryParam == null){
+            queryParam = new HashMap<>();
+        }
+        return queryParam;
+    }
+
+    public Map<String, String> getPathParam() {
+        if (pathParam == null){
+            pathParam = new HashMap<>();
+        }
+        return pathParam;
+    }
+
+    private String fillPath(){
         // 路径变量填值
         Matcher matcher = PATH_REGREX.matcher(path);
         StringBuffer pathSB = new StringBuffer();
@@ -57,51 +128,5 @@ public class HttpUrl implements Serializable {
         matcher.appendTail(pathSB);
         path = pathSB.toString();
         return path;
-    }
-
-    public String toUrl(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(url).append(fillPath());
-        if (queryParam != null && !queryParam.isEmpty()){
-            String urlParam = queryParam.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).reduce((a, b) -> a + "&" + b).orElse("");
-            sb.append("?").append(urlParam);
-        }
-        return sb.toString();
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public void putUrlParam(String key, Object value) {
-        queryParam.put(key,value);
-    }
-
-    public void putIfAbsentUrlParam(String key, Object value) {
-        queryParam.putIfAbsent(key,value);
-    }
-
-    public void putPathParam(String key, Object value) {
-        pathParam.put(key,value == null ? "null" :value.toString());
-    }
-
-    @Override
-    public String toString() {
-        return toUrl();
-    }
-
-    public Map<String, Object> getQueryParam() {
-        if (queryParam == null){
-            queryParam = new HashMap<>();
-        }
-        return queryParam;
-    }
-
-    public Map<String, String> getPathParam() {
-        if (pathParam == null){
-            pathParam = new HashMap<>();
-        }
-
-        return pathParam;
     }
 }
