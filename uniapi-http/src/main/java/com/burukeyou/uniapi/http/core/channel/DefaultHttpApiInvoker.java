@@ -12,7 +12,6 @@ import com.burukeyou.uniapi.http.support.DataApiConstant;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
-import com.burukeyou.uniapi.http.util.HttpUtil;
 import com.burukeyou.uniapi.support.BaseUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
@@ -50,6 +49,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private static final Pattern pattern = Pattern.compile("filename\\s*=\\s*\\\"(.*)\\\"");
 
+    private static OkHttpClient client;
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -59,6 +59,14 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         this.targetClass = targetClass;
         this.annotationMeta = annotationMeta;
         this.methodInvocation = methodInvocation;
+
+        if (client == null){
+            synchronized (DefaultHttpApiInvoker.class){
+                if (client == null){
+                    client = SpringBeanContext.getBean(OkHttpClient.class);
+                }
+            }
+        }
     }
 
     public Object invoke() {
@@ -97,7 +105,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
 
     public HttpResponse sendHttpRequest(HttpMetadata httpMetadata){
-        OkHttpClient client = HttpUtil.getHttpClient();
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
         Map<String, String> oldHeaders = httpMetadata.getHeaders();
