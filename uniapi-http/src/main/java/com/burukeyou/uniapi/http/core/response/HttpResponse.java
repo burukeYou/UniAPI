@@ -17,7 +17,7 @@ public interface HttpResponse<T> {
      * Obtain the deserialized object of the HTTP response body,this type is the return value type of the proxy method
      * @return           HTTP response body Object
      */
-    T getResult();
+    T getBodyResult();
 
     /**
      * Get all the request  header for the response
@@ -53,4 +53,9 @@ public interface HttpResponse<T> {
      * get response set-cookie header string
      */
     List<Cookie> getSetCookies();
+
+    /**
+     * HTTP response message
+     */
+    String toResponseMessage();
 }

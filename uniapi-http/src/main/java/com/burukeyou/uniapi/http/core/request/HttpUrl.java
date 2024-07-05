@@ -88,11 +88,6 @@ public class HttpUrl implements Serializable {
         pathParam.putIfAbsent(key,value == null ? "null" :value.toString());
     }
 
-    @Override
-    public String toString() {
-        return toUrl();
-    }
-
     public Map<String, Object> getQueryParam() {
         if (queryParam == null){
             queryParam = new HashMap<>();

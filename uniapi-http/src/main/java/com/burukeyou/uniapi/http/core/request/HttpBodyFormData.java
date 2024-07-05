@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author caizhihao
@@ -27,8 +28,11 @@ public class HttpBodyFormData extends HttpBody {
     }
 
     @Override
-    public String toString() {
-        return JSON.toJSONString(formData);
+    public String toStringBody() {
+        if (emptyContent()){
+            return "";
+        }
+        return formData.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining("&"));
     }
 
 }

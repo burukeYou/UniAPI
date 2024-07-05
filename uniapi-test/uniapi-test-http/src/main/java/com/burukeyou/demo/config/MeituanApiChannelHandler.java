@@ -1,7 +1,5 @@
 package com.burukeyou.demo.config;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.burukeyou.demo.annotation.MetuanDataApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -44,8 +42,10 @@ public class MeituanApiChannelHandler implements HttpApiProcessor<MetuanDataApi>
 
     @Override
     public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
-        log.info("发送请求 \n 参数：{} ",JSON.toJSONString(httpMetadata, SerializerFeature.PrettyFormat));
-        return httpSender.sendHttpRequest(httpMetadata);
+        //log.info("发送请求 \n 参数：{} ",httpMetadata.toString());
+        HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
+        log.info("请求结果: {}", rsp.toResponseMessage());
+        return rsp;
     }
 
     @Override

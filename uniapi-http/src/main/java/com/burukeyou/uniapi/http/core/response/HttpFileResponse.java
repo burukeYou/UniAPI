@@ -14,4 +14,9 @@ public class HttpFileResponse extends AbstractHttpResponse<File> {
         this.file = file;
         this.result = file;
     }
+
+    @Override
+    public String bodyResultString() {
+        return file == null ? "" : file.getAbsolutePath();
+    }
 }

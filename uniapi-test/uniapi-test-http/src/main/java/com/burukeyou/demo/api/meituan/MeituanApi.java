@@ -38,7 +38,7 @@ public interface MeituanApi {
     BaseRsp<String> add5(@PathPar("userId") String name);
 
     @PutHttpInterface("/user-web/add6")
-    BaseRsp<Add4DTO> add6(@ComposePar Add6DTO req);
+    HttpResponse<BaseRsp<Add4DTO>> add6(@ComposePar Add6DTO req);
 
     // 支持： InputStream、File、MultipartFile等类型
     @PostHttpInterface("/user-web/add7")

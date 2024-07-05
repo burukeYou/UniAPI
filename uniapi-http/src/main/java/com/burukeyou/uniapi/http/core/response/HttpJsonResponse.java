@@ -19,4 +19,9 @@ public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
         this.method = method;
         this.result = JSON.parseObject(jsonRsp,method.getGenericReturnType());
     }
+
+    @Override
+    public String bodyResultString() {
+        return jsonRsp;
+    }
 }

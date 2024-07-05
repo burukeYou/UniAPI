@@ -32,7 +32,9 @@ public class MethodParam extends AbstractParam {
 
     @Override
     public String getName() {
-        return parameter.getName();
+        // 没意义编译后拿不到实际的参数名
+        //return parameter.getName();
+        return "";
     }
 
     @Override

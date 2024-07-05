@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,7 +108,35 @@ public class HttpMetadata {
     /**
      * Get the complete cookie string
      */
-    public String getCookie(){
+    public String getCookieString(){
         return cookies.stream().map(e -> e.getName() + "=" + e.getValue()).collect(Collectors.joining(";"));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n------------------------------------------------");
+        sb.append("\n").append(requestMethod == null ? "" : requestMethod.name())
+                .append("\t\t").append(httpUrl.toUrl()).append("\n");
+
+        sb.append("Request Header:\n");
+        if (body != null){
+            sb.append("\t\tContent-Type:\t\t").append(body.getContentType()).append("\n");
+        }
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            sb.append("\t\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\n");
+        }
+
+        if(!CollectionUtils.isEmpty(cookies)){
+            sb.append("\t\t").append("Cookie:\t").append(getCookieString()).append("\n");
+        }
+
+        sb.append("Request Body:\n");
+        if (body != null){
+            sb.append("\t\t").append(body.toStringBody()).append("\n");
+        }
+        sb.append("------------------------------------------------\n");
+
+        return sb.toString();
     }
 }

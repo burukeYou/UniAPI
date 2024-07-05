@@ -25,7 +25,7 @@ public class HttpBodyJSON extends HttpBody {
     }
 
     @Override
-    public String toString() {
+    public String toStringBody() {
         return bodyJson;
     }
 

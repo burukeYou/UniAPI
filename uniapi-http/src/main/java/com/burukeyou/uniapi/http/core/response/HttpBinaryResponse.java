@@ -15,4 +15,8 @@ public class HttpBinaryResponse extends AbstractHttpResponse<byte[]> {
         this.result = file;
     }
 
+    @Override
+    public String bodyResultString() {
+        return file == null ? "" : fileName;
+    }
 }

@@ -35,12 +35,6 @@ public @interface GetHttpInterface {
     String value() default "";
 
     /**
-     *  Request method
-     */
-    @AliasFor(annotation = HttpInterface.class)
-    RequestMethod method() default RequestMethod.GET;
-
-    /**
      *  Request header
      */
     @AliasFor(annotation = HttpInterface.class)

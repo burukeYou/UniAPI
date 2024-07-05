@@ -1,6 +1,7 @@
 package com.burukeyou.demo.entity;
 
 import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
+import com.burukeyou.uniapi.http.annotation.param.CookiePar;
 import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
 import com.burukeyou.uniapi.http.annotation.param.QueryPar;
 import lombok.Data;
@@ -20,4 +21,7 @@ public class Add6DTO implements Serializable {
 
     @BodyJsonPar
     private Add4DTO req;
+
+    @CookiePar
+    private String cook;
 }

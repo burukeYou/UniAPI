@@ -327,7 +327,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             }
 
             Object argValue = methodArg.getValue();
-            String tmpFiledName = annotation.value();
+            String tmpFiledName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : methodArg.getName();
             boolean isObjFlag = isObjOrMap(methodArg.getType());
             if (StringUtils.isBlank(tmpFiledName) && !isObjFlag){
                 throw new IllegalArgumentException("use @HeaderPar please specify parameter name");
@@ -391,7 +391,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            String tmpFiledName = annotation.value();
+            String tmpFiledName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : param.getName();
             boolean needFlag = isObjOrMap(param.getType());
             if ((!needFlag || param.isCollection()) && StringUtils.isBlank(tmpFiledName)){
                 throw new IllegalArgumentException("use @QueryPar please specify parameter name");

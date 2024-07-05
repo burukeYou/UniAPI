@@ -81,9 +81,11 @@ public class HttpApiTest {
         req.setId(2L);
         req.setName("jay");
         req.setReq(new Add4DTO(99L,"张三"));
+        req.setCook("userName=哈哈;id=33;sessionId=fklasdf8902342");
 
-        BaseRsp<Add4DTO> rsp = meituanApi.add6(req);
-        System.out.println(JSON.toJSONString(rsp));
+        HttpResponse<BaseRsp<Add4DTO>> rsp = meituanApi.add6(req);
+        String s = rsp.toResponseMessage();
+        System.out.println();
     }
 
     @Test

@@ -16,4 +16,9 @@ public class HttpInputStreamResponse extends AbstractHttpResponse<InputStream> {
         this.fileName = fileName;
         this.result = inputStream;
     }
+
+    @Override
+    public String bodyResultString() {
+        return inputStream == null ? "" : inputStream.toString();
+    }
 }

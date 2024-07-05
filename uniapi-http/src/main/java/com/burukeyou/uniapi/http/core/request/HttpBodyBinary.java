@@ -26,7 +26,7 @@ public class HttpBodyBinary extends HttpBody {
     }
 
     @Override
-    public String toString() {
-        return "";
+    public String toStringBody() {
+        return emptyContent()  ? "" : file.toString();
     }
 }

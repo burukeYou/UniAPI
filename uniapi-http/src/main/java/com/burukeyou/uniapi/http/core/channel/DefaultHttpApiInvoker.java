@@ -99,9 +99,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpResponse<?> response = requestProcessor.postSendHttpRequest(this,httpMetadata);
 
         // http response result processor
-        Object result = requestProcessor.postAfterHttpResponseResult(response.getResult(), response, method, httpMetadata);
+        Object result = requestProcessor.postAfterHttpResponseResult(response.getBodyResult(), response, method, httpMetadata);
         ((AbstractHttpResponse<Object>)response).setResult(result);
-        Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getResult();
+        Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getBodyResult();
 
         // MethodReturnValue processor
         return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, method, httpMetadata);
@@ -138,9 +138,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // config cookie
-        String cookie = httpMetadata.getCookie();
+        String cookie = httpMetadata.getCookieString();
         if (StringUtils.isNotBlank(cookie)){
-            requestBuilder.header("Cookie",cookie);
+            try {
+                requestBuilder.header("Cookie", URLEncoder.encode(cookie,"UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // config requestBody
@@ -179,6 +183,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             httpResponse.setMethod(methodInvocation.getMethod());
             httpResponse.setRequest(request);
             httpResponse.setResponse(response);
+            httpResponse.setHttpMetadata(httpMetadata);
             return httpResponse;
         } catch (IOException e){
             throw new SendHttpRequestException("Http请求网络异常", e);
@@ -300,7 +305,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         MediaType mediaTypeJson = MediaType.parse(body.getContentType());
         RequestBody requestBody = null;
         if (body instanceof HttpBodyJSON){
-            requestBody = RequestBody.create(mediaTypeJson,body.toString());
+            requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
         }else if (body instanceof HttpBodyBinary){
             InputStream inputStream = ((HttpBodyBinary) body).getFile();
             requestBody = RequestBody.create(mediaTypeJson,streamToByteArray(inputStream));
