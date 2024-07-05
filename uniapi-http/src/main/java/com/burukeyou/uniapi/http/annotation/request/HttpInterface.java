@@ -5,7 +5,8 @@ import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
-/** Http接口配置
+/** Http interface configuration
+ *
  * @author caizhihao
  */
 @Inherited
@@ -14,44 +15,46 @@ import java.lang.annotation.*;
 public @interface HttpInterface {
 
     /**
-     *  接口url
+     *  Request the root address of the interface
      */
     String url() default "";
 
     /**
-     * 接口路径
+     * Interface path
      */
     @AliasFor("value")
     String path() default "";
 
     /**
-     * 接口路径
+     * Interface path
      */
     @AliasFor("path")
     String value() default "";
 
     /**
-     *  请求方式
+     *  Request method
      */
     RequestMethod method() default RequestMethod.GET;
 
     /**
-     *  请求头
+     *  Request header
      */
     String[] headers() default {};
 
     /**
-     * 请求参数
+     * Query parameters
      */
     String[] params() default {};
 
     /**
-     * 请求参数-字符串
+     *  The complete string of query parameters
+     *      such as 'a=1&b=2&c=3'
      */
     String paramStr() default "";
 
     /**
-     *  请求Cookie
+     * Request the complete string of the cookie
+     *          such as  'a=1;b=2;c=3'
      */
     String cookie() default "";
 }

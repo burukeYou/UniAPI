@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Request metadata
+ *
  * @author caizhihao
  */
 @Data
@@ -22,25 +24,49 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class HttpMetadata {
 
+    /**
+     *  Request url Metadata
+     */
     private HttpUrl httpUrl = new HttpUrl();
 
+    /**
+     *  Request Method
+     */
     private RequestMethod requestMethod;
 
+    /**
+     *  Request Body
+     */
     private HttpBody body;
 
+    /**
+     *  Request Headers
+     */
     private Map<String,String> headers = new HashMap<>();
 
+    /**
+     *  Request Cookies
+     */
     private List<Cookie> cookies = new ArrayList<>();
 
+    /**
+     * set http url root address
+     */
     public void setUrl(String url){
         this.httpUrl.setUrl(url);
     }
 
+    /**
+     * set http url path
+     */
     public void setUrlPath(String path){
         this.httpUrl.setPath(path);
     }
 
-    public void putUrlParam(String key,Object value){
+    /**
+     *  add url queryParam
+     */
+    public void putQueryParam(String key,Object value){
         this.httpUrl.putQueryParam(key,value);
     }
 
@@ -78,6 +104,9 @@ public class HttpMetadata {
         cookies.addAll(cookiesList);
     }
 
+    /**
+     * Get the complete cookie string
+     */
     public String getCookie(){
         return cookies.stream().map(e -> e.getName() + "=" + e.getValue()).collect(Collectors.joining(";"));
     }

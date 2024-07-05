@@ -1,6 +1,7 @@
-package com.burukeyou.uniapi.support;
+package com.burukeyou.uniapi.queue.support;
 
-import com.burukeyou.uniapi.annotation.QueueApi;
+import com.burukeyou.uniapi.queue.annotation.QueueApi;
+import com.burukeyou.uniapi.support.ApiAnnotationMeta;
 import lombok.Getter;
 import lombok.Setter;
 

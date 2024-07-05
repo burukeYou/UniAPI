@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.annotation.request;
 
 import com.burukeyou.uniapi.http.support.RequestMethod;
+import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
@@ -10,5 +11,53 @@ import java.lang.annotation.*;
 @HttpInterface(method = RequestMethod.PATCH)
 public @interface PatchHttpInterface {
 
-    
+    /**
+     *  Request the root address of the interface
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String url() default "";
+
+    /**
+     * Interface path
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String path() default "";
+
+    /**
+     * Interface path
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String value() default "";
+
+    /**
+     *  Request method
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    RequestMethod method() default RequestMethod.GET;
+
+    /**
+     *  Request header
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String[] headers() default {};
+
+    /**
+     * Query parameters
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String[] params() default {};
+
+    /**
+     *  The complete string of query parameters
+     *      such as 'a=1&b=2&c=3'
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String paramStr() default "";
+
+    /**
+     * Request the complete string of the cookie
+     *          such as  'a=1;b=2;c=3'
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String cookie() default "";
 }

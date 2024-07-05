@@ -1,6 +1,7 @@
-package com.burukeyou.uniapi.config;
+package com.burukeyou.uniapi.queue.config;
 
-import com.burukeyou.uniapi.annotation.QueueApi;
+import com.burukeyou.uniapi.queue.annotation.QueueApi;
+import com.burukeyou.uniapi.config.UniApiRegister;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;

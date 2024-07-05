@@ -35,19 +35,10 @@ public class UniApiFactoryBean extends BaseSpringAware implements FactoryBean<Ob
     public UniApiFactoryBean(Class<?> targetClass) {
         this.targetClass = targetClass;
     }
-    private void init() {
-/*        if (this.invokeProxyFactory == null){
-            synchronized (DataApiFactoryBean.class) {
-                if (this.invokeProxyFactory == null) {
-                    this.invokeProxyFactory = new AnnotationProxyFactory(new ProxySupport(getEnvironment()));
-                }
-            }
-        }*/
-    }
+
 
     @Override
     public Object getObject() throws Exception {
-        init();
         if (lazyProxy == null) {
             createLazyProxy();
         }

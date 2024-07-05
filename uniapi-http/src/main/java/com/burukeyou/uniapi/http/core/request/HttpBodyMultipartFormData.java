@@ -8,6 +8,9 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
+/**
+ * @author caizhihao
+ */
 @Getter
 @Setter
 public class HttpBodyMultipartFormData extends HttpBody {

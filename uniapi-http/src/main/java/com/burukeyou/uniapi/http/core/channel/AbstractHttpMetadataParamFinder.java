@@ -2,6 +2,7 @@ package com.burukeyou.uniapi.http.core.channel;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.burukeyou.uniapi.exception.BaseUniApiException;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.annotation.param.*;
@@ -86,7 +87,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            CookieStrPar annotation = param.getAnnotation(CookieStrPar.class);
+            CookiePar annotation = param.getAnnotation(CookiePar.class);
             if (annotation == null){
                 continue;
             }
@@ -114,7 +115,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
             if (StringUtils.isNotBlank(annotation.value())){
                 // 指定了name 当成单个cookie处理
-                if (isBaseType(param.getType())){
+                if (String.class.equals(param.getType())){
                     cookies.add(new Cookie(annotation.value(),argValue.toString()));
                     continue;
                 }
@@ -193,9 +194,13 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             if (stringFormParam != null){
                 if (isObjOrMap(argValue.getClass())){
                     return new HttpBodyFormData(objToMap(argValue));
-                }else if (StringUtils.isNotBlank(stringFormParam.value())){
+                }else if (!methodArg.isCollection()){
+                    if (StringUtils.isBlank(stringFormParam.value())){
+                        throw new BaseUniApiException("user @BodyFormPar for single value please specify the parameter name ");
+                    }
+
                     // 单个
-                    return new HttpBodyFormData(Collections.singletonMap(stringFormParam.value(),argValue.toString()));
+                    return new HttpBodyFormData(Collections.singletonMap(stringFormParam.value(),getArgFillValue(argValue).toString()));
                 }
             }
 
@@ -317,7 +322,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
         for (Param methodArg : argList) {
             HeaderPar annotation = methodArg.getAnnotation(HeaderPar.class);
-            if (annotation == null){
+            if (annotation == null || methodArg.isCollection()){
                 continue;
             }
 
@@ -325,7 +330,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             String tmpFiledName = annotation.value();
             boolean isObjFlag = isObjOrMap(methodArg.getType());
             if (StringUtils.isBlank(tmpFiledName) && !isObjFlag){
-                throw new IllegalArgumentException("use @HeaderParam please specify parameter name");
+                throw new IllegalArgumentException("use @HeaderPar please specify parameter name");
             }
 
             Object value = getActualArgValue(argValue);
@@ -389,7 +394,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             String tmpFiledName = annotation.value();
             boolean needFlag = isObjOrMap(param.getType());
             if ((!needFlag || param.isCollection()) && StringUtils.isBlank(tmpFiledName)){
-                throw new IllegalArgumentException("use @QueryParam please specify parameter name");
+                throw new IllegalArgumentException("use @QueryPar please specify parameter name");
             }
 
             Object argValue = param.getValue();
@@ -423,11 +428,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         Map<String,String> queryMap = new HashMap<>();
         for (Param methodArg : argList) {
             PathPar annotation = methodArg.getAnnotation(PathPar.class);
-            if (annotation == null){
-                continue;
-            }
-
-            if (isObjOrMap(methodArg.getType())){
+            if (annotation == null || !isBaseType(methodArg.getType())){
                 continue;
             }
 
@@ -486,18 +487,11 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             if (methodArg.getValue() == null){
                 continue;
             }
-
-            Object argValue = methodArg.getValue();
-            Class<?> argValueClass = argValue.getClass();
-            if (argValueClass.isArray() || List.class.isAssignableFrom(argValueClass)){
-                continue;
-            }
-
             ComposePar annotation = methodArg.getAnnotation(ComposePar.class);
-            if (annotation == null || !isObjOrMap(argValueClass)){
+            if (annotation == null || methodArg.isCollection() || !methodArg.isObject()){
                 continue;
             }
-            fillHttpMetadata(httpMetadata, new ClassFieldArgList(argValue));
+            fillHttpMetadata(httpMetadata, new ClassFieldArgList(methodArg.getValue()));
         }
     }
 
@@ -533,8 +527,15 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         return argValue;
     }
 
-
+    /**
+     * 判断是否是普通值
+     *      除了自定义对象、Map、集合之外的所有对象都是基本类型，
+     *      表示的是单一值，比如int、Boolean、String
+     */
     public boolean isBaseType(Class<?> valueClass){
+        if (valueClass.isPrimitive()){
+            return true;
+        }
         return !isObjOrMap(valueClass) && !isObjOrArr(valueClass);
     }
 

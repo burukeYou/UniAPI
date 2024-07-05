@@ -3,7 +3,9 @@ package com.burukeyou.uniapi.support;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class BaseUtil {
+public class ClassUtil {
+
+    private ClassUtil(){}
 
     public static Type[] getSuperClassActualTypeArguments(Class<?> clz){
         Type superclass = clz.getGenericSuperclass();

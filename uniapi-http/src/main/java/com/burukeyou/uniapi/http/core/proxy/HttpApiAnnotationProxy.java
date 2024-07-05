@@ -9,6 +9,9 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import java.lang.reflect.Method;
 
+/**
+ * @author caizhihao
+ */
 public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpApiAnnotationMeta> {
 
     public HttpApiAnnotationProxy() {

@@ -1,7 +1,7 @@
-package com.burukeyou.uniapi.core.channel;
+package com.burukeyou.uniapi.queue.core.channel;
 
-import com.burukeyou.uniapi.annotation.QueueApi;
-import com.burukeyou.uniapi.annotation.QueueInterface;
+import com.burukeyou.uniapi.queue.annotation.QueueApi;
+import com.burukeyou.uniapi.queue.annotation.QueueInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInvocation;
 

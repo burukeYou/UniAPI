@@ -1,9 +1,10 @@
-package com.burukeyou.uniapi.core.proxy;
+package com.burukeyou.uniapi.queue.core.proxy;
 
-import com.burukeyou.uniapi.annotation.QueueApi;
-import com.burukeyou.uniapi.annotation.QueueInterface;
-import com.burukeyou.uniapi.core.channel.BaseQueueApiInvoker;
-import com.burukeyou.uniapi.support.QueueApiAnnotationMeta;
+import com.burukeyou.uniapi.queue.annotation.QueueApi;
+import com.burukeyou.uniapi.queue.annotation.QueueInterface;
+import com.burukeyou.uniapi.queue.core.channel.BaseQueueApiInvoker;
+import com.burukeyou.uniapi.core.proxy.AbstractAnnotationInvokeProxy;
+import com.burukeyou.uniapi.queue.support.QueueApiAnnotationMeta;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 

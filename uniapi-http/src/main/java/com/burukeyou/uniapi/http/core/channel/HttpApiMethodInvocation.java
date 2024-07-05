@@ -10,10 +10,19 @@ import java.lang.annotation.Annotation;
  */
 public interface HttpApiMethodInvocation<T extends Annotation> extends MethodInvocation {
 
+    /**
+     * Obtain HttpAPI annotations for the proxy
+     */
     T getProxyApiAnnotation();
 
+    /**
+     * Proxy interface
+     */
     HttpInterface getProxyInterface();
 
+    /**
+     * The specific class being represented
+     */
     Class<?> getProxyClass();
 
 }

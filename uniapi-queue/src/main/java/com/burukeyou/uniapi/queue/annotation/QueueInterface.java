@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.annotation;
+package com.burukeyou.uniapi.queue.annotation;
 
 import org.springframework.core.annotation.AliasFor;
 

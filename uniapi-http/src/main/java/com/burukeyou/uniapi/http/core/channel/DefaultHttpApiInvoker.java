@@ -12,7 +12,7 @@ import com.burukeyou.uniapi.http.support.DataApiConstant;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
-import com.burukeyou.uniapi.support.BaseUtil;
+import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.TimeUtil;
@@ -86,7 +86,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // check
-        Type argument = BaseUtil.getSuperInterfaceActualTypeArguments(beforeProcessor)[0];
+        Type argument = ClassUtil.getSuperInterfaceActualTypeArguments(beforeProcessor)[0];
         Annotation proxyAnnotation = annotationMeta.getProxyAnnotation();
         if (!argument.equals(Annotation.class) && !argument.equals(proxyAnnotation.annotationType())){
             throw new IllegalArgumentException("指定的HttpRequestBeforeProcessor无法处理该注解类型" + proxyAnnotation.annotationType().getSimpleName());

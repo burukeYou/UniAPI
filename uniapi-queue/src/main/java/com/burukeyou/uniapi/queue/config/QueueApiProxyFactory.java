@@ -1,11 +1,11 @@
-package com.burukeyou.uniapi.config;
+package com.burukeyou.uniapi.queue.config;
 
-import com.burukeyou.uniapi.annotation.QueueApi;
+import com.burukeyou.uniapi.queue.annotation.QueueApi;
 import com.burukeyou.uniapi.core.proxy.AnnotationInvokeProxy;
 import com.burukeyou.uniapi.core.proxy.ApiProxyFactory;
-import com.burukeyou.uniapi.core.proxy.QueueApiAnnotationProxy;
+import com.burukeyou.uniapi.queue.core.proxy.QueueApiAnnotationProxy;
+import com.burukeyou.uniapi.queue.support.QueueApiAnnotationMeta;
 import com.burukeyou.uniapi.support.ProxySupport;
-import com.burukeyou.uniapi.support.QueueApiAnnotationMeta;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Component;
 

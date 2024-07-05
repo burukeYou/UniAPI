@@ -6,6 +6,9 @@ import lombok.Setter;
 
 import java.io.InputStream;
 
+/**
+ * @author caizhihao
+ */
 @Getter
 @Setter
 public class HttpBodyBinary extends HttpBody {

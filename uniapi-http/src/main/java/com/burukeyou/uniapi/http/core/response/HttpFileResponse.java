@@ -14,9 +14,4 @@ public class HttpFileResponse extends AbstractHttpResponse<File> {
         this.file = file;
         this.result = file;
     }
-
-    @Override
-    public File getResult() {
-        return file;
-    }
 }
