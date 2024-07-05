@@ -8,6 +8,6 @@ import com.burukeyou.uniapi.http.core.response.HttpResponse;
  */
 public interface HttpSender {
 
-    HttpResponse sendHttpRequest(HttpMetadata httpMetadata);
+    HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata);
 
 }

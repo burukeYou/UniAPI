@@ -113,7 +113,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    public HttpResponse sendHttpRequest(HttpMetadata httpMetadata){
+    public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata){
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
         Map<String, String> oldHeaders = httpMetadata.getHeaders();
@@ -189,7 +189,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
-    private AbstractHttpResponse doWithHttpFileResponse(Response response) {
+    private AbstractHttpResponse<?> doWithHttpFileResponse(Response response) {
         String savePath = getSavePath(response);
         ResponseBody responseBody = response.body();
         InputStream inputStream = responseBody.byteStream();
@@ -256,7 +256,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    private AbstractHttpResponse doWithHttpBinaryResponse(Response response) throws IOException {
+    private AbstractHttpResponse<?> doWithHttpBinaryResponse(Response response) throws IOException {
         ResponseBody responseBody = response.body();
         String fileName = getFileResponseName(response);
         byte[] bytes = responseBody.bytes();
