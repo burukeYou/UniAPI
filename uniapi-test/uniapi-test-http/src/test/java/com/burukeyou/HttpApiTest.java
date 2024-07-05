@@ -161,7 +161,7 @@ public class HttpApiTest {
     @Test
     public void testUpdate3(){
         BaseRsp<String> stringBaseRsp = meituanApi.update3(Arrays.asList(7,8,9));
-        System.out.println();
+        System.out.println(stringBaseRsp);
     }
 }
 

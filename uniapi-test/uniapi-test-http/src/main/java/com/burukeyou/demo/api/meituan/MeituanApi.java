@@ -71,8 +71,8 @@ public interface MeituanApi {
     @PostHttpInterface("/user-web/update1")
     BaseRsp<String> update1(@CookieStrPar String cookie);
 
-    @PostHttpInterface("/user-web/update2")
-    HttpResponse update2(@CookieStrPar String cookie);
+    @PostHttpInterface("/user-web/update1")
+    HttpResponse<Add4DTO> update2(@CookieStrPar String cookie);
 
     @PostHttpInterface("/user-web/update3")
     BaseRsp<String> update3(@QueryPar("ids") List<Integer> params);

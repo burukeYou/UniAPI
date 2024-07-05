@@ -8,9 +8,9 @@ import java.util.Map;
 /**
  * @author caizhihao
  */
-public interface HttpResponse {
+public interface HttpResponse<T> {
 
-    Object getReturnObj();
+    T getResult();
 
     Map<String,String> getHeaders();
 

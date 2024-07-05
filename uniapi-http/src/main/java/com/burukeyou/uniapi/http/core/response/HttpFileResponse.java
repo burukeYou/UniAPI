@@ -6,16 +6,17 @@ import lombok.Data;
 import java.io.File;
 
 @Data
-public class HttpFileResponse extends AbstractHttpResponse {
+public class HttpFileResponse extends AbstractHttpResponse<File> {
 
     private File file;
 
     public HttpFileResponse(File file) {
         this.file = file;
+        this.result = file;
     }
 
     @Override
-    public Object getReturnObj() {
-        return ifReturnOriginalResponse() ? this : file;
+    public File getResult() {
+        return file;
     }
 }

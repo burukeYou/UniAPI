@@ -17,9 +17,9 @@ import java.util.Map;
  * @author  caizhihao
  */
 
-@Getter
 @Setter
-public abstract class AbstractHttpResponse implements HttpResponse {
+@Getter
+public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     private Request request;
 
@@ -27,6 +27,11 @@ public abstract class AbstractHttpResponse implements HttpResponse {
 
     protected Method method;
 
+    protected T result;
+
+    public T getResult() {
+        return result;
+    }
 
     protected boolean ifReturnOriginalResponse() {
         return HttpResponse.class.isAssignableFrom(method.getReturnType());

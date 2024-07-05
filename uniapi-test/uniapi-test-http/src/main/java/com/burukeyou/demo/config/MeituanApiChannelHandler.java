@@ -3,6 +3,7 @@ package com.burukeyou.demo.config;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.burukeyou.demo.annotation.MetuanDataApi;
+import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
@@ -42,17 +43,18 @@ public class MeituanApiChannelHandler implements HttpApiProcessor<MetuanDataApi>
     }
 
     @Override
-    public HttpResponse postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
         log.info("发送请求 \n 参数：{} ",JSON.toJSONString(httpMetadata, SerializerFeature.PrettyFormat));
         return httpSender.sendHttpRequest(httpMetadata);
     }
 
     @Override
-    public Object postAfter(HttpResponse rsp, Method method, HttpMetadata httpMetadata) {
-        Object responseObj = rsp.getReturnObj();
-
-
-
-        return responseObj;
+    public Object postAfterHttpResponseResult(Object result, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata) {
+        if (result instanceof BaseRsp){
+            ((BaseRsp)result).setCode(99999);
+        }
+        return result;
     }
+
+
 }

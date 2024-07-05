@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
  * @author caizhihao
  */
 @Data
-public class HttpJsonResponse extends AbstractHttpResponse {
+public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
 
     private final String jsonRsp;
     private final Method method;
@@ -17,16 +17,6 @@ public class HttpJsonResponse extends AbstractHttpResponse {
     public HttpJsonResponse(String jsonRsp, Method method) {
         this.jsonRsp = jsonRsp;
         this.method = method;
+        this.result = JSON.parseObject(jsonRsp,method.getGenericReturnType());
     }
-
-    @Override
-    public Object getReturnObj() {
-        if (ifReturnOriginalResponse()){
-            return this;
-        }
-
-        return JSON.parseObject(jsonRsp,method.getGenericReturnType());
-    }
-
-
 }

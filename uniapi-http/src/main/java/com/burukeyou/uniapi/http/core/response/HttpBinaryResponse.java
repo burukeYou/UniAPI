@@ -4,7 +4,7 @@ package com.burukeyou.uniapi.http.core.response;
 import lombok.Data;
 
 @Data
-public class HttpBinaryResponse extends AbstractHttpResponse {
+public class HttpBinaryResponse extends AbstractHttpResponse<byte[]> {
 
     private String fileName;
     private byte[] file;
@@ -12,10 +12,7 @@ public class HttpBinaryResponse extends AbstractHttpResponse {
     public HttpBinaryResponse(String fileName, byte[] file) {
         this.fileName = fileName;
         this.file = file;
+        this.result = file;
     }
 
-    @Override
-    public Object getReturnObj() {
-        return ifReturnOriginalResponse() ? this : file;
-    }
 }

@@ -18,15 +18,16 @@ public interface HttpApiProcessor<T extends Annotation> {
         return httpMetadata;
     }
 
-    default HttpResponse postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata){
+    default HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata){
         return httpSender.sendHttpRequest(httpMetadata);
     }
 
-    default Object postAfter(HttpResponse rsp,Method method,HttpMetadata httpMetadata){
-        if (HttpResponse.class.isAssignableFrom(method.getReturnType())){
-            return rsp;
-        }
-        return rsp.getReturnObj();
+    default Object postAfterHttpResponseResult(Object result, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata){
+        return result;
+    }
+
+    default Object postAfterMethodReturnValue(Object methodReturnValue,HttpResponse<?> rsp,Method method,HttpMetadata httpMetadata){
+        return methodReturnValue;
     }
 
 }

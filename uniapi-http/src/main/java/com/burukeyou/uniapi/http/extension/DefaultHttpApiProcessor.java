@@ -18,12 +18,12 @@ import java.lang.annotation.Annotation;
 public class DefaultHttpApiProcessor implements HttpApiProcessor<Annotation> {
 
     @Override
-    public HttpResponse postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
         String path = httpMetadata.getHttpUrl().getPath();
-        HttpResponse rsp = null;
+        HttpResponse<?> rsp = null;
         try {
             rsp = HttpApiProcessor.super.postSendHttpRequest(httpSender, httpMetadata);
             stopWatch.stop();

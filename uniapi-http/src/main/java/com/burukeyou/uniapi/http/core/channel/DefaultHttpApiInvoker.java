@@ -92,10 +92,19 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             throw new IllegalArgumentException("指定的HttpRequestBeforeProcessor无法处理该注解类型" + proxyAnnotation.annotationType().getSimpleName());
         }
 
-        // processor
+        // before processor
         httpMetadata = requestProcessor.postBefore(httpMetadata,param);
-        HttpResponse response = requestProcessor.postSendHttpRequest(this,httpMetadata);
-        return requestProcessor.postAfter(response,method,httpMetadata);
+
+        // sendHttpRequest processor
+        HttpResponse<?> response = requestProcessor.postSendHttpRequest(this,httpMetadata);
+
+        // http response result processor
+        Object result = requestProcessor.postAfterHttpResponseResult(response.getResult(), response, method, httpMetadata);
+        ((AbstractHttpResponse<Object>)response).setResult(result);
+        Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getResult();
+
+        // MethodReturnValue processor
+        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, method, httpMetadata);
     }
 
 
@@ -154,7 +163,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 throw new SendHttpRequestException("Http请求异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
             }
 
-            AbstractHttpResponse httpResponse = null;
+            AbstractHttpResponse<?> httpResponse = null;
             Class<?> returnType = methodInvocation.getMethod().getReturnType();
             if (isFileDownloadResponse(response)){
                 if (File.class.isAssignableFrom(returnType)){
@@ -165,7 +174,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                     httpResponse =  doWithHttpBinaryResponse(response);
                 }
             }else {
-                httpResponse = new HttpJsonResponse(response.body().string(),methodInvocation.getMethod());
+                httpResponse = new HttpJsonResponse<>(response.body().string(),methodInvocation.getMethod());
             }
             httpResponse.setMethod(methodInvocation.getMethod());
             httpResponse.setRequest(request);

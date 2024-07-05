@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.InputStream;
 
 @Data
-public class HttpInputStreamResponse extends AbstractHttpResponse {
+public class HttpInputStreamResponse extends AbstractHttpResponse<InputStream> {
 
     private InputStream inputStream;
 
@@ -14,10 +14,6 @@ public class HttpInputStreamResponse extends AbstractHttpResponse {
     public HttpInputStreamResponse(InputStream inputStream, String fileName) {
         this.inputStream = inputStream;
         this.fileName = fileName;
-    }
-
-    @Override
-    public Object getReturnObj() {
-        return ifReturnOriginalResponse() ? this : inputStream;
+        this.result = inputStream;
     }
 }
