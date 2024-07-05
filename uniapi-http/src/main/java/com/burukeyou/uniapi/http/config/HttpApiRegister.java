@@ -7,6 +7,9 @@ import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author caizhihao
+ */
 public class HttpApiRegister implements UniApiRegister {
 
     @Override

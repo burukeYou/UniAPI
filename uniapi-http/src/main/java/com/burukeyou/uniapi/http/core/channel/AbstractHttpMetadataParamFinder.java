@@ -428,7 +428,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         Map<String,String> queryMap = new HashMap<>();
         for (Param methodArg : argList) {
             PathPar annotation = methodArg.getAnnotation(PathPar.class);
-            if (annotation == null || !isBaseType(methodArg.getType())){
+            if (annotation == null || !methodArg.isNormalValue()){
                 continue;
             }
 

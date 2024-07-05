@@ -6,7 +6,7 @@ import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
-/** Post 接口配置
+/**
  * @author caizhihao
  */
 @Inherited

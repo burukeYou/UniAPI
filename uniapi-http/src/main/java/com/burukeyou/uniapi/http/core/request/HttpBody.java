@@ -33,6 +33,10 @@ public abstract class HttpBody {
         return contentType;
     }
 
+    /**
+     *
+     * @return
+     */
     public abstract String toString();
 
 

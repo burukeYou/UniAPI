@@ -24,8 +24,8 @@ public class MeituanApiChannelHandler implements HttpApiProcessor<MetuanDataApi>
     private String appId;
 
     @Override
-    public HttpMetadata postBefore(HttpMetadata httpMetadata,
-                                   HttpApiMethodInvocation<MetuanDataApi> methodInvocation) {
+    public HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata,
+                                               HttpApiMethodInvocation<MetuanDataApi> methodInvocation) {
         //
         MetuanDataApi api = methodInvocation.getProxyApiAnnotation();
         HttpInterface proxyInterface = methodInvocation.getProxyInterface();

@@ -9,7 +9,23 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
- * Http Api lifecycle processor Extension point
+ * HttpAPI lifecycle processor Extension point
+ *
+ * execution flow:
+ *
+ *                  Build HttpMetadata
+ *                         |
+ *                         V
+ *                postBeforeHttpMetadata
+ *                        |
+ *                        V
+ *                 postSendHttpRequest
+ *                        |
+ *                        V
+ *             postAfterHttpResponseResult
+ *                        |
+ *                        V
+ *             postAfterMethodReturnValue
  *
  *
  * @author caizhihao
@@ -24,12 +40,13 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param methodInvocation          the method of proxy execution
      * @return                          the new request data
      */
-    default HttpMetadata postBefore(HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
+    default HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
         return httpMetadata;
     }
 
     /**
      * When sending HTTP requests
+     *          Send an HTTP request using HttpMetadata
      * @param httpSender                 Request Sender
      * @param httpMetadata               request data
      */

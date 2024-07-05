@@ -36,7 +36,7 @@ public class HttpApiProxyFactory implements ApiProxyFactory {
             throw new IllegalArgumentException("can not find proxyAnnotation for " + targetClass.getName());
         }
 
-        HttpApiAnnotationMeta meta = new HttpApiAnnotationMeta(proxyAnnotation, (HttpApi) apiAnnotation);
+        HttpApiAnnotationMeta meta = new HttpApiAnnotationMeta(proxyAnnotation, apiAnnotation);
         meta.setProxySupport(proxySupport);
         return new HttpApiAnnotationProxy(meta);
     }

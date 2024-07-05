@@ -16,5 +16,8 @@ import java.lang.annotation.*;
 @Import({UniApiStarterConfiguration.class, UniApiBeanCustomRegister.class})
 public @interface UniAPIScan {
 
+    /**
+     * The package path of the defined uniAPI
+     */
     String[] value();
 }

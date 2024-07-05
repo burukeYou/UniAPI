@@ -10,6 +10,18 @@ import java.util.*;
 public abstract class AbstractParam implements Param {
 
     @Override
+    public boolean isNormalValue() {
+        Class<?> type = getType();
+        if (isObject() || isCollection() || Map.class.isAssignableFrom(type)){
+            return false;
+        }
+        if (type.isPrimitive()){
+            return true;
+        }
+        return true;
+    }
+
+    @Override
     public boolean isObject() {
         Class<?> type = getType();
         ClassLoader classLoader = type.getClassLoader();

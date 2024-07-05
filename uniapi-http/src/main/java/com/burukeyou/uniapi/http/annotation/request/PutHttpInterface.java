@@ -6,6 +6,9 @@ import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 
+/**
+ * @author caizhihao
+ */
 @Inherited
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

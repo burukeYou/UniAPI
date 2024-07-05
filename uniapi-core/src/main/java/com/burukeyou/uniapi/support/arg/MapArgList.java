@@ -2,6 +2,9 @@ package com.burukeyou.uniapi.support.arg;
 
 import java.util.Map;
 
+/**
+ * @author caizhihao
+ */
 public class MapArgList extends ArgList {
 
     public MapArgList(Map<?,?> map) {
