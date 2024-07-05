@@ -1,8 +1,8 @@
 package com.burukeyou.uniapi.http.support;
 
-public class DataApiConstant {
+public class UniHttpApiConstant {
 
-    private DataApiConstant(){}
+    private UniHttpApiConstant(){}
 
     public static final String DEFAULT_FILE_SAVE_DIR = "/tmp/{YYYYMMDD}/";
 }

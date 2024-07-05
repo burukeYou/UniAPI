@@ -8,7 +8,7 @@ import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
-import com.burukeyou.uniapi.http.support.DataApiConstant;
+import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
@@ -232,7 +232,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         //
-        String saveDir = DataApiConstant.DEFAULT_FILE_SAVE_DIR;
+        String saveDir = UniHttpApiConstant.DEFAULT_FILE_SAVE_DIR;
         ResponseFile responseFileAnno = AnnotatedElementUtils.getMergedAnnotation(methodInvocation.getMethod(),ResponseFile.class);
         if (responseFileAnno != null){
             saveDir = responseFileAnno.saveDir();
