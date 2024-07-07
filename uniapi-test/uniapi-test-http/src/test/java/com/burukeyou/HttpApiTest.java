@@ -84,7 +84,7 @@ public class HttpApiTest {
         req.setCook("userName=哈哈;id=33;sessionId=fklasdf8902342");
 
         HttpResponse<BaseRsp<Add4DTO>> rsp = meituanApi.add6(req);
-        String s = rsp.toResponseMessage();
+        String s = rsp.toHttpProtocol();
         System.out.println();
     }
 

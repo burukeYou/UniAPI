@@ -44,7 +44,7 @@ public class MeituanApiChannelHandler implements HttpApiProcessor<MetuanDataApi>
     public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
         //log.info("发送请求 \n 参数：{} ",httpMetadata.toString());
         HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
-        log.info("请求结果: {}", rsp.toResponseMessage());
+        log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;
     }
 

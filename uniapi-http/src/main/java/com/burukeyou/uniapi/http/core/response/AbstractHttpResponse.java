@@ -83,7 +83,7 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
     public abstract String bodyResultString();
 
     @Override
-    public String toResponseMessage() {
+    public String toHttpProtocol() {
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
         HttpBody body = httpMetadata.getBody();

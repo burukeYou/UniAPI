@@ -112,8 +112,10 @@ public class HttpMetadata {
         return cookies.stream().map(e -> e.getName() + "=" + e.getValue()).collect(Collectors.joining(";"));
     }
 
-    @Override
-    public String toString() {
+    /**
+     *  http protocol string
+     */
+    public String toHttpProtocol() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n------------------------------------------------");
         sb.append("\n").append(requestMethod == null ? "" : requestMethod.name())

@@ -50,12 +50,12 @@ public interface HttpResponse<T> {
     List<String> getSetCookiesString();
 
     /**
-     * get response set-cookie header string
+     * get response set-cookie header to
      */
     List<Cookie> getSetCookies();
 
     /**
-     * HTTP response message
+     * http protocol string
      */
-    String toResponseMessage();
+    String toHttpProtocol();
 }
