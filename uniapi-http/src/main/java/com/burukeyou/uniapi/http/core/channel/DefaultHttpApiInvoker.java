@@ -98,9 +98,16 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         // sendHttpRequest processor
         HttpResponse<?> response = requestProcessor.postSendHttpRequest(this,httpMetadata);
 
+        //  http response body string processor
+        if (response instanceof HttpJsonResponse){
+            HttpJsonResponse<?> jsonResponse = ((HttpJsonResponse<?>)response);
+            String newJsonRsp = requestProcessor.postAfterHttpResponseBodyString(jsonResponse.getJsonRsp(), response, method, httpMetadata);
+            jsonResponse.setJsonRsp(newJsonRsp);
+        }
+
         // http response result processor
         Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, method, httpMetadata);
-        ((AbstractHttpResponse<Object>)response).setResult(result);
+        ((AbstractHttpResponse<Object>)response).setBodyResult(result);
         Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getBodyResult();
 
         // MethodReturnValue processor

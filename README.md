@@ -24,7 +24,7 @@
 ## 2.2、对接接口
 在类上标记@HttpAPI注解，用户表示定义一个Http接口的信息, 然后就可以去编写每个方法去对接每个接口。 
 如下面两个方法的配置则对接了 GET http://localhost:8080/getUser和 POST http://localhost:8080/addUser 两个接口
-
+方法返回值定义成Http响应body对应的类型即可，默认会使用fastjson反序列化Http响应body的值为该类型对象。
 
 ```java
 @HttpApi(url = "http://localhost:8080")
@@ -86,18 +86,183 @@ class UserAppService {
 
 ```
 
-# 3、特性
+# 3、说明介绍
 
 ##  @HttpApi注解
-
-## HttpApiProcessor 生命周期钩子
+用于标记接口上，该接口上的方法会被代理，指定自定义的Http代理逻辑， 也可配置请求的url路径等等。
 
 ## @HttpInterface注解
+用于配置一个接口的参数，包括请求方式、请求路径、请求头、请求cookie、请求查询参数等等
+
+并且内置了以下请求方式的@HttpInterface，不必再每次手动指定请求方式
+@PostHttpInterface
+@PutHttpInterface
+@DeleteHttpInterface
+@GetHttpInterface
 
 ##  各种@Par注解
+以下各种Par后缀的注解，主要用于方法参数上，用于指定在发送请求时将参数值放到Http请求体的哪部分上。
+为了方便描述，下文的普通值就是表示String，基本类型、基本类型的包装类型等类型
 
-## HttpResponse
 
+### @QueryPar注解
+标记Http请求url的查询参数
+
+支持以下方法参数类型举例
+-    普通值      @QueryPar("id")      String
+-    普通值集合   @QueryPar("ids")     List<Integer>
+-    对象        @QueryPar            User
+-    Map        @QueryPar            Map
+
+如果类型是普通值或者普通值集合需要手动指定参数名，因为是当成单个查询参数传递
+如果类型是对象或者Map是当成多个查询参数传递，字段名或者map的key名就是参数名，字段值或者map的value值就是参数值。
+
+### @PathPar注解
+标记Http请求路径变量参数
+
+支持以下方法参数类型举例
+-   普通值            @PathPar("id")   String
+
+
+
+### @HeaderPar注解
+标记Http请求头参数
+
+支持以下方法参数类型举例
+-      对象              @HeaderPar         User
+-      Map              @HeaderPar          Map
+-      普通值            @HeaderPar("id")    String
+
+如果类型是普通值类型需要手动指定参数名，当成单个请求头参数传递
+
+
+### @CookiePar注解
+用于标记Http请求的cookie请求头
+
+支持以下方法参数类型举例
+-      Map                        @CookiePar                 Map
+-      单个Cookie对象              @CookiePar                 com.burukeyou.uniapi.http.support.Cookie
+-      Cookie对象集合              @CookiePar                 List<com.burukeyou.uniapi.http.support.Cookie>
+-      字符串(指定name)             @CookiePar("userId")       String            当成单个cookie键值对处理
+-      字符串(不指定name)           @CookiePar                 String            当成完整的cookie字符串处理
+
+如果类型是字符串时，当指定参数名时，当成单个cookie键值对处理，如果不指定参数名当成完整的cookie字符串处理比如a=1;b=2;c=3
+如果是Map当成多个cookie键值对处理。
+如果类型是内置的 `com.burukeyou.uniapi.http.support.Cookie`对象当成单个cookie键值对处理
+
+### @BodyJsonPar注解
+用于标记Http请求体内容为json形式: 对应content-type为 application/json
+
+支持以下方法参数类型举例
+-      对象              @BodyJsonPar   User
+-      对象集合           @BodyJsonPar   List<User>
+-      Map               @BodyJsonPar   Map
+-      普通值             @BodyJsonPar   String
+-      普通值集合          @BodyJsonPar   Integer[]
+
+
+### @BodyFormPar注解
+用于标记Http请求体内容为普通表单形式: 对应content-type为 application/x-www-form-urlencoded
+
+支持以下方法参数类型举例
+-      对象                   @BodyFormPar  User
+-      Map                    @BodyFormPar  Map
+-      普通值                  @BodyFormPar("name") String
+
+如果类型是普通值类型需要手动指定参数名，当成单个请求表单键值对传递
+
+
+### BodyMultiPartPar注解
+用于标记Http请求体内容为复杂形式: 对应content-type为 multipart/form-data
+
+支持以下方法参数类型举例
+-      对象              @BodyMultiPartPar              User
+-      Map              @BodyMultiPartPar              Map
+-      普通值            @BodyMultiPartPar("id")        String
+-      File对象          @BodyMultiPartPar("userImg")   File
+
+如果参数类型是普通值或者File类型，当成单个表单键值对处理，需要手动指定参数名。
+如果参数类型是对象或者MAp，当成多个表单键值对处理。 如果字段值或者map的value参数值是File类型，则自动当成是文件表单字段传递处理
+
+
+### @BodyBinaryPar注解
+用于标记Http请求体内容为二进制形式: 对应content-type为 application/octet-stream
+
+支持以下方法参数类型举例
+-         InputStream
+-         File
+-         InputStreamSource
+
+
+### @ComposePar注解
+这个注解本身不是对Http请求内容的配置，仅用于标记一个对象，然后会对该对象内的所有标记了其他@Par注解的字段进行嵌套解析处理，
+
+支持以下方法参数类型举例
+-     对象              @ComposePar  User
+
+
+## 拿到原始的HttpResponse
+HttpResponse表示Http请求的原始响应对象，如果业务需要关注拿到完整的Http响应，只需要在方法返回值包装返回即可。
+如下面所示，此时`HttpResponse<Add4DTO>`里的泛型Add4DTO才是代表接口实际返回的响应内容，后续可直接手动获取
+
+```java
+    @PostHttpInterface("/user-web/get")
+    HttpResponse<Add4DTO> get();
+```
+
+通过它我们就可以拿到响应的Http状态码、响应头、响应cookie等等，当然也可以拿到我们的响应body的内容通过getBodyResult方法
+
+## 下载文件接口如何对接
+对于若是下载文件的类型的接口，可将方法返回值定义为 HttpBinaryResponse、HttpFileResponse、HttpInputStreamResponse 的任意一种，
+这样就可以拿到下载后的文件。
+
+HttpBinaryResponse 表示下载的文件内容以二进制形式返回，如果是大文件请谨慎处理，因为会存放在内存中
+
+HttpFileResponse 表示下载的文件内容以File对象返回，这时文件已经被下载到了本地磁盘
+
+HttpInputStreamResponse 表示下载的文件内容输入流的形式返回，这时文件其实还没被下载到客户端，调用者可以自行读取该输入流进行文件的下载
+
+
+
+## HttpApiProcessor 生命周期钩子
+HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接口的各种生命周期钩子，开发者可以在里面自定义编写各种对接逻辑。
+
+目前提供了4种钩子,执行顺序流程如下:
+```
+
+                  postBeforeHttpMetadata                (请求发送前)在发送请求之前，对Http请求体后置处理
+                         |
+                         V
+                  postSendHttpRequest                   (请求发送时)在Http请求发送时处理
+                         |
+                         V
+               postAfterHttpResponseBodyString          (请求响应后)对响应body文本字符串进行后置处理
+                         |
+                         V
+              postAfterHttpResponseBodyResult           (请求响应后)对响应body反序列化后的结果进行后置处理
+                         |
+                         V
+              postAfterMethodReturnValue                (请求响应后)对代理的方法的返回值进行后置处理，类似aop的后置处理
+```
+
+
+postBeforeHttpMetadata: 可在发送http请求之前对请求体进行二次处理，比如加签之类
+
+postSendHttpRequest:    Http请求发送时会回调该方法，可以在该方法执行自定义的发送逻辑或者打印发送日志
+
+postAfterHttpResponseBodyString：   Http请求响应后，对响应body字符串进行进行后置处理，比如如果是加密数据可以进行解密
+
+postAfterHttpResponseBodyResult：   Http请求响应后，对响应body反序列化后的对象进行后置处理，比如填充默认返回值
+
+postAfterMethodReturnValue：    Http请求响应后，对代理的方法的返回值进行后置处理，类似aop的后置处理
+
+
+HttpMetadata
+- 表示此次Http请求的请求体，包含请求url，请求头、请求方式、请求cookie、请求体、请求参数等等。
+
+
+HttpApiMethodInvocation
+- 继承自MethodInvocation， 表示被代理的方法调用上下文，可以拿到被代理的类，被代理的方法，被代理的HttpAPI注解、HttpInterface注解等信息
 
 
 
@@ -106,9 +271,23 @@ class UserAppService {
 然后还需要在请求头上带上一个sign签名字段， 该sign签名字段生成规则需要用渠道方提供的公钥对所有请求体和请求参数进行加签生成。
 然后还需要在每个接口的查询参数上都带上一个渠道方分配的客户端appId。
 
-## 4.1、自定义该渠道方的HttpAPI注解
-比如现在对接的是某团，所以叫MTuanHttpApi吧，然后需要在该注解上标记@HttpApi注解，并且需要配置processor字段，需要去自定义实现一个HttpApiProcessor这个具体实现后续讲。
-有了这个注解后就可以自定义该注解与对接渠道方相关的各种字段配置，当然也可以不定义。 接下来重点讲讲HttpApiProcessor。
+## 4.1 在application.yml中配置我们对接渠道方的信息
+
+```yaml
+channel:
+  mtuan:
+    # 请求域名
+    url: http://127.0.0.1:8999
+    # 分配的渠道appId
+    appId: UUU-asd-01
+    # 分配的公钥
+    publicKey: fajdkf9492304jklfahqq
+```
+
+## 4.2、自定义该渠道方的HttpAPI注解
+假设现在对接的是某团，所以叫@MTuanHttpApi吧，然后需要在该注解上标记@HttpApi注解，并且需要配置processor字段，需要去自定义实现一个HttpApiProcessor这个具体实现后续讲。
+有了这个注解后就可以自定义该注解与对接渠道方相关的各种字段配置，当然也可以不定义。 注意这里url的字段是使用 @AliasFor(annotation = HttpApi.class)，
+这样构建的HttpMetadata中会默认解析填充要请求体，不标记则也可自行处理。
 
 ```java
 @Inherited
@@ -140,7 +319,7 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
 
 
 
-## 4.2 对接接口
+## 4.3 对接接口
 有了@MTuanHttpApi注解之后就可以开始对接接口了，比如假设有两个接口要对接。一个就是前面说的获取令牌的接口。 一个是获取天气情况的接口。
 为什么getToken方法返回值是 `HttpResponse`, 这是UniHttp内置的原始Http响应对象，方便我们去拿到原始Http响应体的一些内容（比如响应状态码、响应cookie）。 
 其中的泛型BaseRsp<TokenDTO>才是实际的Http响应体反序列化后的内容。 而getCityWeather方法没有使用HttpResponse包装,
@@ -167,9 +346,8 @@ public interface WeatherApi {
 ```
 
 
-## 4.3、自定义HttpApiProcessor
+## 4.4、自定义HttpApiProcessor
 在之前我们自定义了一个@MTuanHttpApi注解上指定了一个MTuanHttpApiProcessor，接下来我们去实现他的具体内容为了实现我们案例背景里描述的功能
-HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接口的各种生命周期钩子，开发者可以在里面自定义编写与渠道方相关的各种对接逻辑。
 
 
 ```java

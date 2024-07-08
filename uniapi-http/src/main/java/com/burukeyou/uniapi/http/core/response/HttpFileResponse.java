@@ -12,7 +12,7 @@ public class HttpFileResponse extends AbstractHttpResponse<File> {
 
     public HttpFileResponse(File file) {
         this.file = file;
-        this.result = file;
+        this.bodyResult = file;
     }
 
     @Override

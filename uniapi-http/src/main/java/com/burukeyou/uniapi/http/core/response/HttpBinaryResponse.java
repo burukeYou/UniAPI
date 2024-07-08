@@ -12,7 +12,7 @@ public class HttpBinaryResponse extends AbstractHttpResponse<byte[]> {
     public HttpBinaryResponse(String fileName, byte[] file) {
         this.fileName = fileName;
         this.file = file;
-        this.result = file;
+        this.bodyResult = file;
     }
 
     @Override

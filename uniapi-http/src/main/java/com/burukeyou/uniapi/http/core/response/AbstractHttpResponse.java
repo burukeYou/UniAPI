@@ -31,10 +31,10 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     protected transient Method method;
 
-    protected T result;
+    protected T bodyResult;
 
     public T getBodyResult() {
-        return result;
+        return bodyResult;
     }
 
     protected boolean ifReturnOriginalResponse() {

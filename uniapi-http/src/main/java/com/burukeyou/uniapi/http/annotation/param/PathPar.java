@@ -6,7 +6,7 @@ import java.lang.annotation.*;
  * 标记Http请求路径变量参数
  *
  * 支持标记的参数类型举例:
- *       普通值            @HeaderPar("id")   String
+ *       普通值            @PathPar("id")   String
  *
  *
  * @author caizhihao

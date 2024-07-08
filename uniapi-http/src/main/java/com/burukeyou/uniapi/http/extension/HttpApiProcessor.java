@@ -22,7 +22,10 @@ import java.lang.reflect.Method;
  *                 postSendHttpRequest
  *                        |
  *                        V
- *             postAfterHttpResponseResult
+ *              postAfterHttpResponseBodyString
+ *                        |
+ *                        V
+ *             postAfterHttpResponseBodyResult
  *                        |
  *                        V
  *             postAfterMethodReturnValue
@@ -53,6 +56,19 @@ public interface HttpApiProcessor<T extends Annotation> {
     default HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata){
         return httpSender.sendHttpRequest(httpMetadata);
     }
+
+    /**
+     * Post-processing of HTTP response body string, when content-type is text
+     * @param bodyString          http body string
+     * @param rsp                 Original  Http Response
+     * @param method              The method of agency
+     * @param httpMetadata        request data
+     * @return                    the new response body string
+     */
+    default String postAfterHttpResponseBodyString(String bodyString, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata){
+        return bodyString;
+    }
+
 
     /**
      * Post-processing of HTTP response body objects

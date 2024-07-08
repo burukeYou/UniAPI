@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
     <name>uniapi-test</name>
     <modules>
-        <module>uniapi-test-http</module>
     </modules>
 
 </project>
