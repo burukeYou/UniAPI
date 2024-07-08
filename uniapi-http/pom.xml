@@ -11,6 +11,7 @@
     <version>${revision}</version>
   </parent>
 
+  <packaging>pom</packaging>
   <artifactId>uniapi-http</artifactId>
   <version>${revision}</version>
 
