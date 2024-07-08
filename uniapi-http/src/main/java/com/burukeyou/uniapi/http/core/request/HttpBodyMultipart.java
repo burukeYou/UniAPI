@@ -1,28 +1,23 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author caizhihao
  */
 @Getter
 @Setter
-public class HttpBodyMultipartFormData extends HttpBody {
+public class HttpBodyMultipart extends HttpBody {
 
-    private List<MultipartFormDataItem> multiPartData;
+    private List<MultipartDataItem> multiPartData;
 
-    public HttpBodyMultipartFormData(List<MultipartFormDataItem> multiPartData) {
+    public HttpBodyMultipart(List<MultipartDataItem> multiPartData) {
         super(MediaTypeEnum.MULTIPART_FORM_DATA.getType());
         this.multiPartData = multiPartData;
     }
@@ -39,9 +34,9 @@ public class HttpBodyMultipartFormData extends HttpBody {
         }
 
         StringBuilder sb = new StringBuilder();
-        for (MultipartFormDataItem tmp : multiPartData) {
-            File file = tmp.getFile();
-            sb.append("\t\t").append(tmp.getKey()).append(":").append(tmp.isFileFlag() && file != null ? file.getAbsolutePath() : tmp.getValue()).append("\n");
+        for (MultipartDataItem tmp : multiPartData) {
+            File file = tmp.getFileValue();
+            sb.append("\t\t").append(tmp.getKey()).append(":").append(tmp.isFileFlag() && file != null ? file.getAbsolutePath() : tmp.getTextValue()).append("\n");
         }
 
         return sb.toString();

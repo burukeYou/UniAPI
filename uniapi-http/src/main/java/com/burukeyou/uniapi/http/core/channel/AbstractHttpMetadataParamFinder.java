@@ -208,14 +208,14 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             if (multipartParam != null) {
                 boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
                 if (nameExistFlag && File.class.isAssignableFrom(methodArg.getType())){
-                    MultipartFormDataItem dataItem = new MultipartFormDataItem(multipartParam.value(),null,(File)argValue,true);
-                    return new HttpBodyMultipartFormData(Collections.singletonList(dataItem));
+                    MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),null,(File)argValue,true);
+                    return new HttpBodyMultipart(Collections.singletonList(dataItem));
                 } else if (isObjOrMap(methodArg.getType())){
                     return getHttpBodyMultipartFormData(argValue, methodArg.getType());
                 }else if (nameExistFlag){
                     // 单个
-                    MultipartFormDataItem dataItem = new MultipartFormDataItem(multipartParam.value(),argValue.toString(),null,false);
-                    return new HttpBodyMultipartFormData(Collections.singletonList(dataItem));
+                    MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),argValue.toString(),null,false);
+                    return new HttpBodyMultipart(Collections.singletonList(dataItem));
                 }
             }
         }
@@ -223,8 +223,8 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
 
-    private HttpBodyMultipartFormData getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
-        List<MultipartFormDataItem> dataItems = new ArrayList<>();
+    private HttpBodyMultipart getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
+        List<MultipartDataItem> dataItems = new ArrayList<>();
 
         ArgList argList = autoGetArgList(argValue);
         for (Param param : argList) {
@@ -247,19 +247,19 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
             if (!isFile){
                 String fieldValueStr = (fieldValue == null ? null : fieldValue.toString());
-                dataItems.add(new MultipartFormDataItem(fieldName,fieldValueStr,null,false));
+                dataItems.add(new MultipartDataItem(fieldName,fieldValueStr,null,false));
                 continue;
             }
 
             // 文件
             if (!param.getType().isArray() && !Collection.class.isAssignableFrom(param.getType())){
                 File onefile = fieldValue == null ? null : (File)fieldValue;
-                dataItems.add(new MultipartFormDataItem(fieldName,null,onefile,true));
+                dataItems.add(new MultipartDataItem(fieldName,null,onefile,true));
                 continue;
             }
 
             if (fieldValue == null){
-                dataItems.add(new MultipartFormDataItem(fieldName,null,null,true));
+                dataItems.add(new MultipartDataItem(fieldName,null,null,true));
                 continue;
             }
 
@@ -272,10 +272,10 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             }
 
             for (File file : fileArr) {
-                dataItems.add(new MultipartFormDataItem(fieldName,null,file,true));
+                dataItems.add(new MultipartDataItem(fieldName,null,file,true));
             }
         }
-        return new HttpBodyMultipartFormData(dataItems);
+        return new HttpBodyMultipart(dataItems);
     }
 
     private  boolean isFileField(Param param){

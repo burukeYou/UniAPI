@@ -56,7 +56,7 @@ public interface HttpApiProcessor<T extends Annotation> {
 
     /**
      * Post-processing of HTTP response body objects
-     * @param result                         response body object。
+     * @param bodyResult                     response body object。
      *                                       The specific object deserialized by the HTTP response body,
      *                                       with the specific type being the return value type of the proxy method
      * @param rsp                            Original  Http Response
@@ -64,8 +64,8 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param httpMetadata                   request data
      * @return                               the new response body object。
      */
-    default Object postAfterHttpResponseResult(Object result, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata){
-        return result;
+    default Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata){
+        return bodyResult;
     }
 
     /**

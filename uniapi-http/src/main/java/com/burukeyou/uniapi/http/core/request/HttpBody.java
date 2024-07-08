@@ -34,8 +34,7 @@ public abstract class HttpBody {
     }
 
     /**
-     *
-     * @return
+     *  toStirng()
      */
     public abstract String toStringBody();
 

@@ -2,7 +2,7 @@ package com.burukeyou;
 
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.demo.DemoApplication;
-import com.burukeyou.demo.api.meituan.MeituanApi;
+import com.burukeyou.demo.api.meituan.MTuanWeatherHttpApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
@@ -25,7 +25,7 @@ import java.util.List;
 public class HttpApiTest {
 
     @Autowired
-    private MeituanApi meituanApi;
+    private MTuanWeatherHttpApi meituanApi;
 
     @Autowired
     private ResourceLoader resourceLoader;

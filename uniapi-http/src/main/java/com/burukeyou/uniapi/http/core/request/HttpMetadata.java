@@ -101,6 +101,10 @@ public class HttpMetadata {
         this.headers.putAll(headers);
     }
 
+
+    public void addCookie(Cookie cookie) {
+        cookies.add(cookie);
+    }
     public void addAllCookies(List<Cookie> cookiesList) {
         cookies.addAll(cookiesList);
     }

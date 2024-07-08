@@ -1,7 +1,7 @@
 package com.burukeyou.demo.annotation;
 
 
-import com.burukeyou.demo.config.MeituanApiChannelHandler;
+import com.burukeyou.demo.config.MTuanChannelHandler;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import org.springframework.core.annotation.AliasFor;
 
@@ -13,14 +13,15 @@ import java.lang.annotation.*;
 @Inherited
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@HttpApi(processor = MeituanApiChannelHandler.class)
-public @interface MetuanDataApi {
+@HttpApi(processor = MTuanChannelHandler.class)
+public @interface MTuanHttpApi {
 
     @AliasFor(annotation = HttpApi.class)
-    String url() default "${channel.meituan.url}";
+    String url() default "${channel.mtuan.url}";
 
-    String name() default "sb";
-
-    String id() default "sb";
+    /**
+     * 渠道方分配的appId
+     */
+    String appId() default "${channel.mtuan.appId}";
 
 }

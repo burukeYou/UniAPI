@@ -99,7 +99,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpResponse<?> response = requestProcessor.postSendHttpRequest(this,httpMetadata);
 
         // http response result processor
-        Object result = requestProcessor.postAfterHttpResponseResult(response.getBodyResult(), response, method, httpMetadata);
+        Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, method, httpMetadata);
         ((AbstractHttpResponse<Object>)response).setResult(result);
         Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getBodyResult();
 
@@ -316,14 +316,14 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             HttpBodyFormData formDataBody = (HttpBodyFormData)body;
             formDataBody.getFormData().forEach(builder::add);
             requestBody = builder.build();
-        }else if (body instanceof HttpBodyMultipartFormData){
+        }else if (body instanceof HttpBodyMultipart){
             MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);;
-            HttpBodyMultipartFormData multipartFormData = (HttpBodyMultipartFormData)body;
-            for (MultipartFormDataItem dataItem : multipartFormData.getMultiPartData()) {
+            HttpBodyMultipart multipartFormData = (HttpBodyMultipart)body;
+            for (MultipartDataItem dataItem : multipartFormData.getMultiPartData()) {
                 if (!dataItem.isFileFlag()){
-                    builder.addFormDataPart(dataItem.getKey(),dataItem.getValue());
+                    builder.addFormDataPart(dataItem.getKey(),dataItem.getTextValue());
                 }else {
-                    File file = dataItem.getFile();
+                    File file = dataItem.getFileValue();
                     if (file == null){
                         continue;
                     }

@@ -1,6 +1,6 @@
 package com.burukeyou.demo.config;
 
-import com.burukeyou.demo.annotation.MetuanDataApi;
+import com.burukeyou.demo.annotation.MTuanHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
@@ -16,16 +16,16 @@ import java.lang.reflect.Method;
 
 @Slf4j
 @Component
-public class MeituanApiChannelHandler implements HttpApiProcessor<MetuanDataApi> {
+public class MTuanChannelHandler implements HttpApiProcessor<MTuanHttpApi> {
 
-    @Value("${channel.meituan.appId}")
+    @Value("${channel.mtuan.appId}")
     private String appId;
 
     @Override
     public HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata,
-                                               HttpApiMethodInvocation<MetuanDataApi> methodInvocation) {
+                                               HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         //
-        MetuanDataApi api = methodInvocation.getProxyApiAnnotation();
+        MTuanHttpApi api = methodInvocation.getProxyApiAnnotation();
         HttpInterface proxyInterface = methodInvocation.getProxyInterface();
         //httpMetadata.updateUrl(url);
 
@@ -49,11 +49,11 @@ public class MeituanApiChannelHandler implements HttpApiProcessor<MetuanDataApi>
     }
 
     @Override
-    public Object postAfterHttpResponseResult(Object result, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata) {
-        if (result instanceof BaseRsp){
-            ((BaseRsp)result).setCode(99999);
+    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata) {
+        if (bodyResult instanceof BaseRsp){
+            ((BaseRsp) bodyResult).setCode(99999);
         }
-        return result;
+        return bodyResult;
     }
 
 

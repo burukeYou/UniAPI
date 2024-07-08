@@ -1,7 +1,7 @@
 package com.burukeyou.demo.api.meituan;
 
 
-import com.burukeyou.demo.annotation.MetuanDataApi;
+import com.burukeyou.demo.annotation.MTuanHttpApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.param.*;
@@ -15,8 +15,8 @@ import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import java.io.File;
 import java.util.List;
 
-@MetuanDataApi
-public interface MeituanApi {
+@MTuanHttpApi
+public interface MTuanWeatherHttpApi {
 
     @GetHttpInterface("/user-web/add")
     BaseRsp<String> add(@QueryPar("name") String name);
