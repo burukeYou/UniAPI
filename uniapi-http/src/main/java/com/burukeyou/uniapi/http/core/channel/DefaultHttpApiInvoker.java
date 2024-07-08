@@ -212,6 +212,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private String getSavePath(Response response) {
         String savePath = null;
+        // 方法参数上获取
         for (Param methodArg : new MethodArgList(methodInvocation.getMethod(),methodInvocation.getArguments())) {
             ResponseFile annotation = methodArg.getAnnotation(ResponseFile.class);
             if (annotation == null){
@@ -238,6 +239,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         //
         String saveDir = UniHttpApiConstant.DEFAULT_FILE_SAVE_DIR;
+        saveDir = getEnvironmentValue(saveDir);
         ResponseFile responseFileAnno = AnnotatedElementUtils.getMergedAnnotation(methodInvocation.getMethod(),ResponseFile.class);
         if (responseFileAnno != null){
             saveDir = responseFileAnno.saveDir();

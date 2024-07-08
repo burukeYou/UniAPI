@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ *  Cookie
+ */
 @Data
 public class Cookie implements Serializable {
 

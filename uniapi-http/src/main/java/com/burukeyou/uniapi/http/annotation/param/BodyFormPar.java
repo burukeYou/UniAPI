@@ -3,6 +3,8 @@ package com.burukeyou.uniapi.http.annotation.param;
 import java.lang.annotation.*;
 
 /**
+ * 标记Http请求体内容为普通表单形式: 对应content-type为 application/x-www-form-urlencoded
+ *
  *
  * 支持标记的参数类型举例:
  *       对象                   @BodyFormPar  User

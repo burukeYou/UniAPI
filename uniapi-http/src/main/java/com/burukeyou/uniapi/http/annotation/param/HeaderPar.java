@@ -4,6 +4,8 @@ import java.lang.annotation.*;
 
 
 /**
+ * 标记Http请求头
+ *
  * 支持标记的参数类型举例:
  *       对象              @HeaderPar         User
  *       Map              @HeaderPar         Map

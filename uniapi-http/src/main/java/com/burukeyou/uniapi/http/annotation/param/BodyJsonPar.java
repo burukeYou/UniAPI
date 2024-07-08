@@ -4,6 +4,8 @@ import java.lang.annotation.*;
 
 
 /**
+ * 标记Http请求体内容为json形式: 对应content-type为 application/json
+ *
  * 支持标记的参数类型举例:
  *       对象              @BodyJsonPar   User
  *       对象集合           @BodyJsonPar   List<User>

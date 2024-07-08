@@ -1,9 +1,9 @@
 
 
-# HttpAPI 
-一个声明式的Http请求对接框架，能以极快的方式完成对一个接口的对接和使用，只要配置一下即可重复使用，
+# UniHttp 
+一个声明式的Http请求对接框架，能以极快的方式完成对一个第三方Http接口的对接和使用，只要配置一下即可重复使用，
 不需要开发者去关注如何发送一个请求，如何去传递Http请求参数，以及如何对请求结果进行处理和反序列化，这些框架都帮你一一实现 
-就像配置 `Spring的Controller` 那样简单，不，甚至更简单。
+就像配置 `Spring的Controller` 那样简单，只不过相当于是反向配置而已
 
 
 ## 2、快速开始
@@ -12,7 +12,7 @@
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>3.1</version>
+      <version>0.0.1</version>
     </dependency>
 ```
 
@@ -23,13 +23,14 @@
 
 ```java
 @HttpApi(url = "http://localhost:8080")
-interface UserHttpAPI {
+interface UserHttpApi {
     
    @GetHttpInterface("/getUser")
    BaseRsp<String> getUser(@QueryPar("name") String param,@HeaderPar("userId") Integer id);
     
    @PostHttpInterface("/addUser")
    BaseRsp<Add4DTO> addUser(@BodyJsonPar Add4DTO req);
+   
 }
 ```
 
@@ -57,15 +58,28 @@ Header:
             {"id":1,"name":"jay"}
 ```
 
-        
-然后使用 @Autowired UserHttpAPI 去引入该HttpAPI去使用即可，
 
 
 ### 2.3、声明定义的HttpAPI的包扫描路径
 
-@UniAPIScan("com.xxx.demo.api")
+@UniAPIScan("com.xxx.demo.api") 会自动为改接口生成代理对象并且注入到Spring容器中，
+之后只需要像使用Spring的其他bean一样，依赖注入使用即可
 
+### 2.4 依赖注入使用即可
 
+```java
+@Service
+class UserAppService {
+    
+    @Autowired
+    private UserHttpApi userHttpApi;
+    
+    public void doSomething(){
+        userHttpApi.getUser("jay",3);
+    }
+} 
+
+```
 
 
 
