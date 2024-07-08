@@ -3,12 +3,13 @@ package com.burukeyou.uniapi.http.annotation.param;
 import java.lang.annotation.*;
 
 /**
- * 标记Http请求体内容为二进制形式: 对应content-type为 application/octet-stream
+ * Mark the HTTP request body content in binary form:
+ *      corresponding content type is application/octet stream
  *
- *  支持标记的参数类型举例
- *          InputStream
- *          File
- *          InputStreamSource
+ *  Support parameter types for tags：
+ *      InputStream
+ *      File
+ *      InputStreamSource
  *
  *
  * @author caizhihao

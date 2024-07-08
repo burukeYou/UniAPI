@@ -3,13 +3,13 @@ package com.burukeyou.uniapi.http.annotation.param;
 import java.lang.annotation.*;
 
 /**
- * 标记Http请求体内容为普通表单形式: 对应content-type为 application/x-www-form-urlencoded
+ * Mark the HTTP request body as a regular form:
+ *      the corresponding content type is application/x-www form urlencoded
  *
- *
- * 支持标记的参数类型举例:
- *       对象                   @BodyFormPar  User
- *       Map                   @BodyFormPar  Map
- *       普通值                 @BodyFormPar("name") String
+ *      Support parameter types for tags:
+ *          Custom Object
+ *          Map
+ *          Normal value
  *
  *
  * @author caizhihao
@@ -19,6 +19,9 @@ import java.lang.annotation.*;
 @Documented
 public @interface BodyFormPar {
 
+    /**
+     * Form Field Name
+     */
     String value() default "";
 
 }

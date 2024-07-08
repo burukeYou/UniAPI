@@ -3,10 +3,10 @@ package com.burukeyou.uniapi.http.annotation.param;
 import java.lang.annotation.*;
 
 /**
- * 标记Http请求路径变量参数
+ * Mark HTTP request path variable parameters
  *
- * 支持标记的参数类型举例:
- *       普通值            @PathPar("id")   String
+ * Support parameter types for tags: Normal value
+ *
  *
  *
  * @author caizhihao
@@ -16,5 +16,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface PathPar {
 
+    /**
+     *  Path variable value
+     */
     String value() default "";
 }

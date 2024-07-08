@@ -4,14 +4,14 @@ import java.lang.annotation.*;
 
 
 /**
- * 标记Http请求体内容为json形式: 对应content-type为 application/json
+ * Mark the HTTP request body content in JSON format: corresponding content type is application/JSON
  *
- * 支持标记的参数类型举例:
- *       对象              @BodyJsonPar   User
- *       对象集合           @BodyJsonPar   List<User>
- *       Map               @BodyJsonPar   Map
- *       普通值            @BodyJsonPar   String
- *       普通值集合         @BodyJsonPar   Integer[]
+ * Support parameter types for tags：
+ *          Custom Object
+ *          Custom Object Collection
+ *          Map
+ *          Normal value
+ *          Normal value Collection
  *
  *
  * @author caizhihao

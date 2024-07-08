@@ -4,12 +4,12 @@ import java.lang.annotation.*;
 
 
 /**
- * 标记Http请求头
+ * Mark HTTP request header
  *
- * 支持标记的参数类型举例:
- *       对象              @HeaderPar         User
- *       Map              @HeaderPar         Map
- *       普通值            @HeaderPar("id")   String
+ * support parameter types for tags:
+ *       Custom Object
+ *       Map
+ *       Normal value
  *
  *
  * @author caizhihao
@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 public @interface HeaderPar {
 
     /**
-     * 单个请求头键值对的key名
+     *  Request header name
      */
     String value() default "";
 }

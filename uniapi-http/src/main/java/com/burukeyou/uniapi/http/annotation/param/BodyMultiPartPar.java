@@ -4,12 +4,12 @@ import java.lang.annotation.*;
 
 
 /**
- * 标记Http请求体内容为复杂形式: 对应content-type为 multipart/form-data
+ * Mark the HTTP request body as a complex form: corresponding content type as multipart/form data
  *
- * 支持标记的参数类型举例:
- *       对象              @BodyMultiPartPar  User
- *       Map              @BodyMultiPartPar  Map
- *       普通值            @BodyMultiPartPar String
+ * Support parameter types for tags：
+ *      Custom Object
+ *      Map
+ *      Normal value
  *
  */
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER})
@@ -17,5 +17,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface BodyMultiPartPar {
 
+    /**
+     * Form Field Name
+     */
     String value() default "";
 }

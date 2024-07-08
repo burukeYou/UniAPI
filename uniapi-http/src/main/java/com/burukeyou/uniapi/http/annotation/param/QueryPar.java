@@ -3,20 +3,25 @@ package com.burukeyou.uniapi.http.annotation.param;
 import java.lang.annotation.*;
 
 /**
- * 标记Http请求url的查询参数
+ * Query parameters for marking HTTP request URLs
  *
- *  支持的参数类型举例
- *     普通值集合   @QueryPar("ids")     List<Integer>
- *     对象        @QueryPar            User
- *     map        @QueryPar            Map
- *     普通值      @QueryPar("id")      String
+ *  Support parameter types for tags
+ *     Map
+ *     Custom Object
+ *     Normal value
+ *     Normal value Collection
  *
+ *
+ * @author caizhihao
  */
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface QueryPar {
 
+    /**
+     * Query parameter name
+     */
     String value() default "";
 
 }
