@@ -264,6 +264,25 @@ HttpMetadata
 HttpApiMethodInvocation
 - 继承自MethodInvocation， 表示被代理的方法调用上下文，可以拿到被代理的类，被代理的方法，被代理的HttpAPI注解、HttpInterface注解等信息
 
+## 配置自定义的Http客户端
+默认使用的是Okhttp客户端，如果要重新配置Okhttp客户端,注入spring的bean即可,如下
+
+```java
+@Configuration
+public class CusotmConfiguration {
+
+    @Bean
+    public OkHttpClient myOHttpClient(){
+        return new OkHttpClient.Builder()
+                .readTimeout(50, TimeUnit.SECONDS)
+                .writeTimeout(50, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool(20,10, TimeUnit.MINUTES))
+                .build();
+    }
+}
+
+```
 
 
 # 4、企业级渠道对接实战
