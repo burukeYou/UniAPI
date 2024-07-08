@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Http Response Object
+ * Http Original Response Object
  *
  *
  * @author caizhihao

@@ -13,9 +13,6 @@ import java.lang.reflect.Method;
  *
  * execution flow:
  *
- *                  Build HttpMetadata
- *                         |
- *                         V
  *                postBeforeHttpMetadata
  *                        |
  *                        V

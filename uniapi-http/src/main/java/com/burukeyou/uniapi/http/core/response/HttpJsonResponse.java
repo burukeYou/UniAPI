@@ -7,13 +7,22 @@ import lombok.Setter;
 import java.lang.reflect.Method;
 
 /**
+ * Deserialize the body result based on the return value type of the proxy's method
+ *
  * @author caizhihao
  */
 @Getter
 @Setter
 public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
 
+    /**
+     *  Http Response body text value
+     */
     private  String jsonRsp;
+
+    /**
+     *  Proxy Method
+     */
     private  Method method;
 
     public HttpJsonResponse(String jsonRsp, Method method) {
