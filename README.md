@@ -12,7 +12,7 @@
 
 
 # 2、快速开始
-## 2.1、引入依赖（待发布到中央仓库）
+## 2.1、引入依赖
 ```xml
     <dependency>
       <groupId>io.github.burukeyou</groupId>
@@ -95,10 +95,26 @@ class UserAppService {
 用于配置一个接口的参数，包括请求方式、请求路径、请求头、请求cookie、请求查询参数等等
 
 并且内置了以下请求方式的@HttpInterface，不必再每次手动指定请求方式
-@PostHttpInterface
-@PutHttpInterface
-@DeleteHttpInterface
-@GetHttpInterface
+- @PostHttpInterface
+- @PutHttpInterface
+- @DeleteHttpInterface
+- @GetHttpInterface
+
+```java
+    @PostHttpInterface(
+            // 请求路径
+            path = "/getUser",
+            // 请求头
+            headers = {"clientType:sys-app","userId:99"},
+            // url查询参数 
+            params = {"name=周杰伦","age=1"},
+            // url查询参数拼接字符串
+            paramStr = "a=1&b=2&c=3&d=哈哈&e=%E7%89%9B%E9%80%BC",
+            // cookie 字符串
+            cookie = "name=1;sessionId=999"
+    )
+    BaseRsp<String> getUser();
+```
 
 ##  各种@Par注解
 以下各种Par后缀的注解，主要用于方法参数上，用于指定在发送请求时将参数值放到Http请求体的哪部分上。
@@ -108,30 +124,44 @@ class UserAppService {
 ### @QueryPar注解
 标记Http请求url的查询参数
 
-支持以下方法参数类型举例
--    普通值      @QueryPar("id")      String
--    普通值集合   @QueryPar("ids")     List<Integer>
--    对象        @QueryPar            User
--    Map        @QueryPar            Map
+支持以下方法参数类型的标记: 普通值、普通值集合、对象、Map 
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@QueryPar("id")  String id,  //  普通值   
+                            @QueryPar("ids") List<Integer> idsList, //  普通值集合
+                            @QueryPar User user,  // 对象
+                            @QueryPar Map<String,Object> map); // Map
+
+    
+```
 
 如果类型是普通值或者普通值集合需要手动指定参数名，因为是当成单个查询参数传递
 如果类型是对象或者Map是当成多个查询参数传递，字段名或者map的key名就是参数名，字段值或者map的value值就是参数值。
 
+
 ### @PathPar注解
-标记Http请求路径变量参数
+标记Http请求路径变量参数，仅支持标记普通值类型
 
-支持以下方法参数类型举例
--   普通值            @PathPar("id")   String
-
+```java
+    @PostHttpInterface("/getUser/{userId}/detail")
+    BaseRsp<String> getUser(@PathPar("userId")  String id);  //  普通值
+```
 
 
 ### @HeaderPar注解
 标记Http请求头参数
 
-支持以下方法参数类型举例
--      对象              @HeaderPar         User
--      Map              @HeaderPar          Map
--      普通值            @HeaderPar("id")    String
+支持以下方法参数类型： 对象、Map、普通值
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@HeaderPar("id")  String id,  //  普通值   
+                            @HeaderPar User user,  // 对象
+                            @HeaderPar Map<String,Object> map); // Map
+
+    
+```
 
 如果类型是普通值类型需要手动指定参数名，当成单个请求头参数传递
 
@@ -139,35 +169,56 @@ class UserAppService {
 ### @CookiePar注解
 用于标记Http请求的cookie请求头
 
-支持以下方法参数类型举例
--      Map                        @CookiePar                 Map
--      单个Cookie对象              @CookiePar                 com.burukeyou.uniapi.http.support.Cookie
--      Cookie对象集合              @CookiePar                 List<com.burukeyou.uniapi.http.support.Cookie>
--      字符串(指定name)             @CookiePar("userId")       String            当成单个cookie键值对处理
--      字符串(不指定name)           @CookiePar                 String            当成完整的cookie字符串处理
+支持以下方法参数类型: Map、Cookie对象、字符串
+
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@CookiePar("id")  String cookiePar,  //   普通值 （指定name）当成单个cookie键值对处理
+                            @CookiePar String cookieString,  //  普通值 （不指定name），当成完整的cookie字符串处理
+                            @CookiePar com.burukeyou.uniapi.http.support.Cookie cookieObj,  // 单个Cookie对象 
+                            @CookiePar List<com.burukeyou.uniapi.http.support.Cookie> cookieList // Cookie对象列表
+                            @CookiePar Map<String,Object> map); // Map
+
+    
+```
 
 如果类型是字符串时，当指定参数名时，当成单个cookie键值对处理，如果不指定参数名当成完整的cookie字符串处理比如a=1;b=2;c=3
 如果是Map当成多个cookie键值对处理。
 如果类型是内置的 `com.burukeyou.uniapi.http.support.Cookie`对象当成单个cookie键值对处理
 
+
+
 ### @BodyJsonPar注解
 用于标记Http请求体内容为json形式: 对应content-type为 application/json
 
-支持以下方法参数类型举例
--      对象              @BodyJsonPar   User
--      对象集合           @BodyJsonPar   List<User>
--      Map               @BodyJsonPar   Map
--      普通值             @BodyJsonPar   String
--      普通值集合          @BodyJsonPar   Integer[]
+支持以下方法参数类型: 对象、对象集合、Map、普通值、普通值集合
+
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@BodyJsonPar  String id,                //  普通值
+                            @BodyJsonPar  String[] id               //  普通值集合
+                            @BodyJsonPar List<User> userList,       // 对象集合
+                            @BodyJsonPar User user,                  // 对象
+                            @BodyJsonPar Map<String,Object> map);    // Map
+```
+
+序列化和反序列化默认用的是fastjson，所以如果想指定别名，可以在字段上标记 @JSONField 注解取别名
 
 
 ### @BodyFormPar注解
 用于标记Http请求体内容为普通表单形式: 对应content-type为 application/x-www-form-urlencoded
 
-支持以下方法参数类型举例
--      对象                   @BodyFormPar  User
--      Map                    @BodyFormPar  Map
--      普通值                  @BodyFormPar("name") String
+支持以下方法参数类型： 对象、Map、普通值
+
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@BodyFormPar("name") String value,         //  普通值
+                            @BodyFormPar User user,                   // 对象
+                            @BodyFormPar Map<String,Object> map);    // Map
+```
 
 如果类型是普通值类型需要手动指定参数名，当成单个请求表单键值对传递
 
@@ -175,30 +226,63 @@ class UserAppService {
 ### BodyMultiPartPar注解
 用于标记Http请求体内容为复杂形式: 对应content-type为 multipart/form-data
 
-支持以下方法参数类型举例
--      对象              @BodyMultiPartPar              User
--      Map              @BodyMultiPartPar              Map
--      普通值            @BodyMultiPartPar("id")        String
--      File对象          @BodyMultiPartPar("userImg")   File
+支持以下方法参数类型: 对象、Map、普通值、File对象
+
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@BodyMultiPartPar("name") String value,         //  单个表单文本值
+                            @BodyMultiPartPar User user,                   // 对象
+                            @BodyMultiPartPar Map<String,Object> map,      // Map
+                            @BodyMultiPartPar("userImg") File file);     // 单个表单文件值
+```
 
 如果参数类型是普通值或者File类型，当成单个表单键值对处理，需要手动指定参数名。
-如果参数类型是对象或者MAp，当成多个表单键值对处理。 如果字段值或者map的value参数值是File类型，则自动当成是文件表单字段传递处理
+如果参数类型是对象或者Map，当成多个表单键值对处理。 如果字段值或者map的value参数值是File类型，则自动当成是文件表单字段传递处理
 
 
 ### @BodyBinaryPar注解
 用于标记Http请求体内容为二进制形式: 对应content-type为 application/octet-stream
 
-支持以下方法参数类型举例
--         InputStream
--         File
--         InputStreamSource
+支持以下方法参数类型: InputStream、File、InputStreamSource
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@BodyBinaryPar InputStream value,         
+                            @BodyBinaryPar File user,                   
+                            @BodyBinaryPar InputStreamSource map);    
+```
 
 
 ### @ComposePar注解
 这个注解本身不是对Http请求内容的配置，仅用于标记一个对象，然后会对该对象内的所有标记了其他@Par注解的字段进行嵌套解析处理，
+目的是减少方法参数数量，支持都内聚到一起配置
 
-支持以下方法参数类型举例
--     对象              @ComposePar  User
+支持以下方法参数类型: 对象
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@ComposePar UserReq req);    
+```
+
+比如UserReq里面的字段可以嵌套标记其他@Par注解，具体支持的标记类型和逻辑与前面一致
+```java
+class UserReq {
+
+    @QueryPar
+    private Long id;
+
+    @HeaderPar
+    private String name;
+
+    @BodyJsonPar
+    private Add4DTO req;
+
+    @CookiePar
+    private String cook;
+}
+```
+
 
 
 ## 拿到原始的HttpResponse
@@ -216,11 +300,11 @@ HttpResponse表示Http请求的原始响应对象，如果业务需要关注拿�
 对于若是下载文件的类型的接口，可将方法返回值定义为 HttpBinaryResponse、HttpFileResponse、HttpInputStreamResponse 的任意一种，
 这样就可以拿到下载后的文件。
 
-HttpBinaryResponse 表示下载的文件内容以二进制形式返回，如果是大文件请谨慎处理，因为会存放在内存中
+HttpBinaryResponse: 表示下载的文件内容以二进制形式返回，如果是大文件请谨慎处理，因为会存放在内存中
 
-HttpFileResponse 表示下载的文件内容以File对象返回，这时文件已经被下载到了本地磁盘
+HttpFileResponse:  表示下载的文件内容以File对象返回，这时文件已经被下载到了本地磁盘
 
-HttpInputStreamResponse 表示下载的文件内容输入流的形式返回，这时文件其实还没被下载到客户端，调用者可以自行读取该输入流进行文件的下载
+HttpInputStreamResponse: 表示下载的文件内容输入流的形式返回，这时文件其实还没被下载到客户端，调用者可以自行读取该输入流进行文件的下载
 
 
 
@@ -228,6 +312,7 @@ HttpInputStreamResponse 表示下载的文件内容输入流的形式返回，�
 HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接口的各种生命周期钩子，开发者可以在里面自定义编写各种对接逻辑。
 
 目前提供了4种钩子,执行顺序流程如下:
+
 ```
 
                   postBeforeHttpMetadata                (请求发送前)在发送请求之前，对Http请求体后置处理
@@ -246,25 +331,22 @@ HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接
 ```
 
 
-postBeforeHttpMetadata: 可在发送http请求之前对请求体进行二次处理，比如加签之类
 
-postSendHttpRequest:    Http请求发送时会回调该方法，可以在该方法执行自定义的发送逻辑或者打印发送日志
+1、postBeforeHttpMetadata: 可在发送http请求之前对请求体进行二次处理，比如加签之类
 
-postAfterHttpResponseBodyString：   Http请求响应后，对响应body字符串进行进行后置处理，比如如果是加密数据可以进行解密
+2、postSendHttpRequest:    Http请求发送时会回调该方法，可以在该方法执行自定义的发送逻辑或者打印发送日志
 
-postAfterHttpResponseBodyResult：   Http请求响应后，对响应body反序列化后的对象进行后置处理，比如填充默认返回值
+3、postAfterHttpResponseBodyString：   Http请求响应后，对响应body字符串进行进行后置处理，比如如果是加密数据可以进行解密
 
-postAfterMethodReturnValue：    Http请求响应后，对代理的方法的返回值进行后置处理，类似aop的后置处理
+4、postAfterHttpResponseBodyResult：   Http请求响应后，对响应body反序列化后的对象进行后置处理，比如填充默认返回值
 
-
-
-HttpMetadata
-- 表示此次Http请求的请求体，包含请求url，请求头、请求方式、请求cookie、请求体、请求参数等等。
+5、postAfterMethodReturnValue：    Http请求响应后，对代理的方法的返回值进行后置处理，类似aop的后置处理
 
 
+其他
+- HttpMetadata: 表示此次Http请求的请求体，包含请求url，请求头、请求方式、请求cookie、请求体、请求参数等等。
+- HttpApiMethodInvocation: 继承自MethodInvocation， 表示被代理的方法调用上下文，可以拿到被代理的类，被代理的方法，被代理的HttpAPI注解、HttpInterface注解等信息
 
-HttpApiMethodInvocation
-- 继承自MethodInvocation， 表示被代理的方法调用上下文，可以拿到被代理的类，被代理的方法，被代理的HttpAPI注解、HttpInterface注解等信息
 
 ## 配置自定义的Http客户端
 默认使用的是Okhttp客户端，如果要重新配置Okhttp客户端,注入spring的bean即可,如下
@@ -466,6 +548,12 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      */
     @Override
     public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+        //  忽略 weatherApi.getToken的方法回调，否则该方法也会回调此方法会递归死循环。 或者该接口指定自定义的HttpApiProcessor重写postSendingHttpRequest
+        Method getTokenMethod = ReflectionUtils.findMethod(WeatherServiceApi.class, "getToken",String.class,String.class);
+        if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
+            return httpSender.sendHttpRequest(httpMetadata);
+        }
+        
         // 1、动态获取token和sessionId
         HttpResponse<String> httpResponse = weatherApi.getToken(appId, publicKey);
 
@@ -480,8 +568,8 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         
         log.info("开始发送Http请求 请求接口:{} 请求体:{}",httpMetadata.getHttpUrl().toUrl(),httpMetadata.toHttpProtocol());
 
-        // 使用框架内置实现发送请求
-        HttpResponse<?> rsp = HttpApiProcessor.super.postSendHttpRequest(httpSender, httpMetadata);
+        // 使用框架内置工具实现发送请求
+        HttpResponse<?> rsp =  httpSender.sendHttpRequest(httpMetadata);
 
         log.info("开始发送Http请求 响应结果:{}",rsp.toHttpProtocol());
         
