@@ -1,12 +1,14 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 import com.burukeyou.uniapi.config.SpringBeanContext;
+import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
+import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
@@ -26,6 +28,7 @@ import org.springframework.util.FileCopyUtils;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.file.Files;
@@ -69,6 +72,16 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
+    public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessor(HttpApi api,HttpInterface httpInterface){
+        if (httpInterface.processor().length > 0){
+            return httpInterface.processor()[0];
+        }
+        if (api.processor().length > 0){
+            return api.processor()[0];
+        }
+        return EmptyHttpApiProcessor.class;
+    }
+
     public Object invoke() {
         Method method = methodInvocation.getMethod();
         HttpMetadata httpMetadata = createHttpMetadata(methodInvocation);
@@ -78,31 +91,35 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         param.setProxyClass(targetClass);
         param.setMethodInvocation(methodInvocation);
 
-        Class<? extends HttpApiProcessor<?>> beforeProcessor = api.processor();
-        HttpApiProcessor<Annotation> requestProcessor = null;
-        requestProcessor =  (HttpApiProcessor<Annotation>) SpringBeanContext.getBean(api.processor());
+        Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessor(api,httpInterface);
+
+        HttpApiProcessor<Annotation> requestProcessor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
         if (requestProcessor == null){
-            throw new IllegalStateException("can not find " + beforeProcessor.getName() + "from spring context");
+            throw new IllegalStateException("can not find " + apiProcessor.getName() + " from spring context");
         }
 
         // check
-        Type argument = ClassUtil.getSuperInterfaceActualTypeArguments(beforeProcessor)[0];
+        ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessor, HttpApiProcessor.class);
+        if (paramTypeHttpApiProcessor == null){
+            throw new IllegalArgumentException(apiProcessor.getName() + " must be implement interface HttpApiProcessor");
+        }
+        Type actualTypeArgument = paramTypeHttpApiProcessor.getActualTypeArguments()[0];
         Annotation proxyAnnotation = annotationMeta.getProxyAnnotation();
-        if (!argument.equals(Annotation.class) && !argument.equals(proxyAnnotation.annotationType())){
-            throw new IllegalArgumentException("指定的HttpRequestBeforeProcessor无法处理该注解类型" + proxyAnnotation.annotationType().getSimpleName());
+        if (!actualTypeArgument.equals(Annotation.class) && !actualTypeArgument.equals(proxyAnnotation.annotationType())){
+            throw new IllegalArgumentException("The specified HttpApiProcessor cannot handle this annotation type" + proxyAnnotation.annotationType().getSimpleName());
         }
 
         // before processor
         httpMetadata = requestProcessor.postBeforeHttpMetadata(httpMetadata,param);
 
         // sendHttpRequest processor
-        HttpResponse<?> response = requestProcessor.postSendHttpRequest(this,httpMetadata);
+        HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata);
 
         //  http response body string processor
         if (response instanceof HttpJsonResponse){
             HttpJsonResponse<?> jsonResponse = ((HttpJsonResponse<?>)response);
-            String newJsonRsp = requestProcessor.postAfterHttpResponseBodyString(jsonResponse.getJsonRsp(), response, method, httpMetadata);
-            jsonResponse.setJsonRsp(newJsonRsp);
+            String newJsonRsp = requestProcessor.postAfterHttpResponseBodyString(jsonResponse.getTextValue(), response, method, httpMetadata);
+            jsonResponse.setTextValue(newJsonRsp);
         }
 
         // http response result processor

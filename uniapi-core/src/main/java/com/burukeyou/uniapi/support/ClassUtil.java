@@ -15,11 +15,33 @@ public class ClassUtil {
         throw new IllegalArgumentException("can not find super class argument");
     }
 
-    public static Type[] getSuperInterfaceActualTypeArguments(Class<?> clz){
-        Type[] genericInterfaces = clz.getGenericInterfaces();
-        if (genericInterfaces[0] instanceof ParameterizedType){
-            return  ((ParameterizedType)genericInterfaces[0]).getActualTypeArguments();
+    public static ParameterizedType getSuperInterfacesParameterizedType(Class<?> clazz,Class<?> genericInterfaceClass) {
+        Class<?> current = clazz;
+        ParameterizedType genericClassParameterizedType = null;
+        while (current != null) {
+            Type[] genericInterfaces = current.getGenericInterfaces();
+            if (genericInterfaces.length <= 0){
+                current = current.getSuperclass();
+                continue;
+            }
+
+            for (Type genericInterface : genericInterfaces) {
+                if (genericInterface instanceof ParameterizedType){
+                    ParameterizedType parameterizedType =  ((ParameterizedType)genericInterface);
+                    if (genericInterfaceClass.equals(parameterizedType.getRawType())){
+                        genericClassParameterizedType = parameterizedType;
+                    }
+                }
+            }
+
+            if (genericClassParameterizedType != null){
+                break;
+            }
+            current = current.getSuperclass();
         }
-        throw new IllegalArgumentException("can not find super interface argument");
+        return genericClassParameterizedType;
     }
+
+
+
 }

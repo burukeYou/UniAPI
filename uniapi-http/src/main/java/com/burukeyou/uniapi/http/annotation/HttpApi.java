@@ -1,7 +1,6 @@
 package com.burukeyou.uniapi.http.annotation;
 
 
-import com.burukeyou.uniapi.http.extension.DefaultHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 
 import java.lang.annotation.*;
@@ -29,5 +28,5 @@ public @interface HttpApi {
      *  Specify extension points for custom HTTP requests during execution
      *       please see {@link HttpApiProcessor}
      */
-    Class<? extends HttpApiProcessor<? extends Annotation>> processor() default DefaultHttpApiProcessor.class;
+    Class<? extends HttpApiProcessor<? extends Annotation>> processor()[] default {};
 }

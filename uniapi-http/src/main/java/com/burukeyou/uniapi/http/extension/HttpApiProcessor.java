@@ -50,7 +50,7 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param httpSender                 Request Sender
      * @param httpMetadata               request data
      */
-    default HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata){
+    default HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata){
         return httpSender.sendHttpRequest(httpMetadata);
     }
 

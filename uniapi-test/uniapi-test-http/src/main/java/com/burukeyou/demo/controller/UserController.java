@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 @RequestMapping("/user-web")
 @Controller
-public class TestDataController {
+public class UserController {
 
     @Autowired
     private ResourceLoader resourceLoader;

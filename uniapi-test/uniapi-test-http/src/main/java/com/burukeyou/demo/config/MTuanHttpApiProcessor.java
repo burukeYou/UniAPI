@@ -114,8 +114,8 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      *  实现-postBeforeHttpMetadata： 发送Http请求时，可定义发送请求的行为 或者打印请求和响应日志。
      */
     @Override
-    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
-        // 1、动态获取token和sessionId. 这个接口不应该回调这个方法
+    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+        // 1、动态获取token和sessionId. 这个接口不应该回调这个方法,否则会递归死循环
         HttpResponse<String> httpResponse = weatherApi.getToken(appId, publicKey);
 
         // 从响应体获取令牌token
@@ -127,12 +127,10 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         httpMetadata.addCookie(new Cookie("token",token));
         httpMetadata.addCookie(new Cookie("sessionId",sessionId));
 
-        log.info("开始发送Http请求 请求接口:{} 请求体:{}",httpMetadata.getHttpUrl().toUrl(),httpMetadata.toHttpProtocol());
-
         // 使用框架内置实现发送请求
-        HttpResponse<?> rsp = HttpApiProcessor.super.postSendHttpRequest(httpSender, httpMetadata);
+        HttpResponse<?> rsp = HttpApiProcessor.super.postSendingHttpRequest(httpSender, httpMetadata);
 
-        log.info("开始发送Http请求 响应结果:{}",rsp.toHttpProtocol());
+        log.info("开始发送Http请求 请求响应报文:{}",rsp.toHttpProtocol());
 
         return rsp;
     }

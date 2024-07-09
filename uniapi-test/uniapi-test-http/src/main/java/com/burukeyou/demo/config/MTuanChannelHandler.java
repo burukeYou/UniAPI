@@ -28,7 +28,7 @@ public class MTuanChannelHandler implements HttpApiProcessor<MTuanHttpApi> {
     }
 
     @Override
-    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
         HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
         log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;

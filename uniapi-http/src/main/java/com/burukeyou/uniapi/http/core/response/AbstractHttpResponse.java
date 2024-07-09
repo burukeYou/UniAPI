@@ -6,10 +6,15 @@ import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import lombok.Getter;
 import lombok.Setter;
-import okhttp3.*;
+import okhttp3.Cookie;
+import okhttp3.Headers;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.HttpCookie;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +38,26 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     protected T bodyResult;
 
+    protected Type bodyResultType;
+
     public T getBodyResult() {
         return bodyResult;
+    }
+
+    public Type getBodyResultType() {
+        if (bodyResultType == null){
+            if (HttpResponse.class.isAssignableFrom(method.getReturnType())){
+                Type genericReturnType = method.getGenericReturnType();
+                if (genericReturnType instanceof ParameterizedType){
+                    Type actualTypeArgument = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                    bodyResultType = actualTypeArgument;
+                }
+            }else {
+                bodyResultType = method.getGenericReturnType();
+            }
+        }
+
+        return bodyResultType;
     }
 
     protected boolean ifReturnOriginalResponse() {

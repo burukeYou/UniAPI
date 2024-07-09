@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.annotation.request;
 
 
+import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import org.springframework.core.annotation.AliasFor;
 
@@ -59,4 +60,11 @@ public @interface GetHttpInterface {
      */
     @AliasFor(annotation = HttpInterface.class)
     String cookie() default "";
+
+    /**
+     *  Specify extension points for custom HTTP requests during execution
+     *       please see {@link HttpApiProcessor}
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    Class<? extends HttpApiProcessor<? extends Annotation>>[] processor() default {};
 }
