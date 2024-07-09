@@ -1,7 +1,7 @@
 package com.burukeyou.demo.api;
 
 
-import com.burukeyou.demo.annotation.MTuanHttpApi;
+import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.param.*;
@@ -15,8 +15,8 @@ import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import java.io.File;
 import java.util.List;
 
-@MTuanHttpApi
-public interface UserHttpApi {
+@UserHttpApi
+public interface UserServiceApi {
 
     @GetHttpInterface("/user-web/add")
     BaseRsp<String> add(@QueryPar("name") String name);

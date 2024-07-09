@@ -1,7 +1,7 @@
 package com.burukeyou.demo.config;
 
 import com.burukeyou.demo.annotation.MTuanHttpApi;
-import com.burukeyou.demo.api.WeatherApi;
+import com.burukeyou.demo.api.WeatherServiceApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
@@ -39,7 +39,7 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
     private Environment environment;
 
     @Autowired
-    private WeatherApi weatherApi;
+    private WeatherServiceApi weatherApi;
 
     /** 实现-postBeforeHttpMetadata： 发送Http请求之前会回调该方法，可对Http请求体的内容进行二次处理
      *
@@ -117,7 +117,7 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
     @Override
     public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         //  忽略 weatherApi.getToken的方法回调，否则该方法也会回调此方法会递归死循环。 或者该接口指定自定义的HttpApiProcessor重写postSendingHttpRequest
-        Method getTokenMethod = ReflectionUtils.findMethod(WeatherApi.class, "getToken",String.class,String.class);
+        Method getTokenMethod = ReflectionUtils.findMethod(WeatherServiceApi.class, "getToken",String.class,String.class);
         if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
             return httpSender.sendHttpRequest(httpMetadata);
         }

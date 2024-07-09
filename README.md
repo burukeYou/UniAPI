@@ -233,7 +233,7 @@ HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接
                   postBeforeHttpMetadata                (请求发送前)在发送请求之前，对Http请求体后置处理
                          |
                          V
-                  postSendHttpRequest                   (请求发送时)在Http请求发送时处理
+                  postSendingHttpRequest                (请求发送时)在Http请求发送时处理
                          |
                          V
                postAfterHttpResponseBodyString          (请求响应后)对响应body文本字符串进行后置处理
@@ -257,8 +257,10 @@ postAfterHttpResponseBodyResult：   Http请求响应后，对响应body反序�
 postAfterMethodReturnValue：    Http请求响应后，对代理的方法的返回值进行后置处理，类似aop的后置处理
 
 
+
 HttpMetadata
 - 表示此次Http请求的请求体，包含请求url，请求头、请求方式、请求cookie、请求体、请求参数等等。
+
 
 
 HttpApiMethodInvocation

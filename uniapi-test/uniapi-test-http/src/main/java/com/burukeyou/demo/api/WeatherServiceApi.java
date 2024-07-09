@@ -9,7 +9,7 @@ import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 
 @MTuanHttpApi
-public interface WeatherApi {
+public interface WeatherServiceApi {
 
     /**
      *  根据appId和公钥获取令牌

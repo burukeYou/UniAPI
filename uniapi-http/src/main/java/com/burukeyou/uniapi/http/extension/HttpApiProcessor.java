@@ -15,7 +15,7 @@ import java.lang.annotation.Annotation;
  *                postBeforeHttpMetadata
  *                        |
  *                        V
- *                 postSendHttpRequest
+ *                 postSendingHttpRequest
  *                        |
  *                        V
  *              postAfterHttpResponseBodyString

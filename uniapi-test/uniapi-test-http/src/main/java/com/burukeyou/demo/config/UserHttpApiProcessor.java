@@ -1,6 +1,6 @@
 package com.burukeyou.demo.config;
 
-import com.burukeyou.demo.annotation.MTuanHttpApi;
+import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
@@ -13,27 +13,27 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class MTuanChannelHandler implements HttpApiProcessor<MTuanHttpApi> {
+public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
 
     @Value("${channel.mtuan.appId}")
     private String appId;
 
     @Override
     public HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata,
-                                               HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+                                               HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
 
         return httpMetadata;
     }
 
     @Override
-    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
         HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
         log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;
     }
 
     @Override
-    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, HttpMetadata httpMetadata,HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, HttpMetadata httpMetadata,HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
         if (bodyResult instanceof BaseRsp){
             ((BaseRsp) bodyResult).setCode(99999);
         }
