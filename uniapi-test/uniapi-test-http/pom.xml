@@ -15,7 +15,6 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>uniapi-test-http</artifactId>
-    <version>0.0.1</version>
 
     <dependencies>
         <dependency>
