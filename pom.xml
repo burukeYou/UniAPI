@@ -32,6 +32,7 @@
     <connection>scm:git:git://github.com/burukeYou/UniAPI.git</connection>
     <developerConnection>scm:git:ssh://github.com:burukeYou/UniAPI.git</developerConnection>
     <url>http://github.com/burukeYou/UniAPI.git/tree/main</url>
+    <tag>${revision}</tag>
   </scm>
 
 
