@@ -3,22 +3,21 @@ package com.burukeyou.uniapi.http.core.response;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
+import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import lombok.Getter;
 import lombok.Setter;
-import okhttp3.Cookie;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.HttpCookie;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author  caizhihao
@@ -100,7 +99,18 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     @Override
     public List<Cookie> getSetCookies() {
-        return Cookie.parseAll(request.url(), response.headers());
+        return parseAll(request.url(), response.headers());
+    }
+
+    public static List<Cookie> parseAll(okhttp3.HttpUrl url, Headers headers) {
+        List<Cookie> cookieList = new ArrayList<>();
+        List<okhttp3.Cookie> cookies = okhttp3.Cookie.parseAll(url, headers);
+        for (okhttp3.Cookie tmp : cookies) {
+            Cookie cookie = new Cookie();
+            BeanUtils.copyProperties(tmp,cookie);
+            cookieList.add(cookie);
+        }
+        return cookieList;
     }
 
     public abstract String bodyResultString();

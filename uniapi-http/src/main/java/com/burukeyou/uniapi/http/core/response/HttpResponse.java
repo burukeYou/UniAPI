@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.core.response;
 
-import okhttp3.Cookie;
+
+import com.burukeyou.uniapi.http.support.Cookie;
 
 import java.util.List;
 import java.util.Map;

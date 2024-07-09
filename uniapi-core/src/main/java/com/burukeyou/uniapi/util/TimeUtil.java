@@ -51,6 +51,10 @@ public class TimeUtil {
 
     }
 
+    public static String formatNormal(Date date) {
+       return formatNormal(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+    }
+
     public static String formatNormal(LocalDateTime time) {
         if (time == null){
             return "";
