@@ -31,6 +31,7 @@
     </dependencyManagement>
 
     <modules>
+        <module>uniapi-test-http</module>
     </modules>
 
 </project>
