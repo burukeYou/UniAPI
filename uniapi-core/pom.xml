@@ -10,7 +10,6 @@
     <version>${revision}</version>
   </parent>
 
-  <packaging>pom</packaging>
   <artifactId>uniapi-core</artifactId>
   <version>${revision}</version>
   <name>uniapi-core</name>

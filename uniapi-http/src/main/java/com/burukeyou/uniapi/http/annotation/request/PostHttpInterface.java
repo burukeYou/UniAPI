@@ -47,14 +47,14 @@ public @interface PostHttpInterface {
 
     /**
      *  The complete string of query parameters
-     *      such as 'a=1&b=2&c=3'
+     *      
      */
     @AliasFor(annotation = HttpInterface.class)
     String paramStr() default "";
 
     /**
      * Request the complete string of the cookie
-     *          such as  'a=1;b=2;c=3'
+     *          
      */
     @AliasFor(annotation = HttpInterface.class)
     String cookie() default "";

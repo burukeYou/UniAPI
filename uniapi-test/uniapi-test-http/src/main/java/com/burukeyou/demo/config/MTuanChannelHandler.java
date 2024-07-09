@@ -2,7 +2,6 @@ package com.burukeyou.demo.config;
 
 import com.burukeyou.demo.annotation.MTuanHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
-import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
@@ -24,25 +23,12 @@ public class MTuanChannelHandler implements HttpApiProcessor<MTuanHttpApi> {
     @Override
     public HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata,
                                                HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
-        //
-        MTuanHttpApi api = methodInvocation.getProxyApiAnnotation();
-        HttpInterface proxyInterface = methodInvocation.getProxyInterface();
-        //httpMetadata.updateUrl(url);
-
-    /*    if (httpMetadata.getBody() != null){
-            String bodyJson = httpMetadata.getBody().toString();
-            JSONObject jsonObject = JSON.parseObject(bodyJson);
-            jsonObject.putIfAbsent("appId",appId);
-            httpMetadata.updateJsonBody(jsonObject.toJSONString());
-        }*/
-
 
         return httpMetadata;
     }
 
     @Override
     public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
-        //log.info("发送请求 \n 参数：{} ",httpMetadata.toString());
         HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
         log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;

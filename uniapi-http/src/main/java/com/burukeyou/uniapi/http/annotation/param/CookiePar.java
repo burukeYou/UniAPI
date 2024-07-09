@@ -8,8 +8,8 @@ import java.lang.annotation.*;
  *
  * Support parameter types for tags：
  *       Map
- *       {@link com.burukeyou.uniapi.http.support.Cookie}
- *       List<{@link com.burukeyou.uniapi.http.support.Cookie}>
+ *       com.burukeyou.uniapi.http.support.Cookie
+ *       com.burukeyou.uniapi.http.support.Cookie Collection
  *       String (specify name)           Treat as a single cookie key value pair
  *       String (not specify name)       Treat as a complete cookie string
  *

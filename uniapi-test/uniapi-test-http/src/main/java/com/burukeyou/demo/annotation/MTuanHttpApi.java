@@ -1,7 +1,7 @@
 package com.burukeyou.demo.annotation;
 
 
-import com.burukeyou.demo.config.MTuanChannelHandler;
+import com.burukeyou.demo.config.MTuanHttpApiProcessor;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import org.springframework.core.annotation.AliasFor;
 
@@ -13,7 +13,7 @@ import java.lang.annotation.*;
 @Inherited
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@HttpApi(processor = MTuanChannelHandler.class)
+@HttpApi(processor = MTuanHttpApiProcessor.class)
 public @interface MTuanHttpApi {
 
     @AliasFor(annotation = HttpApi.class)
