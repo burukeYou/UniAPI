@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
@@ -114,8 +115,15 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      *  实现-postBeforeHttpMetadata： 发送Http请求时，可定义发送请求的行为 或者打印请求和响应日志。
      */
     @Override
-    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
-        // 1、动态获取token和sessionId. 这个接口不应该回调这个方法,否则会递归死循环
+    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+        //  忽略 weatherApi.getToken的方法回调，否则该方法也会回调此方法会递归死循环。 或者该接口指定自定义的HttpApiProcessor重写postSendingHttpRequest
+        Method getTokenMethod = ReflectionUtils.findMethod(WeatherApi.class, "getToken",String.class,String.class);
+        if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
+            return httpSender.sendHttpRequest(httpMetadata);
+        }
+
+        // 1、动态获取token和sessionId.
+        // 这个接口不应该回调这个方法,否则会递归死循环
         HttpResponse<String> httpResponse = weatherApi.getToken(appId, publicKey);
 
         // 从响应体获取令牌token
@@ -128,7 +136,7 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         httpMetadata.addCookie(new Cookie("sessionId",sessionId));
 
         // 使用框架内置实现发送请求
-        HttpResponse<?> rsp = HttpApiProcessor.super.postSendingHttpRequest(httpSender, httpMetadata);
+        HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
 
         log.info("开始发送Http请求 请求响应报文:{}",rsp.toHttpProtocol());
 
@@ -139,12 +147,12 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      *  实现-postAfterHttpResponseBodyResult： 反序列化后Http响应体的内容后回调，可对该结果进行二次处理返回
      * @param bodyResult                     Http响应体反序列化后的结果
      * @param rsp                            原始Http响应对象
-     * @param method                         被代理的方法
+     * @param methodInvocation               被代理的方法
      * @param httpMetadata                   Http请求体
      * @return
      */
     @Override
-    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata) {
+    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, HttpMetadata httpMetadata,HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         if (bodyResult instanceof BaseRsp){
             BaseRsp baseRsp = (BaseRsp) bodyResult;
             // 设置

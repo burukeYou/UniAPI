@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
-
 @Slf4j
 @Component
 public class MTuanChannelHandler implements HttpApiProcessor<MTuanHttpApi> {
@@ -28,14 +26,14 @@ public class MTuanChannelHandler implements HttpApiProcessor<MTuanHttpApi> {
     }
 
     @Override
-    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+    public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
         log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;
     }
 
     @Override
-    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata) {
+    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, HttpMetadata httpMetadata,HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         if (bodyResult instanceof BaseRsp){
             ((BaseRsp) bodyResult).setCode(99999);
         }

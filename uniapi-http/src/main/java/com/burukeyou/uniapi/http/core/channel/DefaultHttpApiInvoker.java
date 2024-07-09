@@ -113,22 +113,22 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         httpMetadata = requestProcessor.postBeforeHttpMetadata(httpMetadata,param);
 
         // sendHttpRequest processor
-        HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata);
+        HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,param);
 
         //  http response body string processor
         if (response instanceof HttpJsonResponse){
             HttpJsonResponse<?> jsonResponse = ((HttpJsonResponse<?>)response);
-            String newJsonRsp = requestProcessor.postAfterHttpResponseBodyString(jsonResponse.getTextValue(), response, method, httpMetadata);
+            String newJsonRsp = requestProcessor.postAfterHttpResponseBodyString(jsonResponse.getTextValue(), response, httpMetadata,param);
             jsonResponse.setTextValue(newJsonRsp);
         }
 
         // http response result processor
-        Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, method, httpMetadata);
+        Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, httpMetadata,param);
         ((AbstractHttpResponse<Object>)response).setBodyResult(result);
         Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getBodyResult();
 
         // MethodReturnValue processor
-        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, method, httpMetadata);
+        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,param);
     }
 
 

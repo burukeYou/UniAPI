@@ -1,7 +1,6 @@
 package com.burukeyou.demo.api;
 
 import com.burukeyou.demo.annotation.MTuanHttpApi;
-import com.burukeyou.demo.config.MTuanGetTokenHttpApiProcessor;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
 import com.burukeyou.uniapi.http.annotation.param.QueryPar;
@@ -15,7 +14,7 @@ public interface WeatherApi {
     /**
      *  根据appId和公钥获取令牌
      */
-    @PostHttpInterface(path = "/mtuan/weather/getToken",processor = MTuanGetTokenHttpApiProcessor.class)
+    @PostHttpInterface(path = "/mtuan/weather/getToken")
     HttpResponse<String> getToken(@HeaderPar("appId") String appId, @HeaderPar("publicKey")String publicKey);
 
     /**

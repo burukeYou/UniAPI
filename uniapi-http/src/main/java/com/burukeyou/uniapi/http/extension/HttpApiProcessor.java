@@ -6,7 +6,6 @@ import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -50,7 +49,7 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param httpSender                 Request Sender
      * @param httpMetadata               request data
      */
-    default HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata){
+    default HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
         return httpSender.sendHttpRequest(httpMetadata);
     }
 
@@ -58,11 +57,11 @@ public interface HttpApiProcessor<T extends Annotation> {
      * Post-processing of HTTP response body string, when content-type is text
      * @param bodyString          http body string
      * @param rsp                 Original  Http Response
-     * @param method              The method of agency
+     * @param methodInvocation    The method of agency
      * @param httpMetadata        request data
      * @return                    the new response body string
      */
-    default String postAfterHttpResponseBodyString(String bodyString, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata){
+    default String postAfterHttpResponseBodyString(String bodyString, HttpResponse<?> rsp,HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
         return bodyString;
     }
 
@@ -73,11 +72,11 @@ public interface HttpApiProcessor<T extends Annotation> {
      *                                       The specific object deserialized by the HTTP response body,
      *                                       with the specific type being the return value type of the proxy method
      * @param rsp                            Original  Http Response
-     * @param method                         The method of agency
+     * @param methodInvocation               The method of agency
      * @param httpMetadata                   request data
      * @return                               the new response body object。
      */
-    default Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata){
+    default Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp,HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
         return bodyResult;
     }
 
@@ -85,11 +84,11 @@ public interface HttpApiProcessor<T extends Annotation> {
      * The post-processing method returns a value, similar to the post-processing of AOP
      * @param methodReturnValue             Method return value
      * @param rsp                           Original  Http Response
-     * @param method                        The method of agency
+     * @param methodInvocation              The method of agency
      * @param httpMetadata                  request data
      * @return                              the new Method return value
      */
-    default Object postAfterMethodReturnValue(Object methodReturnValue,HttpResponse<?> rsp,Method method,HttpMetadata httpMetadata){
+    default Object postAfterMethodReturnValue(Object methodReturnValue,HttpResponse<?> rsp,HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
         return methodReturnValue;
     }
 
