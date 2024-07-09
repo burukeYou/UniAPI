@@ -48,13 +48,13 @@ public @interface HttpInterface {
     String[] params() default {};
 
     /**
-     *  The complete string of query parameters，such as a=1&b=2&c=3
+     *  The complete string of query parameters
      *      
      */
     String paramStr() default "";
 
     /**
-     * Request the complete string of the cookie， such as  a=1;b=2;c=3
+     * Request the complete string of the cookie
      *          
      */
     String cookie() default "";

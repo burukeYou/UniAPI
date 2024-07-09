@@ -378,7 +378,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
         String paramStr = httpInterface.paramStr();
         if (StringUtils.isNotBlank(paramStr) && paramStr.contains("=")){
-            for (String item  :paramStr.split("&")){
+            for (String item  :paramStr.split("[&;；]")){
                 String[] itemArr = item.split("=");
                 queryParam.put(itemArr[0],itemArr[1]);
             }
