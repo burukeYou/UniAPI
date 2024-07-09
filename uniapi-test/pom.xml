@@ -13,7 +13,7 @@
     <properties>
         <skipDeployment>true</skipDeployment>
     </properties>
-    <groupId>com.burukeyou</groupId>
+
     <artifactId>uniapi-test</artifactId>
     <packaging>pom</packaging>
     <name>uniapi-test</name>
