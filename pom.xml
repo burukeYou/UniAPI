@@ -48,7 +48,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <sno.serviceId>central</sno.serviceId>
 
-    <revision>0.0.3</revision>
+    <revision>0.0.4</revision>
   </properties>
 
 
