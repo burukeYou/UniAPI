@@ -1,6 +1,11 @@
 
 
-# 1、UniHttp 
+UniHttp
+-------
+![travis](https://travis-ci.org/nRo/DataFrame.svg?branch=master)
+[![License](http://img.shields.io/badge/license-apache%202-brightgreen.svg)](https://github.com/burukeYou/fast-retry/blob/main/LICENSE)
+
+
 一个声明式的Http请求对接框架，能以极快的方式完成对一个第三方Http接口的对接和使用，只要配置一下即可重复使用，
 不需要开发者去关注如何发送一个请求，如何去传递Http请求参数，以及如何对请求结果进行处理和反序列化，这些框架都帮你一一实现 
 就像配置 `Spring的Controller` 那样简单，只不过相当于是反向配置而已
