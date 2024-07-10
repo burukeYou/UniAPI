@@ -172,7 +172,7 @@ public class HttpApiTest {
 
     @Test
     public void testSimple(){
-        String add = simpleServiceApi.add("1");
+        String add = simpleServiceApi.add2("1");
         System.out.println();
     }
 }

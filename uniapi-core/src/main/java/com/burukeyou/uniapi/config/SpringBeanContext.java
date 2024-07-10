@@ -2,12 +2,12 @@ package com.burukeyou.uniapi.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 
@@ -26,26 +26,25 @@ public class SpringBeanContext implements ApplicationContextAware {
     }
 
     public static Object getMultiBean(Class<?> fieldType) {
-        NoUniqueBeanDefinitionException exception;
-        try {
-            return springContext.getBean(fieldType);
-        }catch (NoUniqueBeanDefinitionException e){
-            exception = e;
-        }
-
-        // 有多个Bean实现，尝试获取与该类型类名相同的类
         Map<String, ?> beansOfType = springContext.getBeansOfType(fieldType);
         if (beansOfType.size() <= 0){
            return null;
         }
 
-        for (Object value : beansOfType.values()) {
+        ArrayList<?> objects = new ArrayList<>(beansOfType.values());
+        if (objects.size() == 1){
+            return objects.get(0);
+        }
+
+        // 有多个Bean实现，尝试获取与该类型类名相同的类
+        for (Object value : objects) {
             if (isSameClass(value.getClass(), fieldType)) {
                 return value;
             }
         }
-       throw exception;
+        return null;
     }
+
 
     public static boolean isSameClass(Class<?> class1, Class<?> class2) {
         if (class1 == class2) {
