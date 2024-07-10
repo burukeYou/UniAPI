@@ -2,6 +2,7 @@ package com.burukeyou;
 
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.demo.DemoApplication;
+import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
@@ -29,6 +30,9 @@ public class HttpApiTest {
 
     @Autowired
     private ResourceLoader resourceLoader;
+
+    @Autowired
+    private SimpleServiceApi simpleServiceApi;
 
     private File getLocalFile(String path) {
         try {
@@ -164,6 +168,12 @@ public class HttpApiTest {
     public void testUpdate3(){
         BaseRsp<String> stringBaseRsp = meituanApi.update3(Arrays.asList(7,8,9));
         System.out.println(stringBaseRsp);
+    }
+
+    @Test
+    public void testSimple(){
+        String add = simpleServiceApi.add("1");
+        System.out.println();
     }
 }
 

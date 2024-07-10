@@ -26,7 +26,7 @@ public class HttpApiProxyFactory implements ApiProxyFactory {
 
         Annotation proxyAnnotation =  null;
         lab: for (Annotation annotation : targetClass.getAnnotations()) {
-                if (AnnotatedElementUtils.findMergedAnnotation(annotation.annotationType(),HttpApi.class) != null){
+                 if (annotation.annotationType().equals(HttpApi.class) || AnnotatedElementUtils.findMergedAnnotation(annotation.annotationType(),HttpApi.class) != null){
                     proxyAnnotation = annotation;
                     break lab;
                 }
