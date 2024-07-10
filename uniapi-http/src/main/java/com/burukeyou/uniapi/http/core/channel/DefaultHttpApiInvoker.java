@@ -10,10 +10,10 @@ import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
-import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
+import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
@@ -82,6 +82,24 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return EmptyHttpApiProcessor.class;
     }
 
+    public HttpApiProcessor<Annotation> buildRequestHttpApiProcessor(Class<? extends HttpApiProcessor<?>> apiProcessor){
+        // 先从spring context获取,
+        HttpApiProcessor<Annotation> processor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
+        if (processor != null){
+            //throw new IllegalStateException("can not find " + apiProcessor.getName() + " from spring context");
+            return processor;
+        }
+
+        try {
+            // 如果不存在则直接手动new一个
+            return (HttpApiProcessor<Annotation>) apiProcessor.newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Object invoke() {
         Method method = methodInvocation.getMethod();
         HttpMetadata httpMetadata = createHttpMetadata(methodInvocation);
@@ -93,10 +111,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessor(api,httpInterface);
 
-        HttpApiProcessor<Annotation> requestProcessor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
-        if (requestProcessor == null){
-            throw new IllegalStateException("can not find " + apiProcessor.getName() + " from spring context");
-        }
+        HttpApiProcessor<Annotation> requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
 
         // check
         ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessor, HttpApiProcessor.class);
@@ -106,7 +121,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         Type actualTypeArgument = paramTypeHttpApiProcessor.getActualTypeArguments()[0];
         Annotation proxyAnnotation = annotationMeta.getProxyAnnotation();
         if (!actualTypeArgument.equals(Annotation.class) && !actualTypeArgument.equals(proxyAnnotation.annotationType())){
-            throw new IllegalArgumentException("The specified HttpApiProcessor cannot handle this annotation type" + proxyAnnotation.annotationType().getSimpleName());
+            throw new IllegalArgumentException("The specified HttpApiProcessor cannot handle this annotation type " + proxyAnnotation.annotationType().getSimpleName());
         }
 
         // before processor
