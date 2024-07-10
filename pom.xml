@@ -39,7 +39,7 @@
   <modules>
     <module>uniapi-core</module>
     <module>uniapi-http</module>
-<!--    <module>uniapi-test</module>-->
+    <module>uniapi-test</module>
   </modules>
 
   <properties>
