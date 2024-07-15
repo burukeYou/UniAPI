@@ -83,7 +83,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         List<Cookie> cookies = new ArrayList<>(parseCookie(getEnvironmentValue(httpInterface.cookie())));
         for (Param param : argList) {
             Object argValue = param.getValue();
-            if (argValue == null){
+            if (param.isValueNotExist()){
                 continue;
             }
 
@@ -113,23 +113,23 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 continue;
             }
 
-            if (StringUtils.isNotBlank(annotation.value())){
-                // 指定了name 当成单个cookie处理
-                if (String.class.equals(param.getType())){
-                    cookies.add(new Cookie(annotation.value(),argValue.toString()));
-                    continue;
-                }
+            if (param.isObject()){
+                List<Cookie> tmpList = JSON.parseObject(JSON.toJSONString(argValue)).entrySet().stream()
+                        .map(e -> new Cookie(e.getKey(), e.getValue().toString()))
+                        .collect(Collectors.toList());
+                cookies.addAll(tmpList);
+                continue;
             }
 
-            // 为指定name当成cookies string 处理
             if (String.class.equals(param.getType())){
-                cookies.addAll(parseCookie(argValue.toString()));
-            }else if (param.isCollection(String.class)){
-                for (String cookieStr : param.castListValue(String.class)) {
-                    cookies.addAll(parseCookie(cookieStr));
+                if (StringUtils.isNotBlank(annotation.value())){
+                    // 指定了name 当成单个cookie处理
+                    cookies.add(new Cookie(annotation.value(),argValue.toString()));
+                }else {
+                    cookies.addAll(parseCookie(argValue.toString()));
                 }
+                continue;
             }
-
         }
 
         return cookies;
@@ -175,7 +175,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
     public HttpBody findHttpBody(ArgList argList){
         for (Param methodArg : argList) {
-            if (methodArg.getValue() == null){
+            if (methodArg.isValueNotExist()){
                 continue;
             }
 
@@ -525,18 +525,6 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
             return  argValue.toString();
         }
         return argValue;
-    }
-
-    /**
-     * 判断是否是普通值
-     *      除了自定义对象、Map、集合之外的所有对象都是基本类型，
-     *      表示的是单一值，比如int、Boolean、String
-     */
-    public boolean isBaseType(Class<?> valueClass){
-        if (valueClass.isPrimitive()){
-            return true;
-        }
-        return !isObjOrMap(valueClass) && !isObjOrArr(valueClass);
     }
 
 

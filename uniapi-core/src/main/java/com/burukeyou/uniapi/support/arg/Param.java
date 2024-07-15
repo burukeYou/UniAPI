@@ -25,6 +25,17 @@ public interface Param {
     Object getValue();
 
     /**
+     *  if the value is not exist
+     *      if the parameter value is  null  or blank  or  empty then return true, or else false
+     */
+    boolean isValueNotExist();
+
+    /**
+     * if the value is exist
+     */
+    boolean isValueExist();
+
+    /**
      * get the parameter name
      */
     String getName();

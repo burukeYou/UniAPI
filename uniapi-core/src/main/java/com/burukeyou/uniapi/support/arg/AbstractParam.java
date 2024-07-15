@@ -1,5 +1,7 @@
 package com.burukeyou.uniapi.support.arg;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -8,6 +10,43 @@ import java.util.*;
  * @author caizhihao
  */
 public abstract class AbstractParam implements Param {
+
+    protected static Object[] castObjectToArray(Object value) {
+        return (Object[]) value;
+    }
+
+    @Override
+    public boolean isValueNotExist() {
+        Class<?> type = getType();
+        Object value = getValue();
+        if (value == null){
+            return true;
+        }
+        if (String.class.equals(type)){
+            if (StringUtils.isBlank(value.toString())){
+                return true;
+            }
+        }
+
+        if (type.isArray() && castObjectToArray(value).length <= 0){
+            return  true;
+        }
+
+        if (Collection.class.isAssignableFrom(type) &&  ((Collection<?>)value).isEmpty()){
+           return true;
+        }
+
+        if (Map.class.isAssignableFrom(type) &&  ((Map<?,?>)value).isEmpty()){
+           return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isValueExist() {
+        return !isValueNotExist();
+    }
 
     @Override
     public boolean isNormalValue() {
