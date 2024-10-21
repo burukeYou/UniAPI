@@ -12,7 +12,7 @@
   </parent>
 
   <artifactId>uniapi-http</artifactId>
-  <version>${revision}</version>
+  <version>${unihttp.version}</version>
 
   <name>uniapi-http</name>
   <description>一个声明式的Http请求对接框架,统一快速接入和处理各种Http接口</description>
