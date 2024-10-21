@@ -22,7 +22,7 @@ UniHttp
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.7</version>
     </dependency>
 ```
 
