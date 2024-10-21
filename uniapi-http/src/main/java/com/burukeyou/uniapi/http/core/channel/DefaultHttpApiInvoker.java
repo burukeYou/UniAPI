@@ -30,13 +30,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,16 +157,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata){
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
-        Map<String, String> oldHeaders = httpMetadata.getHeaders();
-
-        Map<String, String> headers = new HashMap<>();
-        oldHeaders.forEach((key,value) -> {
-            try {
-                headers.put(key, URLEncoder.encode(value,"UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Map<String, String> headers = httpMetadata.getHeaders();
 
         Request.Builder requestBuilder = new Request.Builder();
         requestBuilder = requestBuilder.url(httpUrl.toUrl());
@@ -179,11 +172,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         // config cookie
         String cookie = httpMetadata.getCookieString();
         if (StringUtils.isNotBlank(cookie)){
-            try {
-                requestBuilder.header("Cookie", URLEncoder.encode(cookie,"UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            requestBuilder.header("Cookie", cookie);
         }
 
         // config requestBody
