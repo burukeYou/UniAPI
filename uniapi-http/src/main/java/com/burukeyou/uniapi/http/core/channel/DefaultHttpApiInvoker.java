@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 import com.burukeyou.uniapi.config.SpringBeanContext;
+import com.burukeyou.uniapi.exception.BaseUniApiException;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -10,6 +11,7 @@ import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
@@ -54,7 +56,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private static final Pattern pattern = Pattern.compile("filename\\s*=\\s*\\\"(.*)\\\"");
 
-    private static OkHttpClient client;
+    private static volatile OkHttpClient client;
+
+    private static final EmptyHttpApiProcessor emptyHttpProcessor = new EmptyHttpApiProcessor();
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -68,7 +72,11 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         if (client == null){
             synchronized (DefaultHttpApiInvoker.class){
                 if (client == null){
-                    client = SpringBeanContext.getBean(OkHttpClient.class);
+                    OkHttpClientFactory clientFactory = SpringBeanContext.getBean(OkHttpClientFactory.class);
+                    if (clientFactory == null){
+                        throw new BaseUniApiException("can not find HttpClientFactory from spring context");
+                    }
+                    client = clientFactory.getOkHttpClient();
                 }
             }
         }
@@ -85,7 +93,11 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
     public HttpApiProcessor<Annotation> buildRequestHttpApiProcessor(Class<? extends HttpApiProcessor<?>> apiProcessor){
-        // 先从spring context获取,
+        if (EmptyHttpApiProcessor.class.equals(apiProcessor)){
+            return emptyHttpProcessor;
+        }
+
+        // 优先先从spring context获取,
         HttpApiProcessor<Annotation> processor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
         if (processor != null){
             //throw new IllegalStateException("can not find " + apiProcessor.getName() + " from spring context");
