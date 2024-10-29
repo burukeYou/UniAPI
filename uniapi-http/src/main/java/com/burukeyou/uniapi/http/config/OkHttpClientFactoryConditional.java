@@ -1,6 +1,6 @@
 package com.burukeyou.uniapi.http.config;
 
-import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.GlobalOkHttpClientFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Condition;
@@ -13,7 +13,7 @@ public class OkHttpClientFactoryConditional implements Condition {
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
         try {
-            beanFactory.getBean(OkHttpClientFactory.class);
+            beanFactory.getBean(GlobalOkHttpClientFactory.class);
         } catch (NoSuchBeanDefinitionException e) {
             return true;
         }

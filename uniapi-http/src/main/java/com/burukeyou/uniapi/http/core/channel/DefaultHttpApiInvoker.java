@@ -1,7 +1,6 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 import com.burukeyou.uniapi.config.SpringBeanContext;
-import com.burukeyou.uniapi.exception.BaseUniApiException;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -11,7 +10,6 @@ import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
-import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
@@ -56,33 +54,25 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private static final Pattern pattern = Pattern.compile("filename\\s*=\\s*\\\"(.*)\\\"");
 
-    private static volatile OkHttpClient client;
+    private OkHttpClient client;
 
     private static final EmptyHttpApiProcessor emptyHttpProcessor = new EmptyHttpApiProcessor();
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
                                  HttpInterface httpInterface,
-                                 MethodInvocation methodInvocation) {
+                                 MethodInvocation methodInvocation,OkHttpClient httpClient) {
         super(annotationMeta.getHttpApi(),httpInterface,annotationMeta.getProxySupport().getEnvironment());
         this.targetClass = targetClass;
         this.annotationMeta = annotationMeta;
         this.methodInvocation = methodInvocation;
-
-        if (client == null){
-            synchronized (DefaultHttpApiInvoker.class){
-                if (client == null){
-                    OkHttpClientFactory clientFactory = SpringBeanContext.getBean(OkHttpClientFactory.class);
-                    if (clientFactory == null){
-                        throw new BaseUniApiException("can not find HttpClientFactory from spring context");
-                    }
-                    client = clientFactory.getOkHttpClient();
-                }
-            }
-        }
+        this.client = httpClient;
     }
 
-    public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessor(HttpApi api,HttpInterface httpInterface){
+
+
+
+    public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessorClass(HttpApi api, HttpInterface httpInterface){
         if (httpInterface.processor().length > 0){
             return httpInterface.processor()[0];
         }
@@ -123,7 +113,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         param.setProxyClass(targetClass);
         param.setMethodInvocation(methodInvocation);
 
-        Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessor(api,httpInterface);
+        Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessorClass(api,httpInterface);
 
         HttpApiProcessor<Annotation> requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
 

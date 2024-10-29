@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 
@@ -23,6 +25,14 @@ public class SpringBeanContext implements ApplicationContextAware {
         } catch (NoSuchBeanDefinitionException e) {
            return null;
         }
+    }
+
+    public static <T> List<T> listBean(Class<T> clz){
+        Map<String, T> map = springContext.getBeansOfType(clz);
+        if (map.isEmpty()){
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(map.values());
     }
 
     public static Object getMultiBean(Class<?> fieldType) {

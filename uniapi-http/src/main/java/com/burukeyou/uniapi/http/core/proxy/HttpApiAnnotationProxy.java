@@ -1,9 +1,15 @@
 package com.burukeyou.uniapi.http.core.proxy;
 
+import com.burukeyou.uniapi.config.SpringBeanContext;
+import com.burukeyou.uniapi.exception.BaseUniApiException;
+import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.channel.DefaultHttpApiInvoker;
 import com.burukeyou.uniapi.core.proxy.AbstractAnnotationInvokeProxy;
+import com.burukeyou.uniapi.http.extension.GlobalOkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
+import okhttp3.OkHttpClient;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
@@ -14,11 +20,11 @@ import java.lang.reflect.Method;
  */
 public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpApiAnnotationMeta> {
 
-    public HttpApiAnnotationProxy() {
-    }
+    private final OkHttpClient httpClient;
 
     public HttpApiAnnotationProxy(HttpApiAnnotationMeta annotationMeta) {
         super(annotationMeta);
+        httpClient = initHttpClient(annotationMeta);
     }
 
     @Override
@@ -27,10 +33,38 @@ public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpA
         if (annotationMeta.getHttpApi() != null){
             HttpInterface httpInterface = AnnotatedElementUtils.getMergedAnnotation(method, HttpInterface.class);
             if (httpInterface != null){
-                return new DefaultHttpApiInvoker(annotationMeta,targetClass,httpInterface,methodInvocation).invoke();
+                return new DefaultHttpApiInvoker(annotationMeta,targetClass,httpInterface,methodInvocation,httpClient).invoke();
             }
         }
+        return null;
+    }
 
+    private OkHttpClient initHttpClient(HttpApiAnnotationMeta annotationMeta) {
+        OkHttpClientFactory okHttpClientFactory = null;
+        Class<? extends OkHttpClientFactory> configHttpClientClass = getHttpClientClass(annotationMeta.getHttpApi());
+        if (configHttpClientClass != null){
+            okHttpClientFactory = SpringBeanContext.getBean(configHttpClientClass);
+            if (okHttpClientFactory == null){
+                throw new BaseUniApiException("Unable to find "+ configHttpClientClass.getSimpleName() + " configured with @ httpApi from spring context");
+            }
+        }else {
+            // 如果没配置，从SpringContext获取全局
+            okHttpClientFactory = SpringBeanContext.getBean(GlobalOkHttpClientFactory.class);
+            if (okHttpClientFactory == null){
+                throw new BaseUniApiException("can not find GlobalOkHttpClientFactory from spring context");
+            }
+        }
+        OkHttpClient client = okHttpClientFactory.getHttpClient();
+        if (client == null){
+            throw new BaseUniApiException(okHttpClientFactory.getClass().getSimpleName() + " getHttpClient() can not return null");
+        }
+        return client;
+    }
+
+    public  Class<? extends OkHttpClientFactory> getHttpClientClass(HttpApi api){
+        if(api.httpClient().length > 0){
+            return api.httpClient()[0];
+        }
         return null;
     }
 }

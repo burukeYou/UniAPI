@@ -40,6 +40,7 @@
     <module>uniapi-core</module>
     <module>uniapi-http</module>
     <module>uniapi-test</module>
+    <module>uniapi-queue</module>
   </modules>
 
   <properties>
