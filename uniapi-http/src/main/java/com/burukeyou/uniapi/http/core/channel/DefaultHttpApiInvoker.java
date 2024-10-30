@@ -54,27 +54,25 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private static final Pattern pattern = Pattern.compile("filename\\s*=\\s*\\\"(.*)\\\"");
 
-    private static OkHttpClient client;
+    private OkHttpClient client;
+
+    private static final EmptyHttpApiProcessor emptyHttpProcessor = new EmptyHttpApiProcessor();
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
                                  HttpInterface httpInterface,
-                                 MethodInvocation methodInvocation) {
+                                 MethodInvocation methodInvocation,OkHttpClient httpClient) {
         super(annotationMeta.getHttpApi(),httpInterface,annotationMeta.getProxySupport().getEnvironment());
         this.targetClass = targetClass;
         this.annotationMeta = annotationMeta;
         this.methodInvocation = methodInvocation;
-
-        if (client == null){
-            synchronized (DefaultHttpApiInvoker.class){
-                if (client == null){
-                    client = SpringBeanContext.getBean(OkHttpClient.class);
-                }
-            }
-        }
+        this.client = httpClient;
     }
 
-    public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessor(HttpApi api,HttpInterface httpInterface){
+
+
+
+    public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessorClass(HttpApi api, HttpInterface httpInterface){
         if (httpInterface.processor().length > 0){
             return httpInterface.processor()[0];
         }
@@ -85,7 +83,11 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
     public HttpApiProcessor<Annotation> buildRequestHttpApiProcessor(Class<? extends HttpApiProcessor<?>> apiProcessor){
-        // 先从spring context获取,
+        if (EmptyHttpApiProcessor.class.equals(apiProcessor)){
+            return emptyHttpProcessor;
+        }
+
+        // 优先先从spring context获取,
         HttpApiProcessor<Annotation> processor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
         if (processor != null){
             //throw new IllegalStateException("can not find " + apiProcessor.getName() + " from spring context");
@@ -111,7 +113,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         param.setProxyClass(targetClass);
         param.setMethodInvocation(methodInvocation);
 
-        Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessor(api,httpInterface);
+        Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessorClass(api,httpInterface);
 
         HttpApiProcessor<Annotation> requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
 

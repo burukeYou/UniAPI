@@ -1,8 +1,8 @@
 package com.burukeyou.uniapi.http.config;
 
-import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.core.proxy.AnnotationInvokeProxy;
 import com.burukeyou.uniapi.core.proxy.ApiProxyFactory;
+import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.core.proxy.HttpApiAnnotationProxy;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.support.ProxySupport;

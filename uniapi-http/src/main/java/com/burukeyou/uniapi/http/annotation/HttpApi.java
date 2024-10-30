@@ -2,6 +2,7 @@ package com.burukeyou.uniapi.http.annotation;
 
 
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
 
 import java.lang.annotation.*;
 
@@ -29,4 +30,9 @@ public @interface HttpApi {
      *       please see {@link HttpApiProcessor}
      */
     Class<? extends HttpApiProcessor<? extends Annotation>> processor()[] default {};
+
+    /**
+     *  Config custom http client, if not config will use default http client
+     */
+    Class<? extends OkHttpClientFactory> httpClient()[] default {};
 }
