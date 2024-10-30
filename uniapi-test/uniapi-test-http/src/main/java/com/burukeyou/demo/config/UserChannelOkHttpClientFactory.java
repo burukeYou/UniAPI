@@ -23,8 +23,6 @@ public class UserChannelOkHttpClientFactory implements OkHttpClientFactory {
         log.info("UserChannelOkHttpClientFactory client:{}",client);
     }
 
-
-
     @Override
     public OkHttpClient getHttpClient() {
         return client;

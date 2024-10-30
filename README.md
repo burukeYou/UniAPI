@@ -22,7 +22,7 @@ UniHttp
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.8</version>
     </dependency>
 ```
 
@@ -354,23 +354,60 @@ HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接
 
 
 ## 配置自定义的Http客户端
-默认使用的是Okhttp客户端，如果要重新配置Okhttp客户端,注入spring的bean即可,如下
+如果要自定义全局的Okhttp客户端,实现GlobalOkHttpClientFactory接口并注入spring的bean即可
 
 ```java
-@Configuration
-public class CusotmConfiguration {
+@Component
+public class MyGlobalOkHttpClientFactory implements GlobalOkHttpClientFactory {
+    private  final OkHttpClient client;
 
-    @Bean
-    public OkHttpClient myOHttpClient(){
-        return new OkHttpClient.Builder()
+    public MyGlobalOkHttpClientFactory() {
+        this.client = new OkHttpClient.Builder()
                 .readTimeout(50, TimeUnit.SECONDS)
                 .writeTimeout(50, TimeUnit.SECONDS)
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .connectionPool(new ConnectionPool(20,10, TimeUnit.MINUTES))
                 .build();
     }
+    
+    @Override
+    public OkHttpClient getHttpClient() {
+        return client;
+    }
 }
 
+```
+
+@HttpApi也可自定义的不同Okhttp客户端， 可以实现OkHttpClientFactory接口并注入Spring，然后在@HttpApi注解上指定该实现类即可。
+比如
+```java
+@Component
+public class UserChannelOkHttpClientFactory implements OkHttpClientFactory {
+    private  final OkHttpClient client;
+
+    public UserChannelOkHttpClientFactory() {
+        this.client = new OkHttpClient.Builder()
+                .readTimeout(50, TimeUnit.SECONDS)
+                .writeTimeout(50, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool(20,10, TimeUnit.MINUTES))
+                .build();
+        log.info("UserChannelOkHttpClientFactory client:{}",client);
+    }
+    
+    @Override
+    public OkHttpClient getHttpClient() {
+        return client;
+    }
+}
+```
+
+然后在配置到@HttpApi的httpClient属性即可
+```java
+@HttpApi(httpClient = UserChannelOkHttpClientFactory.class)
+interface UserServiceApi {
+    
+}
 ```
 
 
