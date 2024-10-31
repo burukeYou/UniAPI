@@ -49,9 +49,9 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <sno.serviceId>central</sno.serviceId>
 
-    <revision>0.0.8</revision>
+    <revision>0.0.9</revision>
 
-    <unicore.version>${revision}</unicore.version>
+    <unicore.version>0.0.8</unicore.version>
     <unihttp.version>${revision}</unihttp.version>
   </properties>
 
