@@ -180,7 +180,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         // config requestBody
         RequestBody requestBody = null;
         if (httpMetadata.getBody()!= null && !httpMetadata.getBody().emptyContent()){
-            requestBody = convertToRequestBody(httpMetadata.getBody());
+            requestBody = convertToRequestBody(httpMetadata);
             requestBuilder = requestBuilder.post(requestBody);
         }
 
@@ -330,12 +330,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    protected RequestBody convertToRequestBody(HttpBody body) {
+    protected RequestBody convertToRequestBody(HttpMetadata metadata) {
+        HttpBody body = metadata.getBody();
         if (body.emptyContent()){
             return null;
         }
 
-        MediaType mediaTypeJson = MediaType.parse(body.getContentType());
+        MediaType mediaTypeJson = MediaType.parse(metadata.getHeaders().get(HEADER_CONTENT_TYPE));
         RequestBody requestBody = null;
         if (body instanceof HttpBodyJSON){
             requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());

@@ -8,10 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +40,7 @@ public class HttpMetadata {
     /**
      *  Request Headers
      */
-    private Map<String,String> headers = new HashMap<>();
+    private Map<String,String> headers = new LinkedHashMap<>();
 
     /**
      *  Request Cookies
@@ -126,9 +123,9 @@ public class HttpMetadata {
                 .append("\t\t").append(httpUrl.toUrl()).append("\n");
 
         sb.append("Request Header:\n");
-        if (body != null){
+  /*      if (body != null){
             sb.append("\t\tContent-Type:\t\t").append(body.getContentType()).append("\n");
-        }
+        }*/
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             sb.append("\t\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\n");
         }

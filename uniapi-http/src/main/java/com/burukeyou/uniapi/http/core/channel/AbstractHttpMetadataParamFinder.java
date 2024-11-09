@@ -68,6 +68,12 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         MethodArgList argList = new MethodArgList(method, args);
         fillHttpMetadata(httpMetadata,argList);
         parseCombineParam(httpMetadata, argList);
+        if (httpMetadata.getBody() != null){
+            httpMetadata.putHeader(HEADER_CONTENT_TYPE,httpMetadata.getBody().getContentType());
+        }
+        if (StringUtils.isNotBlank(httpInterface.contentType())){
+            httpMetadata.putHeader(HEADER_CONTENT_TYPE,httpInterface.contentType());
+        }
         return httpMetadata;
     }
 

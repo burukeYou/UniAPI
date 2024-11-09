@@ -11,6 +11,7 @@ import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import org.springframework.http.MediaType;
 
 import java.io.File;
 import java.util.List;
@@ -37,7 +38,7 @@ public interface UserServiceApi {
     @GetHttpInterface("/user-web/add5/{userId}")
     BaseRsp<String> add5(@PathPar("userId") String name);
 
-    @PutHttpInterface("/user-web/add6")
+    @PutHttpInterface(path = "/user-web/add6",contentType = MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8")
     HttpResponse<BaseRsp<Add4DTO>> add6(@ComposePar Add6DTO req);
 
     // 支持： InputStream、File、MultipartFile等类型
