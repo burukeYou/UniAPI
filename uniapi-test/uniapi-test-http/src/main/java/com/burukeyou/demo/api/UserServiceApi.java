@@ -94,4 +94,10 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/update3")
     BaseRsp<String> update3(@QueryPar("ids") List<Integer> params);
+
+    @GetHttpInterface("/user-web/del")
+    String del01(@QueryPar("name") String name);
+
+    @GetHttpInterface("/user-web/del2")
+    String del02();
 }

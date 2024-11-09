@@ -188,6 +188,18 @@ public class HttpApiTest {
         String add = simpleServiceApi.add2("1");
         System.out.println();
     }
+
+    @Test
+    public void testdel01(){
+        String sb = userApi.del01("sb");
+        System.out.println();
+    }
+
+    @Test
+    public void testdel02(){
+        String sb = userApi.del02();
+        System.out.println();
+    }
 }
 
 

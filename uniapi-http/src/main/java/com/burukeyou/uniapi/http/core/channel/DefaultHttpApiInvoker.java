@@ -9,7 +9,9 @@ import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
-import com.burukeyou.uniapi.http.core.response.*;
+import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
+import com.burukeyou.uniapi.http.core.response.HttpTextResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
@@ -125,10 +127,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,param);
 
         //  http response body string processor
-        if (response instanceof HttpJsonResponse){
-            HttpJsonResponse<?> jsonResponse = ((HttpJsonResponse<?>)response);
-            String newJsonRsp = requestProcessor.postAfterHttpResponseBodyString(jsonResponse.getTextValue(), response, httpMetadata,param);
-            jsonResponse.setTextValue(newJsonRsp);
+        if (response instanceof HttpTextResponse){
+            HttpTextResponse<?> textResponse = ((HttpTextResponse<?>)response);
+            String newText = requestProcessor.postAfterHttpResponseBodyString(textResponse.getTextValue(), response, httpMetadata,param);
+            textResponse.setTextValue(newText);
         }
 
         // http response result processor
@@ -140,6 +142,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,param);
     }
 
+    protected String getResponseContentType(Response response){
+        return response.header(HEADER_CONTENT_TYPE);
+    }
 
     private HttpMetadata createHttpMetadata(MethodInvocation methodInvocation) {
         return find(methodInvocation);
@@ -189,7 +194,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             AbstractHttpResponse<?> httpResponse = null;
             httpResponse = (AbstractHttpResponse<?>)responseChain.convert(response, methodInvocation);
             if (httpResponse == null){
-                throw new UniHttpResponseException("Unable to find a suitable converter to deserialize for response content-type " +  response.header(HEADER_CONTENT_TYPE));
+                throw new UniHttpResponseException("Unable to find a suitable converter to deserialize for response content-type " +  getResponseContentType(response));
             }
 
             httpResponse.setMethod(methodInvocation.getMethod());

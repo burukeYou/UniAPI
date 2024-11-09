@@ -116,6 +116,7 @@ public class UserController {
         log.info("下载完成");
     }
 
+
     @PostMapping("/update")
     @ResponseBody
     public BaseRsp<String> update(@RequestParam("name") String name,
@@ -160,5 +161,21 @@ public class UserController {
     public BaseRsp<String> update3(@RequestParam("ids") int[] arr){
         log.info("收到请求1- arr:{} ",arr);
         return BaseRsp.ok(  "-1");
+    }
+
+    @GetMapping(path = "/del",produces = "text/plain")
+    @ResponseBody
+    public String del01(@RequestParam("name") String name){
+        log.info("收到请求del01- name:{}",name);
+        return "牛哔哔哔哔哔哔del01";
+    }
+
+    @GetMapping(path = "/del2",produces = "application/xml")
+    @ResponseBody
+    public String del02(){
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<root>\n" +
+                "  <element>Some data</element>\n" +
+                "</root>";
     }
 }

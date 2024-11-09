@@ -13,7 +13,7 @@ public class HttpResponseBodyConverterChain {
     private static volatile HttpResponseBodyConverter chain;
 
     private static final List<Class<? extends HttpResponseBodyConverter>> orderClassList = Arrays.asList(
-            HttpJsonResponseConverter.class,
+            HttpTextResponseConverter.class,
             HttpInputStreamResponseConverter.class,
             HttpFileResponseConverter.class,
             HttpBinaryResponseConverter.class

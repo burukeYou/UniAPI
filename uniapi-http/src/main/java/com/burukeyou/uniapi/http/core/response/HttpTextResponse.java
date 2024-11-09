@@ -14,14 +14,14 @@ import java.lang.reflect.Type;
  */
 @Getter
 @Setter
-public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
+public class HttpTextResponse<T> extends AbstractHttpResponse<T> {
 
     /**
      *  Http Response body text value
      */
     private  String textValue;
 
-    public HttpJsonResponse(String textValue, Method method) {
+    public HttpTextResponse(String textValue, Method method) {
         this.textValue = textValue;
         this.method = method;
         updateBodyResult();
@@ -42,6 +42,7 @@ public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
         if (resultType.equals(String.class)){
             this.bodyResult = (T)this.textValue;
         }else {
+            // todo 根据实际文本内容格式 json、xml 去反序列化
             this.bodyResult = JSON.parseObject(this.textValue,getBodyResultType());
         }
     }

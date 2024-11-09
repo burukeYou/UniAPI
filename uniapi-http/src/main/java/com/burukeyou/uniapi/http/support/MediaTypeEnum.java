@@ -70,7 +70,8 @@ public enum MediaTypeEnum {
         if (mediaType.startsWith("text")){
             return true;
         }
-        return mediaType.contains(APPLICATION_JSON.getType());
+        // todo xml
+        return mediaType.contains(APPLICATION_JSON.getType()) || mediaType.contains(APPLICATION_XML.getType());
     }
 
 }
