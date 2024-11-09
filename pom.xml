@@ -51,7 +51,7 @@
 
     <revision>0.0.9</revision>
 
-    <unicore.version>0.0.8</unicore.version>
+    <unicore.version>${revision}</unicore.version>
     <unihttp.version>${revision}</unihttp.version>
   </properties>
 
