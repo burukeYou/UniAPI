@@ -7,12 +7,30 @@ import java.util.Arrays;
 public enum MediaTypeEnum {
 
     APPLICATION_JSON("application/json"),
+    APPLICATION_XML("application/xml"),
+    APPLICATION_PDF("application/pdf"),
+
+    TEXT_PLAIN("text/plain"),
+    TEXT_HTML("text/html"),
+    TEXT_XML("text/xml"),
+
     APPLICATION_OCTET_STREAM("application/octet-stream"),
+
+
     APPLICATION_FORM_URLENCODED("application/x-www-form-urlencoded"),
     MULTIPART_FORM_DATA("multipart/form-data"),
 
     ;
     private final String type;
+    private static final String[] filePrefixArr = {"image","audio","video"};
+
+    private static final String[] FILE_MEDIA_TYPE = {
+            APPLICATION_OCTET_STREAM.getType(),
+            "application/x-download",
+            "application/pdf",
+            "application/zip",
+            "application/x-rar-compressed",
+    };
 
     MediaTypeEnum(String mediaType) {
         this.type = mediaType;
@@ -33,20 +51,26 @@ public enum MediaTypeEnum {
         return mediaType.contains(this.type);
     }
 
-
-    public static boolean isFileDownLoadType(String mediaType){
+    public static boolean isFileType(String contentType){
+        final String mediaType = contentType.trim();
         if(StringUtils.isBlank(mediaType)){
             return false;
         }
-        String[] arr = {
-                APPLICATION_OCTET_STREAM.getType(),
-                "application/x-download",
-                "application/pdf",
-                "application/zip",
-                "application/x-rar-compressed",
-                "image/jpeg",
-                "image/png"
-        };
-        return Arrays.stream(arr).anyMatch(mediaType::contains);
+        if (Arrays.stream(filePrefixArr).anyMatch(mediaType::startsWith)){
+            return true;
+        }
+        return Arrays.stream(FILE_MEDIA_TYPE).anyMatch(mediaType::contains);
     }
+
+    public static boolean isTextType(String contentType){
+        final String mediaType = contentType.trim();
+        if(StringUtils.isBlank(mediaType)){
+            return false;
+        }
+        if (mediaType.startsWith("text")){
+            return true;
+        }
+        return mediaType.contains(APPLICATION_JSON.getType());
+    }
+
 }

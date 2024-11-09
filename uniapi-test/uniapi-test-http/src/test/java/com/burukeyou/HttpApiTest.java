@@ -6,6 +6,8 @@ import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.HttpInputStreamResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
 import org.junit.Test;
@@ -17,6 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -124,12 +127,22 @@ public class HttpApiTest {
     @Test
     public void test10(){
         HttpBinaryResponse fileResponse = userApi.add10();
+        byte[] bytes = userApi.add101();
         System.out.println();
     }
 
     @Test
     public void test11(){
         File file = userApi.add11();
+        HttpFileResponse httpFileResponse = userApi.add111();
+        System.out.println();
+    }
+
+
+    @Test
+    public void test112(){
+        HttpInputStreamResponse response = userApi.add113();
+        InputStream inputStream = userApi.add112();
         System.out.println();
     }
 

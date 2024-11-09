@@ -10,10 +10,13 @@ import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.HttpInputStreamResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import org.springframework.http.MediaType;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 @UserHttpApi
@@ -55,8 +58,22 @@ public interface UserServiceApi {
     HttpBinaryResponse add10();
 
     @PostHttpInterface("/user-web/add10")
+    byte[] add101();
+
+    @PostHttpInterface("/user-web/add10")
     @ResponseFile(saveDir = "/Users/burukeyou/dev/tmp/tmp7/{YYYYMMDD}")
     File add11();
+
+    @PostHttpInterface("/user-web/add10")
+    @ResponseFile(saveDir = "/Users/burukeyou/dev/tmp/tmp7/{YYYYMMDD}")
+    HttpFileResponse add111();
+
+
+    @PostHttpInterface("/user-web/add10")
+    InputStream add112();
+
+    @PostHttpInterface("/user-web/add10")
+    HttpInputStreamResponse add113();
 
     // 保存路径savePath可以是具体路径，也可以是具体目录，如果是具体目录则默认文件名是下载的文件名
     @PostHttpInterface("/user-web/add10")

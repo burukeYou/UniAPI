@@ -2,7 +2,7 @@ package com.burukeyou.uniapi.http.core.conveter.request;
 
 import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
-import com.burukeyou.uniapi.http.core.exception.HttpRequestParamException;
+import com.burukeyou.uniapi.http.core.exception.UniHttpRequestParamException;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.support.arg.Param;
@@ -50,10 +50,10 @@ public class BodyBinaryHttpBodyConverter extends AbstractHttpRequestBodyConverte
             } else if (argValue instanceof InputStreamSource){
                 inputStream = ((InputStreamSource) argValue).getInputStream();
             }else {
-                throw new HttpRequestParamException("@BodyBinaryPar annotation only supports use on InputStream、File、InputStreamSource");
+                throw new UniHttpRequestParamException("@BodyBinaryPar annotation only supports use on InputStream、File、InputStreamSource");
             }
         } catch (IOException e) {
-            throw new HttpRequestParamException(e);
+            throw new UniHttpRequestParamException(e);
         }
 
         return inputStream;
