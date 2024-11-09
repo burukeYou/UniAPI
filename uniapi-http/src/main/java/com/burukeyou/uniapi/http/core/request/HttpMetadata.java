@@ -145,8 +145,7 @@ public class HttpMetadata {
                 sb.append("\t\t").append(body.toStringBody()).append("\n");
             }
         }
-        sb.append("------------------------------------------------\n");
-
+        //sb.append("------------------------------------------------\n");
         return sb.toString();
     }
 }
