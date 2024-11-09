@@ -208,6 +208,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                     httpResponse =  doWithHttpBinaryResponse(response);
                 }
             }else {
+                //todo 支持 xml报文
                 httpResponse = new HttpJsonResponse<>(response.body().string(),methodInvocation.getMethod());
             }
             httpResponse.setMethod(methodInvocation.getMethod());
@@ -216,7 +217,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             httpResponse.setHttpMetadata(httpMetadata);
             return httpResponse;
         } catch (IOException e){
-            throw new SendHttpRequestException("Http请求网络异常", e);
+            throw new SendHttpRequestException("Http请求网络IO异常", e);
         } catch (SendHttpRequestException e){
             throw e;
         }catch (Exception e) {

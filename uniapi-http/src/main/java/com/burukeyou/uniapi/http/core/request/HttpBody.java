@@ -34,7 +34,7 @@ public abstract class HttpBody {
     }
 
     /**
-     *  toStirng()
+     *  convert body to string
      */
     public abstract String toStringBody();
 

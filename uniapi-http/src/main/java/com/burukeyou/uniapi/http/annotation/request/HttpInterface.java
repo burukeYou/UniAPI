@@ -43,6 +43,11 @@ public @interface HttpInterface {
     String[] headers() default {};
 
     /**
+     *  request body contentType
+     */
+    String contentType() default "";
+
+    /**
      * Query parameters
      */
     String[] params() default {};

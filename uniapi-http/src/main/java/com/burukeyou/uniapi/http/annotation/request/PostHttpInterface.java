@@ -41,6 +41,12 @@ public @interface PostHttpInterface {
     String[] headers() default {};
 
     /**
+     *  request body contentType
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    String contentType() default "";
+
+    /**
      * Query parameters
      */
     @AliasFor(annotation = HttpInterface.class)

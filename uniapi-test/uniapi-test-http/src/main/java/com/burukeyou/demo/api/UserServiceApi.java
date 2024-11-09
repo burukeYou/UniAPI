@@ -44,11 +44,11 @@ public interface UserServiceApi {
     @PostHttpInterface("/user-web/add7")
     BaseRsp<String> add7(@BodyBinaryPar File file);
 
-    @PostHttpInterface("/user-web/add8")
+    @PostHttpInterface(path = "/user-web/add8")
     BaseRsp<String> add8(@BodyFormPar Add4DTO file);
 
     @PostHttpInterface("/user-web/add9")
-    BaseRsp<String> add9(@BodyMultiPartPar Add9DTO req);
+    BaseRsp<String> add9(@BodyMultiPartPar("reqNo") String value,@BodyMultiPartPar Add9DTO req);
 
     @PostHttpInterface("/user-web/add10")
     HttpBinaryResponse add10();

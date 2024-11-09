@@ -1,6 +1,5 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import com.alibaba.fastjson.JSON;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +17,7 @@ public class HttpBodyFormData extends HttpBody {
     private Map<String,String> formData;
 
     public HttpBodyFormData(Map<String,String> formData) {
-        super(MediaTypeEnum.APPLICATION_FORM_URLENCODED.getChartSetType());
+        super(MediaTypeEnum.APPLICATION_FORM_URLENCODED.getType());
         this.formData = formData;
     }
 

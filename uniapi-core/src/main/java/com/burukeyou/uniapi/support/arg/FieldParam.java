@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
 /**
  * @author caizhihao
  */
-public class FiledParam extends AbstractParam {
+public class FieldParam extends AbstractParam {
 
     protected Object target;
 
@@ -15,7 +15,7 @@ public class FiledParam extends AbstractParam {
 
     private Object fieldValue;
 
-    public FiledParam(Object target, Field field) {
+    public FieldParam(Object target, Field field) {
         this.target = target;
         this.field = field;
         this.field.setAccessible(true);

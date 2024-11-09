@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.core.response;
 
 import com.burukeyou.uniapi.http.core.request.HttpBody;
+import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.support.Cookie;
@@ -17,7 +18,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.HttpCookie;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author  caizhihao
@@ -141,7 +145,11 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
         sb.append("Request Body:\n");
         if (body != null){
-            sb.append("\t\t").append(body.toStringBody()).append("\n");
+            if (body instanceof HttpBodyMultipart){
+                sb.append(body.toStringBody()).append("\n");
+            }else {
+                sb.append("\t\t").append(body.toStringBody()).append("\n");
+            }
         }
 
         sb.append("Response Header:\n");

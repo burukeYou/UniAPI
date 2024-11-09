@@ -139,7 +139,11 @@ public class HttpMetadata {
 
         sb.append("Request Body:\n");
         if (body != null){
-            sb.append("\t\t").append(body.toStringBody()).append("\n");
+            if (body instanceof HttpBodyMultipart){
+                sb.append(body.toStringBody()).append("\n");
+            }else {
+                sb.append("\t\t").append(body.toStringBody()).append("\n");
+            }
         }
         sb.append("------------------------------------------------\n");
 

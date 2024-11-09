@@ -14,12 +14,12 @@ import java.util.List;
 public class ClassFieldArgList extends ArgList {
 
     public ClassFieldArgList(Object targetObj) {
-        for (FiledParam param : new ClassFieldIterable(targetObj)) {
+        for (FieldParam param : new ClassFieldIterable(targetObj)) {
             paramsList.add(param);
         }
     }
 
-    private static class ClassFieldIterable implements Iterable<FiledParam>{
+    private static class ClassFieldIterable implements Iterable<FieldParam>{
 
         private final Object targetObject;
 
@@ -29,12 +29,12 @@ public class ClassFieldArgList extends ArgList {
 
 
         @Override
-        public Iterator<FiledParam> iterator() {
+        public Iterator<FieldParam> iterator() {
             return new ClassFieldArgsListIterator(targetObject);
         }
     }
 
-    private static class ClassFieldArgsListIterator implements Iterator<FiledParam> {
+    private static class ClassFieldArgsListIterator implements Iterator<FieldParam> {
 
         private final List<Field> fieldList = new ArrayList<>();
 
@@ -58,13 +58,13 @@ public class ClassFieldArgList extends ArgList {
         }
 
         @Override
-        public FiledParam next() {
+        public FieldParam next() {
             if (!hasNext()) {
                 throw new IllegalStateException("No more elements");
             }
             Field field = fieldList.get(index);
             index++;
-            return new FiledParam(targetObj,field);
+            return new FieldParam(targetObj,field);
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.burukeyou.uniapi.http.core.exception;
 
-import com.burukeyou.uniapi.exception.BaseUniApiException;
+public class HttpRequestParamException extends BaseUniHttpException {
 
-public class HttpRequestParamException extends BaseUniApiException {
+    private static final long serialVersionUID = -9178705957413908945L;
 
     public HttpRequestParamException() {
     }

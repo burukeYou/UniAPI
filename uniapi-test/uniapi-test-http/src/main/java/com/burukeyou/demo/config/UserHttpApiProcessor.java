@@ -27,6 +27,7 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
 
     @Override
     public HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
+        log.info("请求体: {}",httpMetadata.toHttpProtocol());
         HttpResponse<?> rsp = httpSender.sendHttpRequest(httpMetadata);
         log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;

@@ -2,10 +2,12 @@ package com.burukeyou.uniapi.http.core.channel;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-import com.burukeyou.uniapi.exception.BaseUniApiException;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
-import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.annotation.param.*;
+import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
+import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
+import com.burukeyou.uniapi.http.core.param.HttpRequestBodyConverter;
+import com.burukeyou.uniapi.http.core.param.HttpRequestBodyConverterChain;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.support.arg.*;
@@ -14,14 +16,10 @@ import lombok.Data;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +36,9 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
 
     protected  MethodInvocation methodInvocation;
 
+    private HttpRequestBodyConverter converterChain;
+
+    protected static final String HEADER_CONTENT_TYPE = "Content-Type";
 
     public AbstractHttpMetadataParamFinder(HttpApi api,
                                            HttpInterface httpInterface,
@@ -45,6 +46,7 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         this.api = api;
         this.httpInterface = httpInterface;
         this.environment = environment;
+        this.converterChain = new HttpRequestBodyConverterChain(this).getChain();
     }
 
     @Override
@@ -174,111 +176,57 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
     public HttpBody findHttpBody(ArgList argList){
+        List<HttpBody> bodyList = new ArrayList<>();
         for (Param methodArg : argList) {
             if (methodArg.isValueNotExist()){
                 continue;
             }
-
-            Object argValue = methodArg.getValue();
-            BodyJsonPar annotation = methodArg.getAnnotation(BodyJsonPar.class);
-            if (annotation != null){
-                return new HttpBodyJSON(getArgFillValue(argValue).toString());
-            }
-
-            BodyBinaryPar binaryParam = methodArg.getAnnotation(BodyBinaryPar.class);
-            if (binaryParam != null){
-                return getHttpBodyBinaryForValue(argValue);
-            }
-
-            BodyFormPar stringFormParam = methodArg.getAnnotation(BodyFormPar.class);
-            if (stringFormParam != null){
-                if (isObjOrMap(argValue.getClass())){
-                    return new HttpBodyFormData(objToMap(argValue));
-                }else if (!methodArg.isCollection()){
-                    if (StringUtils.isBlank(stringFormParam.value())){
-                        throw new BaseUniApiException("user @BodyFormPar for single value please specify the parameter name ");
-                    }
-
-                    // 单个
-                    return new HttpBodyFormData(Collections.singletonMap(stringFormParam.value(),getArgFillValue(argValue).toString()));
-                }
-            }
-
-            BodyMultiPartPar multipartParam = methodArg.getAnnotation(BodyMultiPartPar.class);
-            if (multipartParam != null) {
-                boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
-                if (nameExistFlag && File.class.isAssignableFrom(methodArg.getType())){
-                    MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),null,(File)argValue,true);
-                    return new HttpBodyMultipart(Collections.singletonList(dataItem));
-                } else if (isObjOrMap(methodArg.getType())){
-                    return getHttpBodyMultipartFormData(argValue, methodArg.getType());
-                }else if (nameExistFlag){
-                    // 单个
-                    MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),argValue.toString(),null,false);
-                    return new HttpBodyMultipart(Collections.singletonList(dataItem));
-                }
+            HttpBody httpBody = converterChain.convert(methodArg);
+            if (httpBody != null){
+                bodyList.add(httpBody);
             }
         }
-        return null;
+
+        if (CollectionUtils.isEmpty(bodyList)){
+            return null;
+        }
+        if (bodyList.size() == 1){
+            return bodyList.get(0);
+        }
+
+        // HttpBodyBinary、HttpBodyFormData、HttpBodyJSON、HttpBodyMultipart
+        Map<? extends Class<? extends HttpBody>, List<HttpBody>> map = bodyList.stream().collect(Collectors.groupingBy(HttpBody::getClass));
+        if (map.size() > 1){
+            String msg = bodyList.stream().map(HttpBody::getContentType).collect(Collectors.joining(","));
+            throw new BaseUniHttpException("only one request body can be set, but it was found that there are " + msg);
+        }
+
+        // combine body
+        for (Map.Entry<? extends Class<? extends HttpBody>, List<HttpBody>> entry : map.entrySet()) {
+            Class<? extends HttpBody> bodyClass = entry.getKey();
+            List<HttpBody> list = entry.getValue();
+
+            if (bodyClass == HttpBodyBinary.class || bodyClass == HttpBodyJSON.class){
+                throw new BaseUniHttpException("Cannot specify multiple @BodyBinaryPar or @BodyJsonPar");
+            }
+
+            if (bodyClass.equals(HttpBodyFormData.class)){
+                Map<String,String> formData = new HashMap<>();
+                list.forEach(e -> formData.putAll(((HttpBodyFormData)e).getFormData()));
+                return new HttpBodyFormData(formData);
+            }
+
+            if (bodyClass.equals(HttpBodyMultipart.class)){
+                List<MultipartDataItem> allItemList = list.stream().flatMap(e -> ((HttpBodyMultipart) e).getMultiPartData().stream()).collect(Collectors.toList());
+                return new HttpBodyMultipart(allItemList);
+            }
+        }
+
+        throw new BaseUniHttpException("http body build exception can not combine body");
     }
 
 
-    private HttpBodyMultipart getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
-        List<MultipartDataItem> dataItems = new ArrayList<>();
-
-        ArgList argList = autoGetArgList(argValue);
-        for (Param param : argList) {
-            Object fieldValue = param.getValue();
-            com.alibaba.fastjson.annotation.JSONField jsonField = param.getAnnotation(com.alibaba.fastjson.annotation.JSONField.class);
-            com.alibaba.fastjson2.annotation.JSONField jsonField2 = param.getAnnotation(com.alibaba.fastjson2.annotation.JSONField.class);
-            String fieldName = param.getName();
-            if (jsonField != null){
-                fieldName = jsonField.name();
-            }
-            if (jsonField2 != null){
-                fieldName = jsonField2.name();
-            }
-
-            boolean isFile = isFileField(param);
-            if (!isFile && isObjOrMap(param.getType())){
-                // 非File的其他对象不处理
-                continue;
-            }
-
-            if (!isFile){
-                String fieldValueStr = (fieldValue == null ? null : fieldValue.toString());
-                dataItems.add(new MultipartDataItem(fieldName,fieldValueStr,null,false));
-                continue;
-            }
-
-            // 文件
-            if (!param.getType().isArray() && !Collection.class.isAssignableFrom(param.getType())){
-                File onefile = fieldValue == null ? null : (File)fieldValue;
-                dataItems.add(new MultipartDataItem(fieldName,null,onefile,true));
-                continue;
-            }
-
-            if (fieldValue == null){
-                dataItems.add(new MultipartDataItem(fieldName,null,null,true));
-                continue;
-            }
-
-            // 多文件拆成单个
-            File[] fileArr = null;
-            if (Collection.class.isAssignableFrom(param.getType())){
-                fileArr = ((Collection<File>)fieldValue).toArray(new File[0]);
-            }else {
-                fileArr = (File[])fieldValue;
-            }
-
-            for (File file : fileArr) {
-                dataItems.add(new MultipartDataItem(fieldName,null,file,true));
-            }
-        }
-        return new HttpBodyMultipart(dataItems);
-    }
-
-    private  boolean isFileField(Param param){
+    public   boolean isFileField(Param param){
         Class<?> clz = param.getType();
         if (File.class.isAssignableFrom(clz)){
             return true;
@@ -287,32 +235,10 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
 
-    private Map<String, String> objToMap(Object argValue) {
+    public Map<String, String> objToMap(Object argValue) {
         return JSON.parseObject(JSON.toJSONString(argValue), new TypeReference<Map<String, String>>() {});
     }
 
-
-    private HttpBodyBinary getHttpBodyBinaryForValue(Object argValue)  {
-        InputStream inputStream = getInputStream(argValue);
-        return new HttpBodyBinary(inputStream);
-    }
-
-
-    private InputStream getInputStream(Object argValue) {
-        InputStream inputStream = null;
-        try {
-            if (argValue instanceof InputStream){
-                inputStream = (InputStream) argValue;
-            }else if (argValue instanceof File){
-                inputStream = Files.newInputStream(((File) argValue).toPath());
-            } else if (argValue instanceof InputStreamSource){
-                inputStream = ((InputStreamSource) argValue).getInputStream();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return inputStream;
-    }
 
     public Map<String, String> findHeaders(ArgList argList) {
         String[] headers = httpInterface.headers();
@@ -348,6 +274,10 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
                 fixHeaders.putAll(getHeaderParamForObj(value));
             }
 
+        }
+
+        if (StringUtils.isNotBlank(httpInterface.contentType())){
+            fixHeaders.put(HEADER_CONTENT_TYPE,httpInterface.contentType());
         }
         return fixHeaders;
     }

@@ -82,7 +82,8 @@ public class UserController {
     }
 
     // Content-Type:  application/octet-stream
-    @PostMapping("/add7")
+    //  consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE
+    @PostMapping(value = "/add7")
     public BaseRsp<String> add7(@RequestBody byte[] data) throws IOException {
         log.info("收到请求7- dataSize:{}",data.length);
         return BaseRsp.ok("1");
@@ -101,7 +102,8 @@ public class UserController {
     @ResponseBody
     public BaseRsp<String> add9(@RequestPart("userImg") MultipartFile file,
                                 @RequestPart("logoImg") MultipartFile[] file2,
-                                Add4DTO formData) throws IOException {
+                                Add4DTO formData,
+                                @RequestParam("reqNo") String reqNo) throws IOException {
         log.info("收到请求9- data:{} size1:{} size2:{}",JSON.toJSONString(formData),file.getBytes().length,file2.length);
         return BaseRsp.ok("1");
     }

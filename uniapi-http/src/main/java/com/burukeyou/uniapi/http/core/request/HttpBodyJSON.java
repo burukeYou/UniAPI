@@ -15,7 +15,7 @@ public class HttpBodyJSON extends HttpBody {
     private String bodyJson;
 
     public HttpBodyJSON(String bodyJson) {
-        super(MediaTypeEnum.APPLICATION_JSON.getChartSetType());
+        super(MediaTypeEnum.APPLICATION_JSON.getType());
         this.bodyJson = bodyJson;
     }
 

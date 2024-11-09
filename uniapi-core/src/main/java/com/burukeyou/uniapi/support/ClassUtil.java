@@ -15,6 +15,16 @@ public class ClassUtil {
         throw new IllegalArgumentException("can not find super class argument");
     }
 
+
+    public static Class<?> getSuperClassParamFirstClass(Class<?> clz){
+        Type superclass = clz.getGenericSuperclass();
+        if (superclass instanceof ParameterizedType){
+              Type[] arr = ((ParameterizedType)superclass).getActualTypeArguments();
+              return (Class<?>)arr[0];
+        }
+        throw new IllegalArgumentException("can not find super class argument");
+    }
+
     public static ParameterizedType getSuperInterfacesParameterizedType(Class<?> clazz,Class<?> genericInterfaceClass) {
         Class<?> current = clazz;
         ParameterizedType genericClassParameterizedType = null;

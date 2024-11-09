@@ -85,7 +85,7 @@ public class HttpApiTest {
         req.setId(2L);
         req.setName("jay");
         req.setReq(new Add4DTO(99L,"张三"));
-        req.setCook("userName=哈哈;id=33;sessionId=fklasdf8902342");
+        req.setCook("userName=burukeyou;id=33;sessionId=fklasdf8902342");
 
         HttpResponse<BaseRsp<Add4DTO>> rsp = userApi.add6(req);
         String s = rsp.toHttpProtocol();
@@ -117,7 +117,7 @@ public class HttpApiTest {
         //add9DTO.setLogoImg(Arrays.asList(file2,file3));
         add9DTO.setLogoImg(new File[]{file2,file3});
 
-        BaseRsp<String> rsp = userApi.add9(add9DTO);
+        BaseRsp<String> rsp = userApi.add9("Sb",add9DTO);
         System.out.println(JSON.toJSONString(rsp));
     }
 

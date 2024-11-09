@@ -12,6 +12,9 @@ public class Add4DTO implements Serializable {
     private Long id;
     private String name;
 
+    public Add4DTO() {
+    }
+
     public Add4DTO(Long id, String name) {
         this.id = id;
         this.name = name;
