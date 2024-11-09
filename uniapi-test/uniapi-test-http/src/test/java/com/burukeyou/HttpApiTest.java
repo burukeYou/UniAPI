@@ -147,6 +147,14 @@ public class HttpApiTest {
     }
 
     @Test
+    public void test114(){
+        //HttpResponse<InputStream> httpResponse = userApi.add114();
+        //HttpResponse<byte[]> httpResponse2 = userApi.add115();
+        HttpResponse<File> httpResponse3 = userApi.add116();
+        System.out.println();
+    }
+
+    @Test
     public void test12(){
         String savePath = "/Users/burukeyou/dev/tmp/tmp7/jou";
         String savePath2 = "/Users/burukeyou/dev/tmp/tmp7/jou/用户列表.txt";

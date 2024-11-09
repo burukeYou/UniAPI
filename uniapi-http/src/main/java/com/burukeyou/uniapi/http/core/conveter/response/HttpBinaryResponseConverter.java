@@ -2,6 +2,7 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.aopalliance.intercept.MethodInvocation;
@@ -18,7 +19,10 @@ public class HttpBinaryResponseConverter extends AbstractHttpResponseBodyConvert
             return false;
         }
         Class<?> returnType = methodInvocation.getMethod().getReturnType();
-        return byte[].class.equals(returnType) || HttpBinaryResponse.class.equals(returnType);
+        if(byte[].class.equals(returnType) || HttpBinaryResponse.class.equals(returnType)){
+            return true;
+        }
+        return HttpResponse.class.equals(returnType) && isGenericType(byte[].class,methodInvocation);
     }
     @Override
     protected HttpBinaryResponse doConvert(Response response, MethodInvocation methodInvocation) {

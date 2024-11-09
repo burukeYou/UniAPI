@@ -57,6 +57,8 @@ public interface UserServiceApi {
     @PostHttpInterface("/user-web/add10")
     HttpBinaryResponse add10();
 
+
+
     @PostHttpInterface("/user-web/add10")
     byte[] add101();
 
@@ -74,6 +76,15 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/add10")
     HttpInputStreamResponse add113();
+
+    @PostHttpInterface("/user-web/add10")
+    HttpResponse<InputStream> add114();
+
+    @PostHttpInterface("/user-web/add10")
+    HttpResponse<byte[]> add115();
+
+    @PostHttpInterface("/user-web/add10")
+    HttpResponse<File> add116();
 
     // 保存路径savePath可以是具体路径，也可以是具体目录，如果是具体目录则默认文件名是下载的文件名
     @PostHttpInterface("/user-web/add10")

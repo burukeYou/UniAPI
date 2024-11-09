@@ -3,6 +3,7 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
@@ -32,7 +33,10 @@ public class HttpFileResponseConverter extends AbstractHttpResponseBodyConverter
             return false;
         }
         Class<?> returnType = methodInvocation.getMethod().getReturnType();
-        return File.class.isAssignableFrom(returnType) || HttpFileResponse.class.equals(returnType);
+        if(File.class.isAssignableFrom(returnType) || HttpFileResponse.class.equals(returnType)){
+            return true;
+        }
+        return HttpResponse.class.equals(returnType) && isGenericType(File.class,methodInvocation);
     }
 
     @Override

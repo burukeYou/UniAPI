@@ -14,9 +14,9 @@ public class HttpResponseBodyConverterChain {
 
     private static final List<Class<? extends HttpResponseBodyConverter>> orderClassList = Arrays.asList(
             HttpTextResponseConverter.class,
-            HttpInputStreamResponseConverter.class,
+            HttpBinaryResponseConverter.class,
             HttpFileResponseConverter.class,
-            HttpBinaryResponseConverter.class
+            HttpInputStreamResponseConverter.class
     );
 
     public HttpResponseBodyConverterChain() {

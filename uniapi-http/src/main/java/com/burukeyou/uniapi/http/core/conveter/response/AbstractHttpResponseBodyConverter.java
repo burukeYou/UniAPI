@@ -8,9 +8,12 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -130,6 +133,23 @@ public abstract class AbstractHttpResponseBodyConverter implements HttpResponseB
         String disposition = response.header("Content-Disposition");
         if(StringUtils.isNotBlank(disposition) && disposition.contains("attachment")){
             return true;
+        }
+        return false;
+    }
+
+    protected boolean isGenericType(Class<?> clz,MethodInvocation methodInvocation) {
+        Type genericReturnType = methodInvocation.getMethod().getGenericReturnType();
+        if(genericReturnType instanceof ParameterizedType){
+            Type[] arr = ((ParameterizedType)genericReturnType).getActualTypeArguments();
+            Type type = arr[0];
+            if (type instanceof WildcardTypeImpl){
+                // not support ? param type
+                return false;
+            }
+            Class<?>  parameterTypes = (Class<?>)arr[0];
+            if (clz.isAssignableFrom(parameterTypes)){
+                return true;
+            }
         }
         return false;
     }
