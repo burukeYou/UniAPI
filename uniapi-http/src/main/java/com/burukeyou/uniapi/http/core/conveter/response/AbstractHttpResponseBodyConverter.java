@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import okhttp3.Response;
@@ -26,12 +27,12 @@ import java.util.regex.Pattern;
 /**
  * @author caizhihao
  */
-public abstract class AbstractHttpResponseBodyConverter implements HttpResponseBodyConverter {
+public abstract class AbstractHttpResponseBodyConverter implements HttpResponseConverter {
 
     @Autowired
     private Environment environment;
 
-    protected HttpResponseBodyConverter next;
+    protected HttpResponseConverter next;
 
     private static final Pattern pattern = Pattern.compile("filename\\s*=\\s*\\\"(.*)\\\"");
 
@@ -47,7 +48,7 @@ public abstract class AbstractHttpResponseBodyConverter implements HttpResponseB
     }
 
     @Override
-    public void setNext(HttpResponseBodyConverter nextConverter) {
+    public void setNext(HttpResponseConverter nextConverter) {
         this.next = nextConverter;
     }
 
@@ -152,6 +153,14 @@ public abstract class AbstractHttpResponseBodyConverter implements HttpResponseB
             }
         }
         return false;
+    }
+
+    protected boolean isFileReturnType(Class<?> paramType,MethodInvocation methodInvocation){
+        Class<?> returnType = methodInvocation.getMethod().getReturnType();
+        if(paramType.equals(returnType)){
+            return true;
+        }
+        return (HttpResponse.class.equals(returnType) || HttpFileResponse.class.equals(returnType)) && isGenericType(paramType,methodInvocation);
     }
 
 }

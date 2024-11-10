@@ -10,12 +10,12 @@ import java.util.Map;
 
 public class HttpResponseBodyConverterChain {
 
-    private static volatile HttpResponseBodyConverter chain;
+    private static volatile HttpResponseConverter chain;
 
-    private static final List<Class<? extends HttpResponseBodyConverter>> orderClassList = Arrays.asList(
+    private static final List<Class<? extends HttpResponseConverter>> orderClassList = Arrays.asList(
             HttpTextResponseConverter.class,
             HttpBinaryResponseConverter.class,
-            HttpFileResponseConverter.class,
+            HttpFileDownloadLocalResponseConverter.class,
             HttpInputStreamResponseConverter.class
     );
 
@@ -23,7 +23,7 @@ public class HttpResponseBodyConverterChain {
         if (chain == null){
             synchronized (HttpResponseBodyConverterChain.class){
                 if (chain == null){
-                    List<HttpResponseBodyConverter> converters = SpringBeanContext.listBean(HttpResponseBodyConverter.class);
+                    List<HttpResponseConverter> converters = SpringBeanContext.listBean(HttpResponseConverter.class);
                     sorterConverters(converters);
                     for (int i = 0; i < converters.size() - 1; i++) {
                         converters.get(i).setNext(converters.get(i+1));
@@ -36,8 +36,8 @@ public class HttpResponseBodyConverterChain {
 
     }
 
-    private void sorterConverters(List<HttpResponseBodyConverter> converters) {
-        Map<Class<? extends HttpResponseBodyConverter>,Integer> orderMap = new HashMap<>();
+    private void sorterConverters(List<HttpResponseConverter> converters) {
+        Map<Class<? extends HttpResponseConverter>,Integer> orderMap = new HashMap<>();
         for (int i = 0; i < orderClassList.size(); i++) {
             orderMap.put(orderClassList.get(i),i);
         }
@@ -57,7 +57,7 @@ public class HttpResponseBodyConverterChain {
         });
     }
 
-    public HttpResponseBodyConverter getChain() {
+    public HttpResponseConverter getChain() {
         return chain;
     }
 }

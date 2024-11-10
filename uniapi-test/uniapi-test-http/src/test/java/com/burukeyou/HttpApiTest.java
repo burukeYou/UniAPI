@@ -7,7 +7,6 @@ import com.burukeyou.demo.api.UserServiceApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
-import com.burukeyou.uniapi.http.core.response.HttpInputStreamResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
 import org.junit.Test;
@@ -134,23 +133,26 @@ public class HttpApiTest {
     @Test
     public void test11(){
         File file = userApi.add11();
-        HttpFileResponse httpFileResponse = userApi.add111();
+
+        HttpFileResponse<File> rsp = userApi.add111();
+        File file2 = rsp.getBodyResult();
+        file2.getName();
         System.out.println();
     }
 
 
     @Test
     public void test112(){
-        HttpInputStreamResponse response = userApi.add113();
+        HttpFileResponse<InputStream> fileResponse = userApi.add113();
         InputStream inputStream = userApi.add112();
         System.out.println();
     }
 
     @Test
     public void test114(){
-        //HttpResponse<InputStream> httpResponse = userApi.add114();
-        //HttpResponse<byte[]> httpResponse2 = userApi.add115();
-        HttpResponse<File> httpResponse3 = userApi.add116();
+        HttpResponse<InputStream> httpResponse = userApi.add114();
+        HttpResponse<byte[]> httpResponse2 = userApi.add115();
+        //HttpResponse<File> httpResponse3 = userApi.add116();
         System.out.println();
     }
 

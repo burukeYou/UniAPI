@@ -1,7 +1,6 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.core.response.HttpInputStreamResponse;
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Response;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.stereotype.Component;
@@ -16,13 +15,8 @@ public class HttpInputStreamResponseConverter extends AbstractHttpResponseBodyCo
         if (!isFileDownloadResponse(response)){
             return false;
         }
-        Class<?> returnType = methodInvocation.getMethod().getReturnType();
-        if (InputStream.class.isAssignableFrom(returnType) || HttpInputStreamResponse.class.equals(returnType)){
-            return true;
-        }
-        return HttpResponse.class.equals(returnType) && isGenericType(InputStream.class,methodInvocation);
+        return isFileReturnType(InputStream.class,methodInvocation);
     }
-
 
 
     @Override

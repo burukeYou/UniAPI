@@ -9,10 +9,7 @@ import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
-import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
-import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
-import com.burukeyou.uniapi.http.core.response.HttpInputStreamResponse;
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.*;
 import org.springframework.http.MediaType;
 
 import java.io.File;
@@ -68,14 +65,14 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/add10")
     @ResponseFile(saveDir = "/Users/burukeyou/dev/tmp/tmp7/{YYYYMMDD}")
-    HttpFileResponse add111();
+    HttpFileResponse<File> add111();
 
 
     @PostHttpInterface("/user-web/add10")
     InputStream add112();
 
     @PostHttpInterface("/user-web/add10")
-    HttpInputStreamResponse add113();
+    HttpFileResponse<InputStream> add113();
 
     @PostHttpInterface("/user-web/add10")
     HttpResponse<InputStream> add114();

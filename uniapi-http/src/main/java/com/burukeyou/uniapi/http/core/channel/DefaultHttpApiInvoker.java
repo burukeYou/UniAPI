@@ -3,8 +3,9 @@ package com.burukeyou.uniapi.http.core.channel;
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverter;
+import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverterChain;
+import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
@@ -42,12 +43,15 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     protected HttpApiAnnotationMeta annotationMeta;
 
-
-    private OkHttpClient client;
+    private final OkHttpClient client;
 
     private static final EmptyHttpApiProcessor emptyHttpProcessor = new EmptyHttpApiProcessor();
 
-    private final HttpResponseBodyConverter responseChain;
+    private final HttpResponseConverter responseChain;
+
+
+    private final Class<? extends HttpApiProcessor<?>> apiProcessor;
+    private  final HttpApiProcessor<Annotation> requestProcessor;
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -59,9 +63,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         this.methodInvocation = methodInvocation;
         this.client = httpClient;
         this.responseChain = new HttpResponseBodyConverterChain().getChain();
+
+        this.apiProcessor = getHttpApiProcessorClass(api,httpInterface);
+        this.requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
     }
-
-
 
 
     public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessorClass(HttpApi api, HttpInterface httpInterface){
@@ -82,18 +87,30 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         // 优先先从spring context获取,
         HttpApiProcessor<Annotation> processor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
         if (processor != null){
-            //throw new IllegalStateException("can not find " + apiProcessor.getName() + " from spring context");
             return processor;
         }
 
         try {
-            // 如果不存在则直接手动new一个
+            // 如果不存在则直接手动new一个 todo cache
             return (HttpApiProcessor<Annotation>) apiProcessor.newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new BaseUniHttpException(e);
         }
+    }
+
+    protected Type getBodyResultType() {
+        Type bodyResultType = null;
+        Method method = methodInvocation.getMethod();
+        if (HttpResponse.class.isAssignableFrom(method.getReturnType())){
+            Type genericReturnType = method.getGenericReturnType();
+            if (genericReturnType instanceof ParameterizedType){
+                Type actualTypeArgument = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                bodyResultType = actualTypeArgument;
+            }
+        }else {
+            bodyResultType = method.getGenericReturnType();
+        }
+        return bodyResultType;
     }
 
     public Object invoke() {
@@ -104,10 +121,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         param.setProxyInterface(httpInterface);
         param.setProxyClass(targetClass);
         param.setMethodInvocation(methodInvocation);
-
-        Class<? extends HttpApiProcessor<?>> apiProcessor = getHttpApiProcessorClass(api,httpInterface);
-
-        HttpApiProcessor<Annotation> requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
 
         // check
         ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessor, HttpApiProcessor.class);

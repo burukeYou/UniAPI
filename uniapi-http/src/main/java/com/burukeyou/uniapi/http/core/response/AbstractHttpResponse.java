@@ -38,6 +38,7 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     protected Type bodyResultType;
 
+    @Override
     public T getBodyResult() {
         return bodyResult;
     }

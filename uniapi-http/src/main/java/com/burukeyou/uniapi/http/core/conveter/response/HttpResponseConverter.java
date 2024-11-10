@@ -5,9 +5,11 @@ import okhttp3.Response;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
+ * Convert origin Response to Uni-HttpResponse
+ *
  * @author  caizhihao
  */
-public interface  HttpResponseBodyConverter {
+public interface HttpResponseConverter {
 
     /**
      * convert origin response
@@ -17,5 +19,5 @@ public interface  HttpResponseBodyConverter {
     /**
      * set next Converter
      */
-    void setNext(HttpResponseBodyConverter nextConverter);
+    void setNext(HttpResponseConverter nextConverter);
 }

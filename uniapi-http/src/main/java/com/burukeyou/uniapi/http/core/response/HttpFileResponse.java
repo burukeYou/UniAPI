@@ -1,22 +1,14 @@
 package com.burukeyou.uniapi.http.core.response;
 
+/**
+ *
+ * @param <T>  only supports types such as byte[]、File、InputStream
+ */
+public interface HttpFileResponse<T> extends HttpResponse<T> {
 
-import lombok.Data;
+    /**
+     * get download file name from response header Content-Disposition
+     */
+    String getFileName();
 
-import java.io.File;
-
-@Data
-public class HttpFileResponse extends AbstractHttpResponse<File> {
-
-    private File file;
-
-    public HttpFileResponse(File file) {
-        this.file = file;
-        this.bodyResult = file;
-    }
-
-    @Override
-    public String bodyResultString() {
-        return file == null ? "" : file.getAbsolutePath();
-    }
 }

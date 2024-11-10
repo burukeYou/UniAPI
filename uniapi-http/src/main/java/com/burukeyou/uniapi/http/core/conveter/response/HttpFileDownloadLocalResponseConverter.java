@@ -2,8 +2,7 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
-import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.HttpFileDownloadLocalResponse;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
@@ -25,26 +24,22 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
-public class HttpFileResponseConverter extends AbstractHttpResponseBodyConverter {
+public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponseBodyConverter {
 
     @Override
     protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
         if (!isFileDownloadResponse(response)){
             return false;
         }
-        Class<?> returnType = methodInvocation.getMethod().getReturnType();
-        if(File.class.isAssignableFrom(returnType) || HttpFileResponse.class.equals(returnType)){
-            return true;
-        }
-        return HttpResponse.class.equals(returnType) && isGenericType(File.class,methodInvocation);
+        return isFileReturnType(File.class,methodInvocation);
     }
 
     @Override
-    protected HttpFileResponse doConvert(Response response, MethodInvocation methodInvocation) {
+    protected HttpFileDownloadLocalResponse doConvert(Response response, MethodInvocation methodInvocation) {
         return doWithHttpFileResponse(response,methodInvocation);
     }
 
-    private HttpFileResponse doWithHttpFileResponse(Response response, MethodInvocation methodInvocation) {
+    private HttpFileDownloadLocalResponse doWithHttpFileResponse(Response response, MethodInvocation methodInvocation) {
         String savePath = getSavePath(response,methodInvocation);
         ResponseBody responseBody = response.body();
         InputStream inputStream = responseBody.byteStream();
@@ -53,7 +48,7 @@ public class HttpFileResponseConverter extends AbstractHttpResponseBodyConverter
             File file = new File(savePath);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             FileCopyUtils.copy(inputStream,fileOutputStream);
-            return new HttpFileResponse(file);
+            return new HttpFileDownloadLocalResponse(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
