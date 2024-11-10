@@ -11,25 +11,24 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class HttpTextResponse extends AbstractHttpResponse<String> {
+public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
 
-    /**
-     *  Http Response body text value
-     */
-    private String textValue;
+    private  String jsonValue;
 
-    public HttpTextResponse(String textValue, ResponseConvertContext context) {
+    private T result;
+
+    public HttpJsonResponse(String value, ResponseConvertContext context) {
         super(context);
-        this.textValue = textValue;
+        this.jsonValue = value;
     }
 
     @Override
     public String bodyResultString() {
-        return textValue;
+        return jsonValue;
     }
 
     @Override
-    public String getBodyResult() {
-        return textValue;
+    public T getBodyResult() {
+        return result;
     }
 }

@@ -7,13 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * @author  caizhihao
+ */
 public class HttpResponseBodyConverterChain {
 
     private static volatile HttpResponseConverter chain;
 
     private static final List<Class<? extends HttpResponseConverter>> orderClassList = Arrays.asList(
-            HttpTextResponseConverter.class,
+            HttpJsonResponseConverter.class,
             HttpBinaryResponseConverter.class,
             HttpFileDownloadLocalResponseConverter.class,
             HttpInputStreamResponseConverter.class

@@ -2,6 +2,7 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
+import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.response.HttpFileDownloadLocalResponse;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
@@ -19,12 +20,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
-public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponseBodyConverter {
+public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponseConverter {
 
     @Override
     protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
@@ -35,11 +37,13 @@ public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponse
     }
 
     @Override
-    protected HttpFileDownloadLocalResponse doConvert(Response response, MethodInvocation methodInvocation) {
-        return doWithHttpFileResponse(response,methodInvocation);
+    protected HttpFileDownloadLocalResponse doConvert(ResponseConvertContext context) {
+        return doWithHttpFileResponse(context);
     }
 
-    private HttpFileDownloadLocalResponse doWithHttpFileResponse(Response response, MethodInvocation methodInvocation) {
+    private HttpFileDownloadLocalResponse doWithHttpFileResponse(ResponseConvertContext context) {
+        Response response = context.getResponse();
+        HttpApiMethodInvocation<Annotation> methodInvocation = context.getMethodInvocation();
         String savePath = getSavePath(response,methodInvocation);
         ResponseBody responseBody = response.body();
         InputStream inputStream = responseBody.byteStream();
@@ -48,7 +52,7 @@ public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponse
             File file = new File(savePath);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             FileCopyUtils.copy(inputStream,fileOutputStream);
-            return new HttpFileDownloadLocalResponse(file);
+            return new HttpFileDownloadLocalResponse(file,context);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ *  file stream ==> byte[]
+ *
+ */
 @Component
-public class HttpBinaryResponseConverter extends AbstractHttpResponseBodyConverter {
+public class HttpBinaryResponseConverter extends AbstractHttpResponseConverter {
 
     @Override
     protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
@@ -20,12 +24,13 @@ public class HttpBinaryResponseConverter extends AbstractHttpResponseBodyConvert
         return isFileReturnType(byte[].class,methodInvocation);
     }
     @Override
-    protected HttpBinaryResponse doConvert(Response response, MethodInvocation methodInvocation) {
+    protected HttpBinaryResponse doConvert(ResponseConvertContext context) {
         try {
+            Response response = context.getResponse();
             ResponseBody responseBody = response.body();
             String fileName = getFileResponseName(response);
             byte[] bytes = responseBody.bytes();
-            return new HttpBinaryResponse(fileName, bytes);
+            return new HttpBinaryResponse(fileName, bytes,context);
         } catch (IOException e) {
             throw new UniHttpResponseException(e);
         }

@@ -74,4 +74,12 @@ public enum MediaTypeEnum {
         return mediaType.contains(APPLICATION_JSON.getType()) || mediaType.contains(APPLICATION_XML.getType());
     }
 
+    public static boolean isJsonType(String contentType){
+        final String mediaType = contentType.trim();
+        if(StringUtils.isBlank(mediaType)){
+            return false;
+        }
+        return mediaType.contains(APPLICATION_JSON.getType());
+    }
+
 }

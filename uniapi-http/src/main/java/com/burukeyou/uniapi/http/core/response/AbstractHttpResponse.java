@@ -1,5 +1,6 @@
 package com.burukeyou.uniapi.http.core.response;
 
+import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.support.Cookie;
 import lombok.Getter;
@@ -9,9 +10,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.BeanUtils;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,35 +30,17 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     protected transient Response response;
 
-    protected transient Method method;
+
+    public AbstractHttpResponse(ResponseConvertContext context) {
+        this.httpMetadata = context.getHttpMetadata();
+        this.request = context.getRequest();
+        this.response = context.getResponse();
+    }
 
     protected T bodyResult;
 
-    protected Type bodyResultType;
-
-    @Override
-    public T getBodyResult() {
-        return bodyResult;
-    }
-
-    public Type getBodyResultType() {
-        if (bodyResultType == null){
-            if (HttpResponse.class.isAssignableFrom(method.getReturnType())){
-                Type genericReturnType = method.getGenericReturnType();
-                if (genericReturnType instanceof ParameterizedType){
-                    Type actualTypeArgument = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
-                    bodyResultType = actualTypeArgument;
-                }
-            }else {
-                bodyResultType = method.getGenericReturnType();
-            }
-        }
-
-        return bodyResultType;
-    }
-
-    protected boolean ifReturnOriginalResponse() {
-        return HttpResponse.class.isAssignableFrom(method.getReturnType());
+    public void setBodyResult(T bodyResult) {
+        this.bodyResult = bodyResult;
     }
 
     @Override

@@ -3,15 +3,15 @@ package com.burukeyou.uniapi.http.core.channel;
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverterChain;
+import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
+import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
-import com.burukeyou.uniapi.http.core.response.HttpTextResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
@@ -53,6 +53,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private final Class<? extends HttpApiProcessor<?>> apiProcessor;
     private  final HttpApiProcessor<Annotation> requestProcessor;
 
+    private HttpApiMethodInvocationImpl httpApiMethodInvocation;
+
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
                                  HttpInterface httpInterface,
@@ -66,6 +68,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         this.apiProcessor = getHttpApiProcessorClass(api,httpInterface);
         this.requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
+
+        httpApiMethodInvocation = new HttpApiMethodInvocationImpl();
+        httpApiMethodInvocation.setProxyApiAnnotation(annotationMeta.getProxyAnnotation());
+        httpApiMethodInvocation.setProxyInterface(httpInterface);
+        httpApiMethodInvocation.setProxyClass(targetClass);
+        httpApiMethodInvocation.setMethodInvocation(methodInvocation);
     }
 
 
@@ -116,11 +124,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     public Object invoke() {
         Method method = methodInvocation.getMethod();
         HttpMetadata httpMetadata = createHttpMetadata(methodInvocation);
-        HttpApiMethodInvocationImpl param = new HttpApiMethodInvocationImpl();
-        param.setProxyApiAnnotation(annotationMeta.getProxyAnnotation());
-        param.setProxyInterface(httpInterface);
-        param.setProxyClass(targetClass);
-        param.setMethodInvocation(methodInvocation);
 
         // check
         ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessor, HttpApiProcessor.class);
@@ -134,35 +137,19 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // before processor
-        httpMetadata = requestProcessor.postBeforeHttpMetadata(httpMetadata,param);
+        httpMetadata = requestProcessor.postBeforeHttpMetadata(httpMetadata,httpApiMethodInvocation);
 
         // sendHttpRequest processor
-        HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,param);
-
-        //  http response body string processor
-        if (response instanceof HttpTextResponse){
-            HttpTextResponse<?> textResponse = ((HttpTextResponse<?>)response);
-            String newText = requestProcessor.postAfterHttpResponseBodyString(textResponse.getTextValue(), response, httpMetadata,param);
-            textResponse.setTextValue(newText);
-        }
+        HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,httpApiMethodInvocation);
 
         // http response result processor
-        Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, httpMetadata,param);
+        Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, httpMetadata,httpApiMethodInvocation);
         ((AbstractHttpResponse<Object>)response).setBodyResult(result);
         Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getBodyResult();
 
         // MethodReturnValue processor
-        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,param);
+        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,httpApiMethodInvocation);
     }
-
-    protected String getResponseContentType(Response response){
-        return response.header(HEADER_CONTENT_TYPE);
-    }
-
-    private HttpMetadata createHttpMetadata(MethodInvocation methodInvocation) {
-        return find(methodInvocation);
-    }
-
 
     public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata){
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
@@ -204,16 +191,17 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             if (!response.isSuccessful()){
                 throw new SendHttpRequestException("Http请求异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
             }
-            AbstractHttpResponse<?> httpResponse = null;
-            httpResponse = (AbstractHttpResponse<?>)responseChain.convert(response, methodInvocation);
+
+            ResponseConvertContext responseConvertContext = new ResponseConvertContext();
+            responseConvertContext.setResponse(response);
+            responseConvertContext.setRequest(request);
+            responseConvertContext.setHttpMetadata(httpMetadata);
+            responseConvertContext.setMethodInvocation(httpApiMethodInvocation);
+            responseConvertContext.setProcessor(requestProcessor);
+            HttpResponse<?> httpResponse = responseChain.convert(responseConvertContext);
             if (httpResponse == null){
                 throw new UniHttpResponseException("Unable to find a suitable converter to deserialize for response content-type " +  getResponseContentType(response));
             }
-
-            httpResponse.setMethod(methodInvocation.getMethod());
-            httpResponse.setRequest(request);
-            httpResponse.setResponse(response);
-            httpResponse.setHttpMetadata(httpMetadata);
             return httpResponse;
         } catch (IOException e){
             throw new SendHttpRequestException("Http请求网络IO异常", e);
@@ -223,6 +211,15 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             throw new SendHttpRequestException("Http请求异常", e);
         }
     }
+
+    protected String getResponseContentType(Response response){
+        return response.header(HEADER_CONTENT_TYPE);
+    }
+
+    private HttpMetadata createHttpMetadata(MethodInvocation methodInvocation) {
+        return find(methodInvocation);
+    }
+
 
 
     protected RequestBody convertToRequestBody(HttpMetadata metadata) {

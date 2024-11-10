@@ -1,16 +1,20 @@
 package com.burukeyou.uniapi.http.core.response;
 
 
-import lombok.Data;
+import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.File;
 
-@Data
+@Getter
+@Setter
 public class HttpFileDownloadLocalResponse extends AbstractHttpResponse<File> implements HttpFileResponse<File> {
 
     private File file;
 
-    public HttpFileDownloadLocalResponse(File file) {
+    public HttpFileDownloadLocalResponse(File file, ResponseConvertContext context) {
+        super(context);
         this.file = file;
         this.bodyResult = file;
     }

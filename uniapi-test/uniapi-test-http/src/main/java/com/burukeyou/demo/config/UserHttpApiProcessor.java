@@ -34,12 +34,22 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
     }
 
     @Override
+    public String postAfterHttpResponseBodyString(String bodyString, HttpResponse<?> rsp, HttpMetadata httpMetadata, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
+        return HttpApiProcessor.super.postAfterHttpResponseBodyString(bodyString, rsp, httpMetadata, methodInvocation);
+    }
+
+
+    @Override
     public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, HttpMetadata httpMetadata,HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
         if (bodyResult instanceof BaseRsp){
             ((BaseRsp) bodyResult).setCode(99999);
         }
         return bodyResult;
     }
-
+    
+    @Override
+    public Object postAfterMethodReturnValue(Object methodReturnValue, HttpResponse<?> rsp, HttpMetadata httpMetadata, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
+        return HttpApiProcessor.super.postAfterMethodReturnValue(methodReturnValue, rsp, httpMetadata, methodInvocation);
+    }
 
 }

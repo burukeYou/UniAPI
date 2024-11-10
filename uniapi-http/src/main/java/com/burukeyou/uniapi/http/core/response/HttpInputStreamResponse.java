@@ -1,5 +1,6 @@
 package com.burukeyou.uniapi.http.core.response;
 
+import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
 import lombok.Data;
 
 import java.io.InputStream;
@@ -11,7 +12,8 @@ public class HttpInputStreamResponse extends AbstractHttpResponse<InputStream> i
 
     private String fileName;
 
-    public HttpInputStreamResponse(InputStream inputStream, String fileName) {
+    public HttpInputStreamResponse(InputStream inputStream, String fileName, ResponseConvertContext context) {
+        super(context);
         this.inputStream = inputStream;
         this.fileName = fileName;
         this.bodyResult = inputStream;

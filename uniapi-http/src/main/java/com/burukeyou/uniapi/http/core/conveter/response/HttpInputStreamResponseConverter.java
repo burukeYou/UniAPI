@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.io.InputStream;
 
 @Component
-public class HttpInputStreamResponseConverter extends AbstractHttpResponseBodyConverter {
+public class HttpInputStreamResponseConverter extends AbstractHttpResponseConverter {
 
     @Override
     protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
@@ -20,7 +20,8 @@ public class HttpInputStreamResponseConverter extends AbstractHttpResponseBodyCo
 
 
     @Override
-    protected HttpInputStreamResponse doConvert(Response response, MethodInvocation methodInvocation) {
-        return new HttpInputStreamResponse(response.body().byteStream(),getFileResponseName(response));
+    protected HttpInputStreamResponse doConvert(ResponseConvertContext context) {
+        Response response = context.getResponse();
+        return new HttpInputStreamResponse(response.body().byteStream(),getFileResponseName(response),context);
     }
 }

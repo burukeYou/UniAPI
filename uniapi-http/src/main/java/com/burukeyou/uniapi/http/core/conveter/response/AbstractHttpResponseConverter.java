@@ -1,5 +1,6 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
+import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
@@ -13,6 +14,7 @@ import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
@@ -27,7 +29,7 @@ import java.util.regex.Pattern;
 /**
  * @author caizhihao
  */
-public abstract class AbstractHttpResponseBodyConverter implements HttpResponseConverter {
+public abstract class AbstractHttpResponseConverter implements HttpResponseConverter {
 
     @Autowired
     private Environment environment;
@@ -37,14 +39,14 @@ public abstract class AbstractHttpResponseBodyConverter implements HttpResponseC
     private static final Pattern pattern = Pattern.compile("filename\\s*=\\s*\\\"(.*)\\\"");
 
     @Override
-    public HttpResponse<?> convert(Response response, MethodInvocation methodInvocation) {
-        if (isConvert(response,methodInvocation)){
-            return doConvert(response,methodInvocation);
+    public HttpResponse<?> convert(ResponseConvertContext context) {
+        if (isConvert(context.getResponse(),context.getMethodInvocation())){
+            return doConvert(context);
         }
         if (next == null){
             return null;
         }
-        return next.convert(response,methodInvocation);
+        return next.convert(context);
     }
 
     @Override
@@ -54,7 +56,7 @@ public abstract class AbstractHttpResponseBodyConverter implements HttpResponseC
 
     protected abstract boolean isConvert(Response response, MethodInvocation methodInvocation);
 
-    protected  abstract HttpResponse<?> doConvert(Response response, MethodInvocation methodInvocation);
+    protected  abstract HttpResponse<?> doConvert(ResponseConvertContext context);
 
 
     protected String getResponseContentType(Response response){
@@ -163,4 +165,32 @@ public abstract class AbstractHttpResponseBodyConverter implements HttpResponseC
         return (HttpResponse.class.equals(returnType) || HttpFileResponse.class.equals(returnType)) && isGenericType(paramType,methodInvocation);
     }
 
+    // 获取反序列化body后class的类型
+    protected Type getBodyResultType(MethodInvocation methodInvocation) {
+        Method method = methodInvocation.getMethod();
+        Type type = null;
+        if (HttpResponse.class.isAssignableFrom(method.getReturnType())){
+                Type genericReturnType = method.getGenericReturnType();
+                if (genericReturnType instanceof ParameterizedType){
+                    type = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                }
+        }else {
+            type = method.getGenericReturnType();
+        }
+        return type;
+    }
+
+    protected String postAfterBodyString(String originString,
+                                         HttpResponse<?> httpJsonResponse,
+                                         ResponseConvertContext context){
+       return context.getProcessor().postAfterHttpResponseBodyString(originString,httpJsonResponse,context.getHttpMetadata(),context.getMethodInvocation());
+    }
+
+    protected String getResponseBodyString(Response response){
+        try {
+            return response.body().string();
+        } catch (IOException e) {
+            throw new BaseUniHttpException(e);
+        }
+    }
 }
