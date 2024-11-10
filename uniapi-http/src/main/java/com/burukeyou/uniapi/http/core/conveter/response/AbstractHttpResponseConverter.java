@@ -10,7 +10,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -145,13 +144,11 @@ public abstract class AbstractHttpResponseConverter implements HttpResponseConve
         if(genericReturnType instanceof ParameterizedType){
             Type[] arr = ((ParameterizedType)genericReturnType).getActualTypeArguments();
             Type type = arr[0];
-            if (type instanceof WildcardTypeImpl){
-                // not support ? param type
-                return false;
-            }
-            Class<?>  parameterTypes = (Class<?>)arr[0];
-            if (clz.isAssignableFrom(parameterTypes)){
-                return true;
+            if (type instanceof  Class){
+                Class<?>  parameterTypes = (Class<?>)type;
+                if (clz.isAssignableFrom(parameterTypes)){
+                    return true;
+                }
             }
         }
         return false;
