@@ -5,7 +5,6 @@ import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
 import com.burukeyou.demo.entity.*;
-import com.burukeyou.uniapi.http.core.response.HttpBinaryResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
@@ -125,7 +124,7 @@ public class HttpApiTest {
 
     @Test
     public void test10(){
-        HttpBinaryResponse fileResponse = userApi.add10();
+        HttpFileResponse<byte[]> httpFileResponse = userApi.add10();
         byte[] bytes = userApi.add101();
         System.out.println();
     }

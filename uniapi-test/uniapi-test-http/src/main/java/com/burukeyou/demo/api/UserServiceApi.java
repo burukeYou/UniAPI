@@ -52,8 +52,7 @@ public interface UserServiceApi {
     BaseRsp<String> add9(@BodyMultiPartPar("reqNo") String value,@BodyMultiPartPar Add9DTO req);
 
     @PostHttpInterface("/user-web/add10")
-    HttpBinaryResponse add10();
-
+    HttpFileResponse<byte[]> add10();
 
 
     @PostHttpInterface("/user-web/add10")
