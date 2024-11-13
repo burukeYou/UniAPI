@@ -180,7 +180,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         if (requestBody == null && requestMethod.needBody()){
-            requestBody = RequestBody.create(MediaType.parse("text/plain"), "");
+            requestBody = RequestBody.create(MediaType.parse(headers.get(HEADER_CONTENT_TYPE)), "");
         }
 
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);

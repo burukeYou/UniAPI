@@ -70,6 +70,8 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         parseCombineParam(httpMetadata, argList);
         if (httpMetadata.getBody() != null){
             httpMetadata.putHeader(HEADER_CONTENT_TYPE,httpMetadata.getBody().getContentType());
+        }else {
+            httpMetadata.putHeader(HEADER_CONTENT_TYPE, "application/json");
         }
         if (StringUtils.isNotBlank(httpInterface.contentType())){
             httpMetadata.putHeader(HEADER_CONTENT_TYPE,httpInterface.contentType());
