@@ -167,7 +167,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // config cookie
-        String cookie = httpMetadata.getCookieString();
+        String cookie = httpMetadata.getCookiesToString();
         if (StringUtils.isNotBlank(cookie)){
             requestBuilder.header("Cookie", cookie);
         }
@@ -180,7 +180,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         if (requestBody == null && requestMethod.needBody()){
-            requestBody = RequestBody.create(MediaType.parse(headers.get(HEADER_CONTENT_TYPE)), "");
+            requestBody = RequestBody.create(MediaType.parse(httpMetadata.getContentType()), "");
         }
 
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
@@ -228,7 +228,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
 
-        MediaType mediaTypeJson = MediaType.parse(metadata.getHeaders().get(HEADER_CONTENT_TYPE));
+        MediaType mediaTypeJson = MediaType.parse(metadata.getContentType());
         RequestBody requestBody = null;
         if (body instanceof HttpBodyJSON){
             requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());

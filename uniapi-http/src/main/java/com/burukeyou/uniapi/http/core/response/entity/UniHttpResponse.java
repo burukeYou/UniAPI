@@ -11,7 +11,7 @@ import java.util.Map;
 public interface UniHttpResponse {
 
     /**
-     * get reponse body to string
+     * get response body to string
      */
     String getBodyToString();
 

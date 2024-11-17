@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,10 +16,15 @@ import java.util.List;
 @Setter
 public class HttpBodyMultipart extends HttpBody {
 
-    private List<MultipartDataItem> multiPartData;
+    private List<MultipartDataItem> multiPartData = new ArrayList<>();
+
+
+    public HttpBodyMultipart() {
+        super(MediaTypeEnum.MULTIPART_FORM_DATA.getType());
+    }
 
     public HttpBodyMultipart(List<MultipartDataItem> multiPartData) {
-        super(MediaTypeEnum.MULTIPART_FORM_DATA.getType());
+        this();
         this.multiPartData = multiPartData;
     }
 
@@ -41,5 +47,10 @@ public class HttpBodyMultipart extends HttpBody {
 
         return sb.toString();
     }
+
+    public void addTextItem(String name, String value){
+        multiPartData.add(new MultipartDataItem(name,value,null,false));
+    }
+
 
 }

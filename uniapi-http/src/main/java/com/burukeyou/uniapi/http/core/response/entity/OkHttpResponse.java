@@ -29,7 +29,6 @@ public class OkHttpResponse extends AbstractUniHttpResponse {
 
     @Override
     public String getBodyToString() {
-        // todo 执行多次？
         return response.body().toString();
     }
 

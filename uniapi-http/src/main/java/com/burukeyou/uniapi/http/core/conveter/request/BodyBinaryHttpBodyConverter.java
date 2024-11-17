@@ -8,6 +8,7 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.support.arg.Param;
 import org.springframework.core.io.InputStreamSource;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +50,8 @@ public class BodyBinaryHttpBodyConverter extends AbstractHttpRequestBodyConverte
                 inputStream = Files.newInputStream(((File) argValue).toPath());
             } else if (argValue instanceof InputStreamSource){
                 inputStream = ((InputStreamSource) argValue).getInputStream();
+            }else if (byte[].class == argValue.getClass()){
+                inputStream = new ByteArrayInputStream((byte[])argValue);
             }else {
                 throw new UniHttpRequestParamException("@BodyBinaryPar annotation only supports use on InputStream、File、InputStreamSource");
             }

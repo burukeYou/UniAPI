@@ -2,6 +2,9 @@ package com.burukeyou.uniapi.http.support;
 
 import java.util.Arrays;
 
+/**
+ * @author  caizhihao
+ */
 public enum RequestMethod {
 
     GET,
