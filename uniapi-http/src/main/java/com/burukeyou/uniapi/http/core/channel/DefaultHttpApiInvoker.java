@@ -247,13 +247,24 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 if (!dataItem.isFileFlag()){
                     builder.addFormDataPart(dataItem.getKey(),dataItem.getTextValue());
                 }else {
-                    File file = dataItem.getFileValue();
-                    if (file == null){
+                    Object fileValue = dataItem.getFieldValue();
+                    if (fileValue == null){
                         continue;
                     }
+                    if (fileValue instanceof File){
+                        File file = (File) fileValue;
+                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, file);
+                        builder.addFormDataPart(dataItem.getKey(), file.getName(), fileBody);
+                    }else if (fileValue instanceof InputStream){
+                        InputStream inputStream = (InputStream) fileValue;
+                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, streamToByteArray(inputStream));
+                        builder.addFormDataPart(dataItem.getKey(), "",fileBody);
+                    }else if (fileValue instanceof byte[]){
+                        byte[] bytes = (byte[]) fileValue;
+                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, bytes);
+                        builder.addFormDataPart(dataItem.getKey(), "",fileBody);
+                    }
 
-                    RequestBody fileBody = RequestBody.create(MultipartBody.FORM, file);
-                    builder.addFormDataPart(dataItem.getKey(), file.getName(), fileBody);
                 }
             }
             requestBody = builder.build();

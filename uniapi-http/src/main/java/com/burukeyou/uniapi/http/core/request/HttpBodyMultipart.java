@@ -38,13 +38,10 @@ public class HttpBodyMultipart extends HttpBody {
         if (emptyContent()){
             return "";
         }
-
         StringBuilder sb = new StringBuilder();
         for (MultipartDataItem tmp : multiPartData) {
-            File file = tmp.getFileValue();
-            sb.append("\t\t").append(tmp.getKey()).append(":   ").append(tmp.isFileFlag() && file != null ? file.getAbsolutePath() : tmp.getTextValue()).append("\n");
+            sb.append("\t\t").append(tmp.getKey()).append(":   ").append(tmp.getValueString()).append("\n");
         }
-
         return sb.toString();
     }
 

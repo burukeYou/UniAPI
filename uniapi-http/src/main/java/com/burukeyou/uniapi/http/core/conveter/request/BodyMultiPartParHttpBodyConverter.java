@@ -11,7 +11,9 @@ import com.burukeyou.uniapi.support.arg.Param;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -29,25 +31,33 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
     @Override
     protected HttpBody doConvert(Param param, BodyMultiPartPar multipartParam) {
         Object argValue = param.getValue();
-        boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
-        if (nameExistFlag && File.class.isAssignableFrom(param.getType())){
-            MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),null,(File)argValue,true);
-            return new HttpBodyMultipart(Collections.singletonList(dataItem));
-        } else if (paramFinder.isObjOrMap(param.getType())){
+        if (paramFinder.isObjOrMap(param.getType())){
             return getHttpBodyMultipartFormData(argValue, param.getType());
-        }else if (nameExistFlag){
-            // 单个
-            MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),argValue.toString(),null,false);
+        }
+
+        boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
+        if (!nameExistFlag){
+            throw new BaseUniHttpException("use @BodyMultiPartPar for type " + param.getType().getName() + "must have name");
+        }
+
+        if (Arrays.asList(byte[].class,File.class, InputStream.class).contains(param.getType())){
+            MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(), argValue,true);
             return new HttpBodyMultipart(Collections.singletonList(dataItem));
         }
 
-        throw new BaseUniHttpException("use @BodyMultiPartPar for not support type for  " + param.getType().getName());
+        MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),argValue.toString(),false);
+        return new HttpBodyMultipart(Collections.singletonList(dataItem));
     }
 
     private HttpBodyMultipart getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
         List<MultipartDataItem> dataItems = new ArrayList<>();
         ArgList argList = paramFinder.autoGetArgList(argValue);
         for (Param param : argList) {
+            if (paramFinder.isObjOrMap(param.getType())){
+                continue;
+            }
+
+            Class<?> fieldType = param.getType();
             Object fieldValue = param.getValue();
             com.alibaba.fastjson.annotation.JSONField jsonField = param.getAnnotation(com.alibaba.fastjson.annotation.JSONField.class);
             com.alibaba.fastjson2.annotation.JSONField jsonField2 = param.getAnnotation(com.alibaba.fastjson2.annotation.JSONField.class);
@@ -59,42 +69,48 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
                 fieldName = jsonField2.name();
             }
 
-            boolean isFile = paramFinder.isFileField(param);
-            if (!isFile && paramFinder.isObjOrMap(param.getType())){
-                // 非File的其他对象不处理
+            if (File.class.equals(fieldType) || byte[].class.equals(fieldType) || InputStream.class.equals(fieldType)){
+                dataItems.add(new MultipartDataItem(fieldName,fieldValue,true));
                 continue;
             }
-
-            if (!isFile){
-                String fieldValueStr = (fieldValue == null ? null : fieldValue.toString());
-                dataItems.add(new MultipartDataItem(fieldName,fieldValueStr,null,false));
-                continue;
+            if (param.isCollection(File.class)){
+                for (File file : param.castListValue(File.class)) {
+                    dataItems.add(new MultipartDataItem(fieldName,file,true));
+                }
             }
-
-            // 文件
-            if (!param.getType().isArray() && !Collection.class.isAssignableFrom(param.getType())){
-                File onefile = fieldValue == null ? null : (File)fieldValue;
-                dataItems.add(new MultipartDataItem(fieldName,null,onefile,true));
-                continue;
+            if (param.isCollection(byte[].class)){
+                for (byte[] bytes : param.castListValue(byte[].class)) {
+                    dataItems.add(new MultipartDataItem(fieldName,bytes,true));
+                }
+            }
+            if (param.isCollection(InputStream.class)){
+                for (InputStream inputStream : param.castListValue(InputStream.class)) {
+                    dataItems.add(new MultipartDataItem(fieldName,inputStream,true));
+                }
             }
 
             if (fieldValue == null){
-                dataItems.add(new MultipartDataItem(fieldName,null,null,true));
-                continue;
+                dataItems.add(new MultipartDataItem(fieldName,null,true));
             }
 
-            // 多文件拆成单个
-            File[] fileArr = null;
-            if (Collection.class.isAssignableFrom(param.getType())){
-                fileArr = ((Collection<File>)fieldValue).toArray(new File[0]);
-            }else {
-                fileArr = (File[])fieldValue;
-            }
-
-            for (File file : fileArr) {
-                dataItems.add(new MultipartDataItem(fieldName,null,file,true));
+            if (param.isNormalValue()){
+                dataItems.add(new MultipartDataItem(fieldName,fieldValue == null ? null : fieldValue.toString(),false));
             }
         }
         return new HttpBodyMultipart(dataItems);
+    }
+
+    public  boolean isFileField(Param param){
+        Class<?> clz = param.getType();
+        if (File.class.isAssignableFrom(clz)){
+            return true;
+        }
+        if (byte[].class.equals(clz)){
+            return true;
+        }
+        if (InputStream.class.equals(clz)){
+            return true;
+        }
+        return param.isCollection(File.class);
     }
 }

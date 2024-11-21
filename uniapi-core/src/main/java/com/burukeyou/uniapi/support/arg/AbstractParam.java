@@ -4,12 +4,48 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
  * @author caizhihao
  */
 public abstract class AbstractParam implements Param {
+
+    private static final List<Class<?>> normalValueClassesArr = Arrays.asList(
+           String.class,
+           Integer.class,
+           Long.class,
+           byte.class,
+           Byte.class,
+           Short.class,
+           BigDecimal.class,
+           BigInteger.class,
+           Double.class,
+           Float.class,
+           Boolean.class,
+           Character.class,
+           Date.class,
+           LocalDate.class,
+           LocalDateTime.class,
+           LocalTime.class,
+           OffsetDateTime.class,
+           OffsetTime.class,
+           ZonedDateTime.class,
+           Time.class,
+           java.sql.Date.class,
+           java.sql.Time.class,
+           java.sql.Timestamp.class,
+           Enum.class
+    );
 
     protected static Object[] castObjectToArray(Object value) {
         return (Object[]) value;
@@ -55,6 +91,9 @@ public abstract class AbstractParam implements Param {
             return false;
         }
         if (type.isPrimitive()){
+            return true;
+        }
+        if (normalValueClassesArr.contains(type)){
             return true;
         }
         return true;

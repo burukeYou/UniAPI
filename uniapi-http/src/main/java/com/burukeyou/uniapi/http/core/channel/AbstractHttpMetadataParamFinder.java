@@ -240,15 +240,6 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
 
-    public   boolean isFileField(Param param){
-        Class<?> clz = param.getType();
-        if (File.class.isAssignableFrom(clz)){
-            return true;
-        }
-        return param.isCollection(File.class);
-    }
-
-
     public Map<String, String> objToMap(Object argValue) {
         return JSON.parseObject(JSON.toJSONString(argValue), new TypeReference<Map<String, String>>() {});
     }
