@@ -1,20 +1,33 @@
 package com.burukeyou.demo.api;
 
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
+
 import com.burukeyou.demo.annotation.UserHttpApi;
-import com.burukeyou.demo.entity.*;
+import com.burukeyou.demo.entity.Add4DTO;
+import com.burukeyou.demo.entity.Add6DTO;
+import com.burukeyou.demo.entity.Add9DTO;
+import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
-import com.burukeyou.uniapi.http.annotation.param.*;
+import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
+import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
+import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
+import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
+import com.burukeyou.uniapi.http.annotation.param.ComposePar;
+import com.burukeyou.uniapi.http.annotation.param.CookiePar;
+import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
+import com.burukeyou.uniapi.http.annotation.param.PathPar;
+import com.burukeyou.uniapi.http.annotation.param.QueryPar;
 import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
-import com.burukeyou.uniapi.http.core.response.*;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import org.springframework.http.MediaType;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.List;
 
 @UserHttpApi
 public interface UserServiceApi {
@@ -53,9 +66,9 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/add9")
     BaseRsp<String> add91(@BodyMultiPartPar("reqNo") String value,
-                          @BodyMultiPartPar("userImg") byte[] file,
-                          @BodyMultiPartPar("logoImg") InputStream logoImg,
-                          @BodyMultiPartPar("logoImg") File file2);
+                          @BodyMultiPartPar(value = "userImg",fileName = "牛逼.pdf") byte[] file,
+                          @BodyMultiPartPar(value = "logoImg",fileName = "和.mp4") InputStream logoImg,
+                          @BodyMultiPartPar(value = "logoImg",fileName = "娃啊.xlsx") File file2);
 
     @PostHttpInterface("/user-web/add10")
     HttpFileResponse<byte[]> add10();

@@ -1,6 +1,5 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -167,18 +166,18 @@ public interface UniHttpRequest extends Serializable {
     void addBodyMultipartText(String name,String value);
 
     /**
-     * set request body for multipart/form-data , add File key value pairs
+     * set request body for multipart/form-data , add File key value pairs only support InputStream、File、byte[]
+     * @param name          key name
+     * @param file          File or InputStream or byte[]
      */
-    void addBodyMultipartFile(String name, InputStream fileStream);
+    void addBodyMultipartFile(String name, Object file);
 
     /**
-     * set request body for multipart/form-data , add File key value pairs
+     * set request body for multipart/form-data , add File key value pairs only support InputStream、File、byte[]
+     * @param name          key name
+     * @param file          File or InputStream or byte[]
+     * @param fileName      file name
      */
-    void addBodyMultipartFile(String name, byte[] fileStream);
+    void addBodyMultipartFile(String name, Object file, String fileName);
 
-
-    /**
-     * set request body for multipart/form-data , add File key value pairs
-     */
-    void addBodyMultipartFile(String name, File fileStream);
 }

@@ -1,7 +1,6 @@
 package com.burukeyou.uniapi.http.core.request;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.stream.Collectors;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.RequestMethod;
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -222,28 +222,28 @@ public class HttpMetadata implements UniHttpRequest {
     }
 
     @Override
-    public void addBodyMultipartFile(String name, InputStream fileStream) {
-        if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
-            this.body = new HttpBodyMultipart();
+    public void addBodyMultipartFile(String name, Object file) {
+        if (file != null && !BizUtil.isFileForClass(file.getClass())){
+            throw new IllegalArgumentException("file must be a File,byte[] or InputStream");
         }
-        ((HttpBodyMultipart)body).addFileItem(name,fileStream);
-    }
-
-    @Override
-    public void addBodyMultipartFile(String name, byte[] fileByte) {
-        if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
-            this.body = new HttpBodyMultipart();
-        }
-        ((HttpBodyMultipart)body).addFileItem(name,fileByte);
-    }
-
-    @Override
-    public void addBodyMultipartFile(String name, File file) {
         if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
             this.body = new HttpBodyMultipart();
         }
         ((HttpBodyMultipart)body).addFileItem(name,file);
     }
+
+    @Override
+    public void addBodyMultipartFile(String name, Object file, String fileName) {
+        if (file != null && !BizUtil.isFileForClass(file.getClass())){
+            throw new IllegalArgumentException("file must be a File,byte[] or InputStream");
+        }
+        if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
+            this.body = new HttpBodyMultipart();
+        }
+        ((HttpBodyMultipart)body).addFileItem(name,file,fileName);
+    }
+
+
 
     /**
      *  http protocol string

@@ -1,7 +1,5 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,19 +45,14 @@ public class HttpBodyMultipart extends HttpBody {
     }
 
     public void addTextItem(String name, String value){
-        multiPartData.add(new MultipartDataItem(name,value,false));
+        multiPartData.add(MultipartDataItem.ofText(name,value));
     }
 
-    public void addFileItem(String name, byte[] file){
-        multiPartData.add(new MultipartDataItem(name,file,true));
+    public void addFileItem(String name, Object file){
+        multiPartData.add(MultipartDataItem.ofFile(name,file));
     }
 
-    public void addFileItem(String name, InputStream file){
-        multiPartData.add(new MultipartDataItem(name,file,true));
+    public void addFileItem(String name, Object file, String fileName){
+        multiPartData.add(MultipartDataItem.ofFile(name,file,fileName));
     }
-
-    public void addFileItem(String name, File file){
-        multiPartData.add(new MultipartDataItem(name,file,true));
-    }
-
 }
