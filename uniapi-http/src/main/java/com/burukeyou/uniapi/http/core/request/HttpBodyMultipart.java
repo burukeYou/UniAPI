@@ -1,13 +1,14 @@
 package com.burukeyou.uniapi.http.core.request;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.CollectionUtils;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author caizhihao
@@ -40,14 +41,25 @@ public class HttpBodyMultipart extends HttpBody {
         }
         StringBuilder sb = new StringBuilder();
         for (MultipartDataItem tmp : multiPartData) {
-            sb.append("\t\t").append(tmp.getKey()).append(":   ").append(tmp.getValueString()).append("\n");
+            sb.append("\t\t").append(tmp.isFileFlag() ? "(File)" : "      ").append(tmp.getKey()).append(":   ").append(tmp.getValueString()).append("\n");
         }
         return sb.toString();
     }
 
     public void addTextItem(String name, String value){
-        multiPartData.add(new MultipartDataItem(name,value,null,false));
+        multiPartData.add(new MultipartDataItem(name,value,false));
     }
 
+    public void addFileItem(String name, byte[] file){
+        multiPartData.add(new MultipartDataItem(name,file,true));
+    }
+
+    public void addFileItem(String name, InputStream file){
+        multiPartData.add(new MultipartDataItem(name,file,true));
+    }
+
+    public void addFileItem(String name, File file){
+        multiPartData.add(new MultipartDataItem(name,file,true));
+    }
 
 }

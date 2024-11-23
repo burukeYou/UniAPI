@@ -1,5 +1,11 @@
 package com.burukeyou.uniapi.http.core.conveter.request;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
@@ -9,14 +15,6 @@ import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.support.arg.ArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author  caizhihao
@@ -40,13 +38,19 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
             throw new BaseUniHttpException("use @BodyMultiPartPar for type " + param.getType().getName() + "must have name");
         }
 
-        if (Arrays.asList(byte[].class,File.class, InputStream.class).contains(param.getType())){
+        if (isFileType(param)){
             MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(), argValue,true);
             return new HttpBodyMultipart(Collections.singletonList(dataItem));
         }
 
         MultipartDataItem dataItem = new MultipartDataItem(multipartParam.value(),argValue.toString(),false);
         return new HttpBodyMultipart(Collections.singletonList(dataItem));
+    }
+
+    private static boolean isFileType(Param param) {
+        return byte[].class.equals(param.getType())
+                || File.class.isAssignableFrom(param.getType())
+                || InputStream.class.isAssignableFrom(param.getType());
     }
 
     private HttpBodyMultipart getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
@@ -100,17 +104,4 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
         return new HttpBodyMultipart(dataItems);
     }
 
-    public  boolean isFileField(Param param){
-        Class<?> clz = param.getType();
-        if (File.class.isAssignableFrom(clz)){
-            return true;
-        }
-        if (byte[].class.equals(clz)){
-            return true;
-        }
-        if (InputStream.class.equals(clz)){
-            return true;
-        }
-        return param.isCollection(File.class);
-    }
 }

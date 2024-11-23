@@ -16,8 +16,12 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -119,6 +123,14 @@ public class HttpApiTest {
         add9DTO.setLogoImg(new File[]{file2,file3});
 
         BaseRsp<String> rsp = userApi.add9("Sb",add9DTO);
+        System.out.println(JSON.toJSONString(rsp));
+    }
+
+    @Test
+    public void test91() throws IOException {
+        File file1 = getLocalFile("img/a.txt");
+        File file2 = getLocalFile("img/b.txt");
+        BaseRsp<String> rsp = userApi.add91("Sb", "123".getBytes(), Files.newInputStream(file1.toPath()),file2);
         System.out.println(JSON.toJSONString(rsp));
     }
 

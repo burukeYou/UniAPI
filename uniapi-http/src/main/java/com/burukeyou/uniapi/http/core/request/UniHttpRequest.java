@@ -1,12 +1,13 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import com.burukeyou.uniapi.http.support.Cookie;
-import com.burukeyou.uniapi.http.support.RequestMethod;
-import org.omg.CORBA.portable.InputStream;
-
+import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+
+import com.burukeyou.uniapi.http.support.Cookie;
+import com.burukeyou.uniapi.http.support.RequestMethod;
+import org.omg.CORBA.portable.InputStream;
 
 /**
  *
@@ -166,7 +167,18 @@ public interface UniHttpRequest extends Serializable {
     void addBodyMultipartText(String name,String value);
 
     /**
-     * set request body for multipart/form-data , add Text key value pairs
+     * set request body for multipart/form-data , add File key value pairs
      */
     void addBodyMultipartFile(String name, InputStream fileStream);
+
+    /**
+     * set request body for multipart/form-data , add File key value pairs
+     */
+    void addBodyMultipartFile(String name, byte[] fileStream);
+
+
+    /**
+     * set request body for multipart/form-data , add File key value pairs
+     */
+    void addBodyMultipartFile(String name, File fileStream);
 }

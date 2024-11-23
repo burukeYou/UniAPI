@@ -1,5 +1,13 @@
 package com.burukeyou.uniapi.http.core.request;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.RequestMethod;
@@ -10,13 +18,6 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.omg.CORBA.portable.InputStream;
 import org.springframework.util.CollectionUtils;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Request metadata
@@ -225,8 +226,23 @@ public class HttpMetadata implements UniHttpRequest {
         if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
             this.body = new HttpBodyMultipart();
         }
-        // todo
-        //((HttpBodyMultipart)body).addFileItem(name,fileStream);
+        ((HttpBodyMultipart)body).addFileItem(name,fileStream);
+    }
+
+    @Override
+    public void addBodyMultipartFile(String name, byte[] fileByte) {
+        if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
+            this.body = new HttpBodyMultipart();
+        }
+        ((HttpBodyMultipart)body).addFileItem(name,fileByte);
+    }
+
+    @Override
+    public void addBodyMultipartFile(String name, File file) {
+        if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
+            this.body = new HttpBodyMultipart();
+        }
+        ((HttpBodyMultipart)body).addFileItem(name,file);
     }
 
     /**

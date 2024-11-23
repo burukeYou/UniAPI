@@ -1,7 +1,6 @@
 package com.burukeyou.uniapi.support.arg;
 
-import org.apache.commons.lang3.StringUtils;
-
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -13,7 +12,15 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author caizhihao
@@ -24,7 +31,6 @@ public abstract class AbstractParam implements Param {
            String.class,
            Integer.class,
            Long.class,
-           byte.class,
            Byte.class,
            Short.class,
            BigDecimal.class,
@@ -47,8 +53,12 @@ public abstract class AbstractParam implements Param {
            Enum.class
     );
 
-    protected static Object[] castObjectToArray(Object value) {
-        return (Object[]) value;
+    protected static boolean objectArrayNotExist(Object value) {
+        if (value == null){
+            return true;
+        }
+        int length = Array.getLength(value);
+        return length <= 0;
     }
 
     @Override
@@ -64,7 +74,7 @@ public abstract class AbstractParam implements Param {
             }
         }
 
-        if (type.isArray() && castObjectToArray(value).length <= 0){
+        if (type.isArray() && objectArrayNotExist(value)){
             return  true;
         }
 
@@ -96,7 +106,7 @@ public abstract class AbstractParam implements Param {
         if (normalValueClassesArr.contains(type)){
             return true;
         }
-        return true;
+        return false;
     }
 
     @Override

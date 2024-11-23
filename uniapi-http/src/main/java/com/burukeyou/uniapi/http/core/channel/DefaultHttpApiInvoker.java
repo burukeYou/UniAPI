@@ -245,7 +245,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             HttpBodyMultipart multipartFormData = (HttpBodyMultipart)body;
             for (MultipartDataItem dataItem : multipartFormData.getMultiPartData()) {
                 if (!dataItem.isFileFlag()){
-                    builder.addFormDataPart(dataItem.getKey(),dataItem.getTextValue());
+                    builder.addFormDataPart(dataItem.getKey(),dataItem.getValueString());
                 }else {
                     Object fileValue = dataItem.getFieldValue();
                     if (fileValue == null){

@@ -51,6 +51,12 @@ public interface UserServiceApi {
     @PostHttpInterface("/user-web/add9")
     BaseRsp<String> add9(@BodyMultiPartPar("reqNo") String value,@BodyMultiPartPar Add9DTO req);
 
+    @PostHttpInterface("/user-web/add9")
+    BaseRsp<String> add91(@BodyMultiPartPar("reqNo") String value,
+                          @BodyMultiPartPar("userImg") byte[] file,
+                          @BodyMultiPartPar("logoImg") InputStream logoImg,
+                          @BodyMultiPartPar("logoImg") File file2);
+
     @PostHttpInterface("/user-web/add10")
     HttpFileResponse<byte[]> add10();
 
