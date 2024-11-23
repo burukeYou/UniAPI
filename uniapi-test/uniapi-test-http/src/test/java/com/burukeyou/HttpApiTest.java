@@ -16,11 +16,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -219,6 +216,12 @@ public class HttpApiTest {
     @Test
     public void testdel02(){
         String sb = userApi.del02();
+        System.out.println();
+    }
+
+    @Test
+    public void testdel03(){
+        String sb = userApi.del03("hahah");
         System.out.println();
     }
 }

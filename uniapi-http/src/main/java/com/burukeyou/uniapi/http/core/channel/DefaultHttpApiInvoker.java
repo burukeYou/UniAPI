@@ -234,7 +234,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         RequestBody requestBody = null;
         if (body instanceof HttpBodyJSON){
             requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
-        }else if (body instanceof HttpBodyBinary){
+        } else if (body instanceof HttpBodyText) {
+            requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
+        } else if (body instanceof HttpBodyBinary){
             InputStream inputStream = ((HttpBodyBinary) body).getFile();
             requestBody = RequestBody.create(mediaTypeJson,streamToByteArray(inputStream));
         }else if (body instanceof HttpBodyFormData){

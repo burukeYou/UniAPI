@@ -11,7 +11,7 @@ public class HttpBodyText extends HttpBody {
 
     private String text;
 
-    protected HttpBodyText(String text) {
+    public HttpBodyText(String text) {
         super(MediaTypeEnum.TEXT_PLAIN.getType());
         this.text = text;
     }

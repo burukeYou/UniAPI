@@ -9,10 +9,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.omg.CORBA.portable.InputStream;
 import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HttpMetadata implements UniHttpRequest {
+public class HttpMetadata implements Serializable {
 
     private static final long serialVersionUID = 3712288492261896042L;
 
@@ -60,12 +61,15 @@ public class HttpMetadata implements UniHttpRequest {
     /**
      * set http url root address
      */
-    @Override
+    
     public void setUrl(String url){
         this.httpUrl.setUrl(url);
     }
 
-    @Override
+
+    /**
+     * get request url
+     */
     public String getUrl(){
         return this.httpUrl.getUrl();
     }
@@ -73,90 +77,126 @@ public class HttpMetadata implements UniHttpRequest {
     /**
      * set http url path
      */
-    @Override
+    
     public void setUrlPath(String path){
         this.httpUrl.setPath(path);
     }
 
-    @Override
-    public String getUrlPath(String path){
+    /**
+     *  get request url path
+     */
+    public String getUrlPath(){
         return this.httpUrl.getPath();
     }
 
-    @Override
+    /**
+     * obtain the final request URL path, it's about splicing {@link #getUrl()} onto {@link #getUrl()}
+     */
     public String getRequestUrl() {
         return this.httpUrl.toUrl();
     }
 
     /**
-     *  add url queryParam
+     * add request url query param
+     * @param key               query param key
+     * @param value             query param value
      */
-    @Override
     public void putQueryParam(String key,Object value){
         this.httpUrl.putQueryParam(key,value);
     }
 
-    @Override
+    /**
+     * add batch request url query param
+     */
     public void putQueryParams(Map<String, Object> queryParam) {
         this.httpUrl.getQueryParam().putAll(queryParam);
     }
 
 
-    @Override
+    /**
+     *  add request url path query param
+     * @param key               Path parameter placeholder
+     * @param value             path parameter value
+     */
     public void putPathParam(String key, Object value) {
         this.httpUrl.putPathParam(key,value);
     }
 
-    @Override
+    /**
+     * add request header
+     * @param key               header key
+     * @param value             header value
+     */
     public void putHeader(String key, String value) {
         this.headers.put(key,value);
     }
 
-    @Override
+    /**
+     * add batch request header
+     */
     public void putHeaders(Map<String, String> headers) {
         this.headers.putAll(headers);
     }
 
-    @Override
+    /**
+     * add request header
+     * @param key           header key
+     */
     public String getHeader(String key){
         return this.headers.get(key);
     }
 
-    @Override
+    /**
+     * set request header for content-type
+     */
     public void setContentType(String contentType){
         this.headers.put("Content-Type",contentType);
     }
 
-    @Override
+
+    /**
+     * get request header for  content-type
+     */
     public String getContentType(){
         return this.headers.get("Content-Type");
     }
 
+    /**
+     * if path use placeholder such {xxx} ，can set placeholder valur
+     */
     public void putPathParams(Map<String, String> pathParam) {
         httpUrl.getPathParam().putAll(pathParam);
     }
 
+    /**
+     * Set custom Http Request Body
+     */
     public void setBodyIfAbsent(HttpBody httpBody) {
         if (httpBody == null){
             return;
         }
-
         if (body == null){
             this.body = httpBody;
         }
     }
 
-    @Override
+    /**
+     *  add request cookie
+     */
     public void addCookie(Cookie cookie) {
         cookies.add(cookie);
     }
 
-    @Override
+    /**
+     * add request cookie list
+     */
     public void addCookiesList(List<Cookie> cookiesList) {
         cookies.addAll(cookiesList);
     }
 
-    @Override
+    /**
+     * add cookie string
+     */
     public void addCookieString(String cookieString){
         if (StringUtils.isBlank(cookieString)){
             return;
@@ -171,49 +211,67 @@ public class HttpMetadata implements UniHttpRequest {
         }
     }
 
-    @Override
+    /**
+     * get cookie by cookie name, only find one
+     * @param name   cookie name
+     */
     public Cookie getCookie(String name){
         return this.cookies.stream().filter(e -> e.getName().equals(name)).findFirst().orElse(null);
     }
 
-    @Override
+    /**
+     * get all cookie by cookie name
+     * @param name   cookie name
+     */
     public List<Cookie> getCookies(String name){
         return this.cookies.stream().filter(e -> e.getName().equals(name)).collect(Collectors.toList());
     }
 
     /**
-     * Get the complete cookie string
+     * get all cookie convert to string
      */
     public String getCookiesToString(){
         return cookies.stream().map(e -> e.getName() + "=" + e.getValue()).collect(Collectors.joining(";"));
     }
 
-    @Override
+    /**
+     * set request body for application/json  formatted
+     */
     public void setBodyJson(String json) {
         this.body = new HttpBodyJSON(json);
     }
 
-    @Override
+    /**
+     * set request body for application/x-www-form-urlencoded
+     */
     public void setBodyFromData(Map<String, String> map) {
         this.body = new HttpBodyFormData(map);
     }
 
-    @Override
+    /**
+     * set request body text/*
+     */
     public void setBodyText(String text) {
         this.body = new HttpBodyText(text);
     }
 
-    @Override
+    /**
+     * set request body for  application/octet-stream
+     */
     public void setBodyBinary(byte[] binary) {
         this.body = new HttpBodyBinary(new ByteArrayInputStream(binary));
     }
 
-    @Override
+    /**
+     * set request body for  application/octet-stream
+     */
     public void setBodyBinary(InputStream stream) {
         this.body = new HttpBodyBinary(stream);
     }
 
-    @Override
+    /**
+     * set request body for multipart/form-data , add Text key value pairs
+     */
     public void addBodyMultipartText(String name, String value) {
         if (body == null || !body.getClass().equals(HttpBodyMultipart.class)){
             this.body = new HttpBodyMultipart();
@@ -221,7 +279,11 @@ public class HttpMetadata implements UniHttpRequest {
         ((HttpBodyMultipart)body).addTextItem(name,value);
     }
 
-    @Override
+    /**
+     * set request body for multipart/form-data , add File key value pairs only support InputStream、File、byte[]
+     * @param name          key name
+     * @param file          File or InputStream or byte[]
+     */
     public void addBodyMultipartFile(String name, Object file) {
         if (file != null && !BizUtil.isFileForClass(file.getClass())){
             throw new IllegalArgumentException("file must be a File,byte[] or InputStream");
@@ -232,7 +294,12 @@ public class HttpMetadata implements UniHttpRequest {
         ((HttpBodyMultipart)body).addFileItem(name,file);
     }
 
-    @Override
+    /**
+     * set request body for multipart/form-data , add File key value pairs only support InputStream、File、byte[]
+     * @param name          key name
+     * @param file          File or InputStream or byte[]
+     * @param fileName      file name
+     */
     public void addBodyMultipartFile(String name, Object file, String fileName) {
         if (file != null && !BizUtil.isFileForClass(file.getClass())){
             throw new IllegalArgumentException("file must be a File,byte[] or InputStream");
@@ -243,8 +310,6 @@ public class HttpMetadata implements UniHttpRequest {
         ((HttpBodyMultipart)body).addFileItem(name,file,fileName);
     }
 
-
-
     /**
      *  http protocol string
      */
@@ -253,19 +318,13 @@ public class HttpMetadata implements UniHttpRequest {
         sb.append("\n------------------------------------------------");
         sb.append("\n").append(requestMethod == null ? "" : requestMethod.name())
                 .append("\t\t").append(httpUrl.toUrl()).append("\n");
-
         sb.append("Request Header:\n");
-  /*      if (body != null){
-            sb.append("\t\tContent-Type:\t\t").append(body.getContentType()).append("\n");
-        }*/
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             sb.append("\t\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\n");
         }
-
         if(!CollectionUtils.isEmpty(cookies)){
             sb.append("\t\t").append("Cookie:\t").append(getCookiesToString()).append("\n");
         }
-
         sb.append("Request Body:\n");
         if (body != null){
             if (body instanceof HttpBodyMultipart){
@@ -274,7 +333,6 @@ public class HttpMetadata implements UniHttpRequest {
                 sb.append("\t\t").append(body.toStringBody()).append("\n");
             }
         }
-        //sb.append("------------------------------------------------\n");
         return sb.toString();
     }
 }
