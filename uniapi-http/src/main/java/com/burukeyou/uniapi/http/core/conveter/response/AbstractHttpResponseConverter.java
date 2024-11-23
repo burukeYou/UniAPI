@@ -1,11 +1,10 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
-import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import okhttp3.Response;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,13 +52,13 @@ public abstract class AbstractHttpResponseConverter implements HttpResponseConve
         this.next = nextConverter;
     }
 
-    protected abstract boolean isConvert(Response response, MethodInvocation methodInvocation);
+    protected abstract boolean isConvert(UniHttpResponse response, MethodInvocation methodInvocation);
 
     protected  abstract HttpResponse<?> doConvert(ResponseConvertContext context);
 
 
-    protected String getResponseContentType(Response response){
-        return response.header("Content-Type");
+    protected String getResponseContentType(UniHttpResponse response){
+        return response.getContentType();
     }
 
     protected static void createDirIfNotExist(String baseDir) {
@@ -74,8 +73,8 @@ public abstract class AbstractHttpResponseConverter implements HttpResponseConve
         }
     }
 
-    protected String getFileResponseName(Response response){
-        String header = response.header("Content-Disposition");
+    protected String getFileResponseName(UniHttpResponse response){
+        String header = response.getHeader("Content-Disposition");
         if(StringUtils.isBlank(header)){
             return null;
         }
@@ -125,14 +124,14 @@ public abstract class AbstractHttpResponseConverter implements HttpResponseConve
         return (T)environment.resolvePlaceholders(value.toString());
     }
 
-    protected boolean isFileDownloadResponse(Response response){
+    protected boolean isFileDownloadResponse(UniHttpResponse response){
         String contentType = getResponseContentType(response);
         if (MediaTypeEnum.isFileType(contentType)){
             return true;
         }
 
         // Content-Disposition: attachment; filename=xxx.txt
-        String disposition = response.header("Content-Disposition");
+        String disposition = response.getHeader("Content-Disposition");
         if(StringUtils.isNotBlank(disposition) && disposition.contains("attachment")){
             return true;
         }
@@ -183,11 +182,7 @@ public abstract class AbstractHttpResponseConverter implements HttpResponseConve
        return context.getProcessor().postAfterHttpResponseBodyString(originString,httpJsonResponse,context.getHttpMetadata(),context.getMethodInvocation());
     }
 
-    protected String getResponseBodyString(Response response){
-        try {
-            return response.body().string();
-        } catch (IOException e) {
-            throw new BaseUniHttpException(e);
-        }
+    protected String getResponseBodyString(UniHttpResponse response){
+        return response.getBodyToString();
     }
 }

@@ -1,12 +1,14 @@
-package com.burukeyou.uniapi.http.core.response.entity;
+package com.burukeyou.uniapi.http.core.http.response;
 
-import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
+import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.support.Cookie;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.BeanUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,14 +24,34 @@ public class OkHttpResponse extends AbstractUniHttpResponse {
     private Response response;
 
 
-    public OkHttpResponse(ResponseConvertContext context) {
-        this.request = context.getRequest();
-        this.response = context.getResponse();
+    public OkHttpResponse(Request request,Response response) {
+        this.request = request;
+        this.response = response;
     }
 
     @Override
     public String getBodyToString() {
         return response.body().toString();
+    }
+
+    @Override
+    public byte[] getBodyBytes() {
+        if (response.body() == null){
+            return null;
+        }
+        try {
+            return response.body().bytes();
+        } catch (IOException e) {
+            throw new UniHttpResponseException(e);
+        }
+    }
+
+    @Override
+    public InputStream getBodyToInputStream() {
+        if (response.body() == null){
+            return null;
+        }
+        return response.body().byteStream();
     }
 
     @Override

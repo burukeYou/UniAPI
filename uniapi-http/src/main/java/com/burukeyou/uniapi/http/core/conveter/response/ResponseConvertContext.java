@@ -2,11 +2,11 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
+import com.burukeyou.uniapi.http.core.http.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import lombok.Getter;
 import lombok.Setter;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import java.lang.annotation.Annotation;
 
@@ -14,9 +14,9 @@ import java.lang.annotation.Annotation;
 @Setter
 public class ResponseConvertContext {
 
-    private Response response;
+    private UniHttpResponse response;
 
-    private Request request;
+    private UniHttpRequest request;
 
     private HttpMetadata httpMetadata;
 

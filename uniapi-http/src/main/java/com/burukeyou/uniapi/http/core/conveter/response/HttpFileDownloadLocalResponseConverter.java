@@ -3,13 +3,13 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
+import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.response.HttpFileDownloadLocalResponse;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.TimeUtil;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponseConverter {
 
     @Override
-    protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
+    protected boolean isConvert(UniHttpResponse response, MethodInvocation methodInvocation) {
         if (!isFileDownloadResponse(response)){
             return false;
         }
@@ -42,11 +42,10 @@ public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponse
     }
 
     private HttpFileDownloadLocalResponse doWithHttpFileResponse(ResponseConvertContext context) {
-        Response response = context.getResponse();
+        UniHttpResponse response = context.getResponse();
         HttpApiMethodInvocation<Annotation> methodInvocation = context.getMethodInvocation();
         String savePath = getSavePath(response,methodInvocation);
-        ResponseBody responseBody = response.body();
-        InputStream inputStream = responseBody.byteStream();
+        InputStream inputStream = response.getBodyToInputStream();
         createDirIfNotExist(Paths.get(savePath).getParent().toString());
         try {
             File file = new File(savePath);
@@ -54,11 +53,11 @@ public class HttpFileDownloadLocalResponseConverter extends AbstractHttpResponse
             FileCopyUtils.copy(inputStream,fileOutputStream);
             return new HttpFileDownloadLocalResponse(file,context);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UniHttpResponseException(e);
         }
     }
 
-    private String getSavePath(Response response, MethodInvocation methodInvocation) {
+    private String getSavePath(UniHttpResponse response, MethodInvocation methodInvocation) {
         String savePath = null;
         // 方法参数上获取
         for (Param methodArg : new MethodArgList(methodInvocation.getMethod(),methodInvocation.getArguments())) {

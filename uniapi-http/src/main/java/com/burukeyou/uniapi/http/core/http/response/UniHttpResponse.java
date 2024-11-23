@@ -1,7 +1,8 @@
-package com.burukeyou.uniapi.http.core.response.entity;
+package com.burukeyou.uniapi.http.core.http.response;
 
 import com.burukeyou.uniapi.http.support.Cookie;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,17 @@ public interface UniHttpResponse {
      * get response body to string
      */
     String getBodyToString();
+
+    /**
+     * get response body to byte[]
+     */
+    byte[] getBodyBytes();
+
+
+    /**
+     * get response body to InputStream
+     */
+    InputStream getBodyToInputStream();
 
     /**
      * Get all the request  header for the response

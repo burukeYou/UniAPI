@@ -2,8 +2,8 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import okhttp3.Response;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
 
     @Override
-    protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
+    protected boolean isConvert(UniHttpResponse response, MethodInvocation methodInvocation) {
         return getResponseContentType(response).contains(MediaTypeEnum.APPLICATION_JSON.getType());
     }
 

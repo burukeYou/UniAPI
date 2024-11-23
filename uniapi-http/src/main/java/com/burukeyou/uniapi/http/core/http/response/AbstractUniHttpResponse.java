@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.core.response.entity;
+package com.burukeyou.uniapi.http.core.http.response;
 
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import org.apache.commons.lang3.StringUtils;
