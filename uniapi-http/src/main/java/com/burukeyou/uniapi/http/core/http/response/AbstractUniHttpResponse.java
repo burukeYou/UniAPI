@@ -12,7 +12,8 @@ public abstract class AbstractUniHttpResponse implements UniHttpResponse {
 
     @Override
     public String getContentType() {
-        return getHeader("Content-Type");
+        String contentType = getHeader("Content-Type");
+        return StringUtils.isBlank(contentType) ? "" : contentType;
     }
 
     @Override

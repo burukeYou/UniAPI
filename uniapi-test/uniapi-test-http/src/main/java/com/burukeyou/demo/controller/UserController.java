@@ -178,4 +178,11 @@ public class UserController {
                 "  <element>Some data</element>\n" +
                 "</root>";
     }
+
+
+    @PostMapping(path = "/del03")
+    @ResponseBody
+    public void del01(){
+        log.info("收到请求del03");
+    }
 }

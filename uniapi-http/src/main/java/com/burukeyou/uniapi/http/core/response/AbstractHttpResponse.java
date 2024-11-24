@@ -25,7 +25,7 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     protected transient UniHttpResponse response;
 
-    public AbstractHttpResponse(ResponseConvertContext context) {
+    public AbstractHttpResponse(ResponseConvertContext context, T bodyResult) {
         this.httpMetadata = context.getHttpMetadata();
         this.response = context.getResponse();
     }

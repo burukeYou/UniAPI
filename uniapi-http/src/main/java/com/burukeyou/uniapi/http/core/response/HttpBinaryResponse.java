@@ -13,10 +13,9 @@ public class HttpBinaryResponse extends AbstractHttpResponse<byte[]> implements 
     private byte[] file;
 
     public HttpBinaryResponse(String fileName, byte[] file, ResponseConvertContext context) {
-        super(context);
+        super(context,file);
         this.fileName = fileName;
         this.file = file;
-        this.bodyResult = file;
     }
 
     @Override

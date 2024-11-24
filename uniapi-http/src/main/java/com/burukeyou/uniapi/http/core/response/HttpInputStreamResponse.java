@@ -13,10 +13,9 @@ public class HttpInputStreamResponse extends AbstractHttpResponse<InputStream> i
     private String fileName;
 
     public HttpInputStreamResponse(InputStream inputStream, String fileName, ResponseConvertContext context) {
-        super(context);
+        super(context,inputStream);
         this.inputStream = inputStream;
         this.fileName = fileName;
-        this.bodyResult = inputStream;
     }
 
     @Override

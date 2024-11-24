@@ -33,7 +33,7 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
 
             //
             Object bodyResultObj = JSON.parseObject(originBodyString, bodyResultType);
-            httpJsonResponse.setResult(bodyResultObj);
+            httpJsonResponse.setBodyResult(bodyResultObj);
             return httpJsonResponse;
     }
 }

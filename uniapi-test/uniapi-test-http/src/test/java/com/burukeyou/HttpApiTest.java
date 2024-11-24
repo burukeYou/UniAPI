@@ -221,7 +221,7 @@ public class HttpApiTest {
 
     @Test
     public void testdel03(){
-        String sb = userApi.del03("hahah");
+        userApi.del03();
         System.out.println();
     }
 }

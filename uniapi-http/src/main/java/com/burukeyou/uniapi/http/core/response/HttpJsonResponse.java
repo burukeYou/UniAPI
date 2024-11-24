@@ -15,20 +15,13 @@ public class HttpJsonResponse<T> extends AbstractHttpResponse<T> {
 
     private  String jsonValue;
 
-    private T result;
-
     public HttpJsonResponse(String value, ResponseConvertContext context) {
-        super(context);
+        super(context,null);
         this.jsonValue = value;
     }
 
     @Override
     public String bodyResultString() {
         return jsonValue;
-    }
-
-    @Override
-    public T getBodyResult() {
-        return result;
     }
 }

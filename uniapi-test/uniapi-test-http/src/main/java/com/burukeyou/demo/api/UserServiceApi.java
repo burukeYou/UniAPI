@@ -115,6 +115,6 @@ public interface UserServiceApi {
     @GetHttpInterface("/user-web/del2")
     String del02();
 
-    @PostHttpInterface(path = "/user-web/del3",contentType = "test/html")
-    String del03(@BodyTextPar String text);
+    @PostHttpInterface(path = "/user-web/del03")
+    void del03();
 }
