@@ -42,6 +42,11 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
     }
 
     @Override
+    public Map<String, List<String>> getHeaderMap() {
+        return response.getHeaderMap();
+    }
+
+    @Override
     public String getHeader(String name) {
         return response.getHeader(name);
     }
@@ -68,6 +73,11 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
     @Override
     public List<Cookie> getSetCookies() {
         return response.getSetCookies();
+    }
+
+    @Override
+    public boolean isRedirect() {
+        return response.isRedirect();
     }
 
     public abstract String bodyResultString();

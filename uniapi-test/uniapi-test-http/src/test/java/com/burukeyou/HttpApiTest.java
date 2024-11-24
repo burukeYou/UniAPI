@@ -158,7 +158,7 @@ public class HttpApiTest {
 
     @Test
     public void test114(){
-        HttpResponse<InputStream> httpResponse = userApi.add114();
+        //HttpResponse<InputStream> httpResponse = userApi.add114();
         HttpResponse<byte[]> httpResponse2 = userApi.add115();
         //HttpResponse<File> httpResponse3 = userApi.add116();
         System.out.println();

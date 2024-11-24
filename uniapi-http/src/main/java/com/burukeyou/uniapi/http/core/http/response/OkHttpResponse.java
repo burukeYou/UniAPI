@@ -2,6 +2,8 @@ package com.burukeyou.uniapi.http.core.http.response;
 
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.support.Cookie;
+import lombok.Getter;
+import lombok.Setter;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -17,6 +19,9 @@ import java.util.Map;
 /**
  * @author      caizhihao
  */
+
+@Getter
+@Setter
 public class OkHttpResponse extends AbstractUniHttpResponse {
 
     private Request request;
@@ -94,7 +99,10 @@ public class OkHttpResponse extends AbstractUniHttpResponse {
         return parseAll(request.url(), response.headers());
     }
 
-
+    @Override
+    public boolean isRedirect() {
+        return response.isRedirect();
+    }
 
     private static List<Cookie> parseAll(okhttp3.HttpUrl url, Headers headers) {
         List<Cookie> cookieList = new ArrayList<>();

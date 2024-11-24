@@ -38,5 +38,10 @@ public abstract class HttpBody {
      */
     public abstract String toStringBody();
 
-
+    /**
+     * to String
+     */
+    public String toString() {
+        return toStringBody();
+    }
 }

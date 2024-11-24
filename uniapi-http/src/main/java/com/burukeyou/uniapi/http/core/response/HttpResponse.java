@@ -20,10 +20,19 @@ public interface HttpResponse<T> {
      */
     T getBodyResult();
 
+
+    /**
+     * Get all the request  header for the response
+     *      If the same request header name exists,
+     *      it will be overwritten and returned. In this case,
+     *      please use {@link #getHeaderMap()}
+     */
+    Map<String,String> getHeaders();
+
     /**
      * Get all the request  header for the response
      */
-    Map<String,String> getHeaders();
+    Map<String, List<String>> getHeaderMap();
 
     /**
      * Get the  custom request header for the response
@@ -54,6 +63,11 @@ public interface HttpResponse<T> {
      * get response set-cookie header to
      */
     List<Cookie> getSetCookies();
+
+    /**
+     *  Returns true if this response redirects to another resource.
+     */
+    boolean isRedirect();
 
     /**
      * http protocol string

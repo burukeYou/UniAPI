@@ -40,14 +40,15 @@ public interface UniHttpResponse {
      */
     Map<String, List<String>> getHeaderMap();
 
-
     /**
-     * Get the  custom request header for the response
+     * Get request header by name
+     * @param name   header name
      */
     String getHeader(String name);
 
     /**
-     * Get the  custom request header for the response
+     * Get request header by name , If there are multiple identical request headers, they will all be returned
+     * @param name   header name
      */
     List<String> getHeaderList(String name);
 
@@ -72,7 +73,14 @@ public interface UniHttpResponse {
     List<Cookie> getSetCookies();
 
     /**
+     *  Returns true if this response redirects to another resource.
+     */
+    boolean isRedirect();
+
+    /**
      * http protocol string
      */
     String toHttpProtocol();
+
+
 }
