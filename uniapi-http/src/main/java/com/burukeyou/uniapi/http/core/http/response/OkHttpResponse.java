@@ -35,6 +35,11 @@ public class OkHttpResponse extends AbstractUniHttpResponse {
     }
 
     @Override
+    public boolean isSuccessful() {
+        return response.isSuccessful();
+    }
+
+    @Override
     public String getBodyToString() {
         return response.body().toString();
     }

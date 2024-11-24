@@ -15,6 +15,12 @@ import java.util.Map;
 public interface HttpResponse<T> {
 
     /**
+     * Returns true if the code is in [200..300), which means the request was successfully received, understood, and accepted.
+     * @return                  is response success
+     */
+    boolean isSuccessful();
+
+    /**
      * Obtain the deserialized object of the HTTP response body,this type is the return value type of the proxy method
      * @return           HTTP response body Object
      */

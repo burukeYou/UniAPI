@@ -7,14 +7,15 @@ import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverte
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
 import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
+import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.http.request.OkHttpRequest;
+import com.burukeyou.uniapi.http.core.http.response.OkHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
-import com.burukeyou.uniapi.http.core.http.response.OkHttpResponse;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
@@ -153,7 +154,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,httpApiMethodInvocation);
     }
 
-    public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata){
+    public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata)  {
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
         Map<String, String> headers = httpMetadata.getHeaders();
@@ -191,7 +192,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             if (!response.isSuccessful()){
-                throw new SendHttpRequestException("Http请求异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
+                throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
             }
 
             ResponseConvertContext responseConvertContext = new ResponseConvertContext();
@@ -200,6 +201,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             responseConvertContext.setHttpMetadata(httpMetadata);
             responseConvertContext.setMethodInvocation(httpApiMethodInvocation);
             responseConvertContext.setProcessor(requestProcessor);
+
             HttpResponse<?> httpResponse = responseChain.convert(responseConvertContext);
             if (httpResponse == null){
                 throw new UniHttpResponseException("Unable to find a suitable converter to deserialize for response content-type " +  getResponseContentType(response));
@@ -207,9 +209,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return httpResponse;
         } catch (IOException e){
             throw new SendHttpRequestException("Http请求网络IO异常", e);
-        } catch (SendHttpRequestException e){
+        } catch (HttpResponseException e){
             throw e;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new SendHttpRequestException("Http请求异常", e);
         }
     }

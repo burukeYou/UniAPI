@@ -37,6 +37,11 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
     }
 
     @Override
+    public boolean isSuccessful() {
+        return response.isSuccessful();
+    }
+
+    @Override
     public Map<String, String> getHeaders() {
         return response.getHeaders();
     }

@@ -12,6 +12,12 @@ import java.util.Map;
 public interface UniHttpResponse {
 
     /**
+     * Returns true if the code is in [200..300), which means the request was successfully received, understood, and accepted.
+     * @return                  is response success
+     */
+    boolean isSuccessful();
+
+    /**
      * get response body to string
      */
     String getBodyToString();
