@@ -10,6 +10,7 @@ import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverter;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverterChain;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.support.Cookie;
+import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.support.arg.*;
 import com.burukeyou.uniapi.util.ListsUtil;
 import lombok.Data;
@@ -68,13 +69,20 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         MethodArgList argList = new MethodArgList(method, args);
         fillHttpMetadata(httpMetadata,argList);
         parseCombineParam(httpMetadata, argList);
+        initBase(httpMetadata);
+        return httpMetadata;
+    }
+
+    private void initBase(HttpMetadata httpMetadata) {
         if (httpMetadata.getBody() != null){
-            httpMetadata.putHeader(HEADER_CONTENT_TYPE,httpMetadata.getBody().getContentType());
+            httpMetadata.setContentType(httpMetadata.getBody().getContentType());
         }
         if (StringUtils.isNotBlank(httpInterface.contentType())){
-            httpMetadata.putHeader(HEADER_CONTENT_TYPE,httpInterface.contentType());
+            httpMetadata.setContentType(httpInterface.contentType().trim());
         }
-        return httpMetadata;
+        if (StringUtils.isBlank(httpMetadata.getContentType()) && httpMetadata.getRequestMethod().needBody()){
+            httpMetadata.setContentType(MediaTypeEnum.APPLICATION_JSON.getType());
+        }
     }
 
     public <T> T getEnvironmentValue(T value){
@@ -229,15 +237,6 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
         }
 
         throw new BaseUniHttpException("http body build exception can not combine body");
-    }
-
-
-    public   boolean isFileField(Param param){
-        Class<?> clz = param.getType();
-        if (File.class.isAssignableFrom(clz)){
-            return true;
-        }
-        return param.isCollection(File.class);
     }
 
 
@@ -432,11 +431,11 @@ public abstract class AbstractHttpMetadataParamFinder implements HttpMetadataFin
     }
 
     private void fillHttpMetadata(HttpMetadata httpMetadata, ArgList paramArgList) {
-        httpMetadata.putAllQueryParam(findQueryParam(paramArgList));
-        httpMetadata.putAllPathParam(findPathParam(paramArgList));
+        httpMetadata.putQueryParams(findQueryParam(paramArgList));
+        httpMetadata.putPathParams(findPathParam(paramArgList));
         httpMetadata.setBodyIfAbsent(findHttpBody(paramArgList));
-        httpMetadata.putAllHeaders(findHeaders(paramArgList));
-        httpMetadata.addAllCookies(findCookies(paramArgList));
+        httpMetadata.putHeaders(findHeaders(paramArgList));
+        httpMetadata.addCookiesList(findCookies(paramArgList));
     }
 
     public boolean isEmpty(Object arg){

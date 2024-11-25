@@ -1,18 +1,15 @@
-package com.burukeyou.uniapi.http.core.response;
-
+package com.burukeyou.uniapi.http.core.http.response;
 
 import com.burukeyou.uniapi.http.support.Cookie;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Http Original Response Object
- *
- *
- * @author caizhihao
+ *  Http Response
  */
-public interface HttpResponse<T> {
+public interface UniHttpResponse {
 
     /**
      * Returns true if the code is in [200..300), which means the request was successfully received, understood, and accepted.
@@ -21,17 +18,26 @@ public interface HttpResponse<T> {
     boolean isSuccessful();
 
     /**
-     * Obtain the deserialized object of the HTTP response body,this type is the return value type of the proxy method
-     * @return           HTTP response body Object
+     * get response body to string
      */
-    T getBodyResult();
+    String getBodyToString();
 
+    /**
+     * get response body to byte[]
+     */
+    byte[] getBodyBytes();
+
+
+    /**
+     * get response body to InputStream
+     */
+    InputStream getBodyToInputStream();
 
     /**
      * Get all the request  header for the response
      *      If the same request header name exists,
      *      it will be overwritten and returned. In this case,
-     *      please use {@link #getHeaderMap()}
+     *      please use {@link UniHttpResponse#getHeaderMap()}
      */
     Map<String,String> getHeaders();
 
@@ -41,12 +47,14 @@ public interface HttpResponse<T> {
     Map<String, List<String>> getHeaderMap();
 
     /**
-     * Get the  custom request header for the response
+     * Get request header by name
+     * @param name   header name
      */
     String getHeader(String name);
 
     /**
-     * Get the  custom request header for the response
+     * Get request header by name , If there are multiple identical request headers, they will all be returned
+     * @param name   header name
      */
     List<String> getHeaderList(String name);
 
@@ -79,4 +87,6 @@ public interface HttpResponse<T> {
      * http protocol string
      */
     String toHttpProtocol();
+
+
 }

@@ -18,6 +18,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -123,6 +124,14 @@ public class HttpApiTest {
     }
 
     @Test
+    public void test91() throws IOException {
+        File file1 = getLocalFile("img/a.txt");
+        File file2 = getLocalFile("img/b.txt");
+        BaseRsp<String> rsp = userApi.add91("Sb", "123".getBytes(), Files.newInputStream(file1.toPath()),file2);
+        System.out.println(JSON.toJSONString(rsp));
+    }
+
+    @Test
     public void test10(){
         HttpFileResponse<byte[]> httpFileResponse = userApi.add10();
         byte[] bytes = userApi.add101();
@@ -149,7 +158,7 @@ public class HttpApiTest {
 
     @Test
     public void test114(){
-        HttpResponse<InputStream> httpResponse = userApi.add114();
+        //HttpResponse<InputStream> httpResponse = userApi.add114();
         HttpResponse<byte[]> httpResponse2 = userApi.add115();
         //HttpResponse<File> httpResponse3 = userApi.add116();
         System.out.println();
@@ -207,6 +216,12 @@ public class HttpApiTest {
     @Test
     public void testdel02(){
         String sb = userApi.del02();
+        System.out.println();
+    }
+
+    @Test
+    public void testdel03(){
+        userApi.del03();
         System.out.println();
     }
 }

@@ -9,7 +9,8 @@ import java.lang.annotation.*;
  * Support parameter types for tags：
  *      Custom Object
  *      Map
- *      Normal value
+ *      Normal Text value
+ *      File value, support byte[]、InputStream、File
  *
  */
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER})
@@ -21,4 +22,10 @@ public @interface BodyMultiPartPar {
      * Form Field Name
      */
     String value() default "";
+
+    /**
+     * File Name
+     *      if not set, use original file name
+     */
+    String fileName() default "";
 }

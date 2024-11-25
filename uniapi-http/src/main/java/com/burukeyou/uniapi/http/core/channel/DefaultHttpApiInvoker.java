@@ -7,8 +7,11 @@ import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverte
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
 import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
+import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
+import com.burukeyou.uniapi.http.core.http.request.OkHttpRequest;
+import com.burukeyou.uniapi.http.core.http.response.OkHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
@@ -151,7 +154,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,httpApiMethodInvocation);
     }
 
-    public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata){
+    public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata)  {
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
         Map<String, String> headers = httpMetadata.getHeaders();
@@ -167,7 +170,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // config cookie
-        String cookie = httpMetadata.getCookieString();
+        String cookie = httpMetadata.getCookiesToString();
         if (StringUtils.isNotBlank(cookie)){
             requestBuilder.header("Cookie", cookie);
         }
@@ -180,7 +183,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         if (requestBody == null && requestMethod.needBody()){
-            requestBody = RequestBody.create(MediaType.parse("text/plain"), "");
+            requestBody = RequestBody.create(MediaType.parse(httpMetadata.getContentType()), "");
         }
 
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
@@ -189,15 +192,16 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             if (!response.isSuccessful()){
-                throw new SendHttpRequestException("Http请求异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
+                throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
             }
 
             ResponseConvertContext responseConvertContext = new ResponseConvertContext();
-            responseConvertContext.setResponse(response);
-            responseConvertContext.setRequest(request);
+            responseConvertContext.setRequest(new OkHttpRequest(request));
+            responseConvertContext.setResponse(new OkHttpResponse(request,response));
             responseConvertContext.setHttpMetadata(httpMetadata);
             responseConvertContext.setMethodInvocation(httpApiMethodInvocation);
             responseConvertContext.setProcessor(requestProcessor);
+
             HttpResponse<?> httpResponse = responseChain.convert(responseConvertContext);
             if (httpResponse == null){
                 throw new UniHttpResponseException("Unable to find a suitable converter to deserialize for response content-type " +  getResponseContentType(response));
@@ -205,9 +209,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return httpResponse;
         } catch (IOException e){
             throw new SendHttpRequestException("Http请求网络IO异常", e);
-        } catch (SendHttpRequestException e){
+        } catch (HttpResponseException e){
             throw e;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new SendHttpRequestException("Http请求异常", e);
         }
     }
@@ -228,11 +232,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
 
-        MediaType mediaTypeJson = MediaType.parse(metadata.getHeaders().get(HEADER_CONTENT_TYPE));
+        MediaType mediaTypeJson = MediaType.parse(metadata.getContentType());
         RequestBody requestBody = null;
         if (body instanceof HttpBodyJSON){
             requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
-        }else if (body instanceof HttpBodyBinary){
+        } else if (body instanceof HttpBodyText) {
+            requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
+        } else if (body instanceof HttpBodyBinary){
             InputStream inputStream = ((HttpBodyBinary) body).getFile();
             requestBody = RequestBody.create(mediaTypeJson,streamToByteArray(inputStream));
         }else if (body instanceof HttpBodyFormData){
@@ -245,15 +251,27 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             HttpBodyMultipart multipartFormData = (HttpBodyMultipart)body;
             for (MultipartDataItem dataItem : multipartFormData.getMultiPartData()) {
                 if (!dataItem.isFileFlag()){
-                    builder.addFormDataPart(dataItem.getKey(),dataItem.getTextValue());
+                    builder.addFormDataPart(dataItem.getKey(),dataItem.getValueString());
                 }else {
-                    File file = dataItem.getFileValue();
-                    if (file == null){
+                    Object fileValue = dataItem.getFieldValue();
+                    String fileName = dataItem.getFileName();
+                    if (fileValue == null){
                         continue;
                     }
+                    if (fileValue instanceof File){
+                        File file = (File) fileValue;
+                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, file);
+                        builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
+                    }else if (fileValue instanceof InputStream){
+                        InputStream inputStream = (InputStream) fileValue;
+                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, streamToByteArray(inputStream));
+                        builder.addFormDataPart(dataItem.getKey(), fileName,fileBody);
+                    }else if (fileValue instanceof byte[]){
+                        byte[] bytes = (byte[]) fileValue;
+                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, bytes);
+                        builder.addFormDataPart(dataItem.getKey(), fileName,fileBody);
+                    }
 
-                    RequestBody fileBody = RequestBody.create(MultipartBody.FORM, file);
-                    builder.addFormDataPart(dataItem.getKey(), file.getName(), fileBody);
                 }
             }
             requestBody = builder.build();

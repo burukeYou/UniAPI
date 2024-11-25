@@ -13,6 +13,7 @@ public class HttpRequestBodyConverterChain {
     private HttpRequestBodyConverter[] getChainConverter(AbstractHttpMetadataParamFinder paramFinder) {
         return new HttpRequestBodyConverter[]{
                 new BodyJsonParHttpBodyConverter(paramFinder),
+                new BodyTextParHttpBodyConverter(paramFinder),
                 new BodyFormParHttpBodyConverter(paramFinder),
                 new BodyBinaryHttpBodyConverter(paramFinder),
                 new BodyMultiPartParHttpBodyConverter(paramFinder)

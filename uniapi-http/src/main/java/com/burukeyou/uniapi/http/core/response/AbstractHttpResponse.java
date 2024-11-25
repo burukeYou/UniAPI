@@ -1,17 +1,13 @@
 package com.burukeyou.uniapi.http.core.response;
 
 import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.support.Cookie;
 import lombok.Getter;
 import lombok.Setter;
-import okhttp3.Headers;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.springframework.beans.BeanUtils;
 
 import java.net.HttpCookie;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +22,11 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     protected transient HttpMetadata httpMetadata;
 
-    private transient Request request;
 
-    protected transient Response response;
+    protected transient UniHttpResponse response;
 
-
-    public AbstractHttpResponse(ResponseConvertContext context) {
+    public AbstractHttpResponse(ResponseConvertContext context, T bodyResult) {
         this.httpMetadata = context.getHttpMetadata();
-        this.request = context.getRequest();
         this.response = context.getResponse();
     }
 
@@ -44,33 +37,38 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
     }
 
     @Override
+    public boolean isSuccessful() {
+        return response.isSuccessful();
+    }
+
+    @Override
     public Map<String, String> getHeaders() {
-        Map<String, String> map = new HashMap<>();
-        Headers headers = response.headers();
-        for (String name : response.headers().names()) {
-            map.put(name,headers.get(name));
-        }
-        return map;
+        return response.getHeaders();
+    }
+
+    @Override
+    public Map<String, List<String>> getHeaderMap() {
+        return response.getHeaderMap();
     }
 
     @Override
     public String getHeader(String name) {
-        return response.header(name);
+        return response.getHeader(name);
     }
 
     @Override
     public List<String> getHeaderList(String name) {
-        return  response.headers(name);
+        return  response.getHeaderList(name);
     }
 
     @Override
     public int getHttpCode() {
-        return response.code();
+        return response.getHttpCode();
     }
 
     @Override
     public String getContentType() {
-        return getHeader("Content-Type");
+        return response.getContentType();
     }
 
     public List<String> getSetCookiesString() {
@@ -79,18 +77,12 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     @Override
     public List<Cookie> getSetCookies() {
-        return parseAll(request.url(), response.headers());
+        return response.getSetCookies();
     }
 
-    public static List<Cookie> parseAll(okhttp3.HttpUrl url, Headers headers) {
-        List<Cookie> cookieList = new ArrayList<>();
-        List<okhttp3.Cookie> cookies = okhttp3.Cookie.parseAll(url, headers);
-        for (okhttp3.Cookie tmp : cookies) {
-            Cookie cookie = new Cookie();
-            BeanUtils.copyProperties(tmp,cookie);
-            cookieList.add(cookie);
-        }
-        return cookieList;
+    @Override
+    public boolean isRedirect() {
+        return response.isRedirect();
     }
 
     public abstract String bodyResultString();
@@ -100,7 +92,7 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
         String requestProtocol = httpMetadata.toHttpProtocol();
         StringBuilder sb = new StringBuilder(requestProtocol);
         sb.append("Response Header:\n");
-        Map<String, List<String>> stringListMap = response.headers().toMultimap();
+        Map<String, List<String>> stringListMap = response.getHeaderMap();
         stringListMap.forEach((key, value) -> {
             for (String s : value) {
                 sb.append("\t\t").append(key).append(":\t").append(s).append("\n");

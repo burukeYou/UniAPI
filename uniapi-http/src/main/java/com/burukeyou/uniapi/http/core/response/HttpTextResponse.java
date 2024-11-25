@@ -19,17 +19,12 @@ public class HttpTextResponse extends AbstractHttpResponse<String> {
     private String textValue;
 
     public HttpTextResponse(String textValue, ResponseConvertContext context) {
-        super(context);
+        super(context,textValue);
         this.textValue = textValue;
     }
 
     @Override
     public String bodyResultString() {
-        return textValue;
-    }
-
-    @Override
-    public String getBodyResult() {
         return textValue;
     }
 }

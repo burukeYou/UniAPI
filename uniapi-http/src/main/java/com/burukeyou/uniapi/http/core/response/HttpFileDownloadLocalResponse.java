@@ -14,7 +14,7 @@ public class HttpFileDownloadLocalResponse extends AbstractHttpResponse<File> im
     private File file;
 
     public HttpFileDownloadLocalResponse(File file, ResponseConvertContext context) {
-        super(context);
+        super(context,file);
         this.file = file;
         this.bodyResult = file;
     }

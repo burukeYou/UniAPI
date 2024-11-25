@@ -2,7 +2,7 @@ package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpTextResponse;
-import okhttp3.Response;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 public class HttpTextResponseConverter  extends AbstractHttpResponseConverter {
 
     @Override
-    protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
+    protected boolean isConvert(UniHttpResponse response, MethodInvocation methodInvocation) {
         String contentType = getResponseContentType(response).trim();
         if (contentType.startsWith("text")){
             return true;

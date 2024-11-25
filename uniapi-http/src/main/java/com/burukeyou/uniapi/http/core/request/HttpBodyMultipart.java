@@ -1,12 +1,12 @@
 package com.burukeyou.uniapi.http.core.request;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.CollectionUtils;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * @author caizhihao
@@ -15,10 +15,15 @@ import java.util.List;
 @Setter
 public class HttpBodyMultipart extends HttpBody {
 
-    private List<MultipartDataItem> multiPartData;
+    private List<MultipartDataItem> multiPartData = new ArrayList<>();
+
+
+    public HttpBodyMultipart() {
+        super(MediaTypeEnum.MULTIPART_FORM_DATA.getType());
+    }
 
     public HttpBodyMultipart(List<MultipartDataItem> multiPartData) {
-        super(MediaTypeEnum.MULTIPART_FORM_DATA.getType());
+        this();
         this.multiPartData = multiPartData;
     }
 
@@ -32,14 +37,22 @@ public class HttpBodyMultipart extends HttpBody {
         if (emptyContent()){
             return "";
         }
-
         StringBuilder sb = new StringBuilder();
         for (MultipartDataItem tmp : multiPartData) {
-            File file = tmp.getFileValue();
-            sb.append("\t\t").append(tmp.getKey()).append(":   ").append(tmp.isFileFlag() && file != null ? file.getAbsolutePath() : tmp.getTextValue()).append("\n");
+            sb.append("\t\t").append(tmp.isFileFlag() ? "(File)" : "      ").append(tmp.getKey()).append(":   ").append(tmp.getValueString()).append("\n");
         }
-
         return sb.toString();
     }
 
+    public void addTextItem(String name, String value){
+        multiPartData.add(MultipartDataItem.ofText(name,value));
+    }
+
+    public void addFileItem(String name, Object file){
+        multiPartData.add(MultipartDataItem.ofFile(name,file));
+    }
+
+    public void addFileItem(String name, Object file, String fileName){
+        multiPartData.add(MultipartDataItem.ofFile(name,file,fileName));
+    }
 }

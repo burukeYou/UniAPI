@@ -1,7 +1,7 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.burukeyou.uniapi.http.core.response.HttpInputStreamResponse;
-import okhttp3.Response;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ import java.io.InputStream;
 public class HttpInputStreamResponseConverter extends AbstractHttpResponseConverter {
 
     @Override
-    protected boolean isConvert(Response response, MethodInvocation methodInvocation) {
+    protected boolean isConvert(UniHttpResponse response, MethodInvocation methodInvocation) {
         if (!isFileDownloadResponse(response)){
             return false;
         }
@@ -21,7 +21,7 @@ public class HttpInputStreamResponseConverter extends AbstractHttpResponseConver
 
     @Override
     protected HttpInputStreamResponse doConvert(ResponseConvertContext context) {
-        Response response = context.getResponse();
-        return new HttpInputStreamResponse(response.body().byteStream(),getFileResponseName(response),context);
+        UniHttpResponse response = context.getResponse();
+        return new HttpInputStreamResponse(response.getBodyToInputStream(),getFileResponseName(response),context);
     }
 }

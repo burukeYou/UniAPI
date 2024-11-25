@@ -9,7 +9,8 @@ import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
-import com.burukeyou.uniapi.http.core.response.*;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import org.springframework.http.MediaType;
 
 import java.io.File;
@@ -50,6 +51,12 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/add9")
     BaseRsp<String> add9(@BodyMultiPartPar("reqNo") String value,@BodyMultiPartPar Add9DTO req);
+
+    @PostHttpInterface("/user-web/add9")
+    BaseRsp<String> add91(@BodyMultiPartPar("reqNo") String value,
+                          @BodyMultiPartPar(value = "userImg",fileName = "牛逼.pdf") byte[] file,
+                          @BodyMultiPartPar(value = "logoImg",fileName = "和.mp4") InputStream logoImg,
+                          @BodyMultiPartPar(value = "logoImg",fileName = "娃啊.xlsx") File file2);
 
     @PostHttpInterface("/user-web/add10")
     HttpFileResponse<byte[]> add10();
@@ -107,4 +114,7 @@ public interface UserServiceApi {
 
     @GetHttpInterface("/user-web/del2")
     String del02();
+
+    @PostHttpInterface(path = "/user-web/del03")
+    void del03();
 }
