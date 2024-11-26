@@ -1,10 +1,21 @@
 package com.burukeyou;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
-import com.burukeyou.demo.entity.*;
+import com.burukeyou.demo.entity.Add4DTO;
+import com.burukeyou.demo.entity.Add6DTO;
+import com.burukeyou.demo.entity.Add9DTO;
+import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
@@ -14,13 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
 
 
 @SpringBootTest(classes = DemoApplication.class)
@@ -223,6 +227,12 @@ public class HttpApiTest {
     public void testdel03(){
         userApi.del03();
         System.out.println();
+    }
+
+    @Test
+    public void testdel04(){
+        String s = userApi.del04();
+        System.out.println(s);
     }
 }
 
