@@ -264,7 +264,7 @@ class UserAppService {
 ### @BodyBinaryPar注解
 用于标记Http请求体内容为二进制形式: 对应content-type为 application/octet-stream
 
-支持以下方法参数类型: InputStream、File、InputStreamSource
+支持以下方法参数类型: InputStream、File、InputStreamSource、byte[]
 
 ```java
     @PostHttpInterface
@@ -302,7 +302,6 @@ class UserReq {
     private String cook;
 }
 ```
-
 
 
 ## 拿到原始的HttpResponse
@@ -424,6 +423,21 @@ interface UserServiceApi {
     
 }
 ```
+
+
+## 接口超时配置
+自定义HttpClient虽然可以配置超时时间，但是无法针对每个接口做不同的超时配置。
+这时需要使用  @HttpCallConfig 注解来针对每个接口进行配置
+
+```java
+    @PostHttpInterface
+    @HttpCallConfig(callTimeout = 3000, //  整个接口调用的超时时间
+                    connectTimeout = 3000, // 进行握手连接的超时时间
+                    writeTimeout = 3000,  // 进行写数据到服务端的超时时间
+                    readTimeout = 3000)  // 从服务器读数据的超时时间
+    BaseRsp<String> getUser();    
+```
+
 
 
 # 4、企业级渠道对接实战

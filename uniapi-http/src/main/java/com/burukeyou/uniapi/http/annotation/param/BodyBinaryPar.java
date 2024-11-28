@@ -10,7 +10,7 @@ import java.lang.annotation.*;
  *      InputStream
  *      File
  *      InputStreamSource
- *
+ *      byte[]
  *
  * @author caizhihao
  */
