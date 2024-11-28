@@ -23,7 +23,7 @@ UniHttp
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>0.1.2</version>
+      <version>0.1.3</version>
     </dependency>
 ```
 
@@ -212,6 +212,18 @@ class UserAppService {
 
 序列化和反序列化默认用的是fastjson，所以如果想指定别名，可以在字段上标记 @JSONField 注解取别名
 
+## @BodyTextPar
+用于标记Http请求体内容为json形式: 对应content-type为 test/plain
+
+支持以下方法参数类型: Object 
+
+会调用Object.toString() 转成字符串进行传输，请确保这这是你期望的格式
+
+```java
+    @PostHttpInterface
+    BaseRsp<String> getUser(@BodyTextPar  String id);  
+```
+
 
 ### @BodyFormPar注解
 用于标记Http请求体内容为普通表单形式: 对应content-type为 application/x-www-form-urlencoded
@@ -232,19 +244,21 @@ class UserAppService {
 ### BodyMultiPartPar注解
 用于标记Http请求体内容为复杂形式: 对应content-type为 multipart/form-data
 
-支持以下方法参数类型: 对象、Map、普通值、File对象
+支持以下方法参数类型: 对象、Map、普通值、File对象、InputStream、byte[]
 
 
 ```java
     @PostHttpInterface
     BaseRsp<String> getUser(@BodyMultiPartPar("name") String value,         //  单个表单文本值
+                            @BodyMultiPartPar("userImg") byte[] value1,         //  单个表单-文件二进制
+                            @BodyMultiPartPar("logoImg") InputStream value2,      //  单个表单-文件流
+                            @BodyMultiPartPar("logoImg2") File value2,      //  单个表单-文件对象
                             @BodyMultiPartPar User user,                   // 对象
-                            @BodyMultiPartPar Map<String,Object> map,      // Map
-                            @BodyMultiPartPar("userImg") File file);     // 单个表单文件值
+                            @BodyMultiPartPar Map<String,Object> map)      // Map
 ```
 
-如果参数类型是普通值或者File类型，当成单个表单键值对处理，需要手动指定参数名。
-如果参数类型是对象或者Map，当成多个表单键值对处理。 如果字段值或者map的value参数值是File类型，则自动当成是文件表单字段传递处理
+如果参数类型是普通值或者文件类型（包含File、InputStream、byte[]），当成单个表单键值对处理，需要手动指定参数名。
+如果参数类型是对象或者Map，当成多个表单键值对处理。 如果字段值或者map的value参数值是文件类型，则自动当成是文件表单字段传递处理
 
 
 ### @BodyBinaryPar注解
