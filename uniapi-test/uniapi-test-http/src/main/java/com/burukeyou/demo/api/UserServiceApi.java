@@ -11,6 +11,7 @@ import com.burukeyou.demo.entity.Add6DTO;
 import com.burukeyou.demo.entity.Add9DTO;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.demo.entity.U2DTO;
+import com.burukeyou.uniapi.http.annotation.HttpCallConfig;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
 import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
@@ -131,5 +132,8 @@ public interface UserServiceApi {
     void del03();
 
     @PostHttpInterface(path = "/user-web/del04")
+    @HttpCallConfig(connectTimeout = 3000)
     String del04();
+
+
 }

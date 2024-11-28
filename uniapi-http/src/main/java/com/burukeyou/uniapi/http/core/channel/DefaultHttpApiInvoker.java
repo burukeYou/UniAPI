@@ -8,7 +8,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.Duration;
 import java.util.Map;
 
 import com.burukeyou.uniapi.config.SpringBeanContext;
@@ -51,7 +50,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.StopWatch;
 
 /**
  * @author  caizhihao
@@ -204,14 +202,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
-
         Request request = requestBuilder.build();
 
-        OkHttpClient callClient = client.newBuilder().callTimeout(Duration.ofSeconds(8)).build();
-
+        OkHttpClient callClient = getCallHttpClient(methodInvocation.getMethod(),client);
         Call call = callClient.newCall(request);
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
         try (Response response = call.execute()) {
             if (!response.isSuccessful()){
                 throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
@@ -235,9 +229,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             throw e;
         } catch (Exception e) {
             throw new SendHttpRequestException("Http请求异常", e);
-        }finally {
-            stopWatch.stop();
-            log.info("Http请求耗时【{}】ms",stopWatch.getTotalTimeMillis());
         }
     }
 
