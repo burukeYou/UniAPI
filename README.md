@@ -117,10 +117,15 @@ class UserAppService {
             // url查询参数拼接字符串
             paramStr = "a=1&b=2&c=3&d=哈哈&e=%E7%89%9B%E9%80%BC",
             // cookie 字符串
-            cookie = "name=1;sessionId=999"
+            cookie = "name=1;sessionId=999"，
+            // 请求体格式. 如果使用了 @Par注解标记请求体不需要手动指定
+            contentType= "appliaction/json;chartset=utf-8"
     )
     BaseRsp<String> getUser();
 ```
+
+这些@HttpInterface注解上的参数建议配置写死的固定的参数，如果需要动态的传参。 请重写具体的 HttpApiProcessor#postBeforeHttpMetadata 针对不同渠道做不同的调用前传参或者修改覆盖
+
 
 ##  各种@Par注解
 以下各种Par后缀的注解，主要用于方法参数上，用于指定在发送请求时将参数值放到Http请求体的哪部分上。
@@ -213,7 +218,7 @@ class UserAppService {
 序列化和反序列化默认用的是fastjson，所以如果想指定别名，可以在字段上标记 @JSONField 注解取别名
 
 ## @BodyTextPar
-用于标记Http请求体内容为json形式: 对应content-type为 test/plain
+用于标记Http请求体内容为text文本形式: 对应content-type为 test/plain
 
 支持以下方法参数类型: Object 
 
