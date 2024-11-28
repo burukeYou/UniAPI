@@ -23,7 +23,7 @@ UniHttp
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>0.0.9</version>
+      <version>0.1.2</version>
     </dependency>
 ```
 
@@ -303,14 +303,14 @@ HttpResponse表示Http请求的原始响应对象，如果业务需要关注拿�
 通过它我们就可以拿到响应的Http状态码、响应头、响应cookie等等，当然也可以拿到我们的响应body的内容通过getBodyResult方法
 
 ## 下载文件接口如何对接
-对于若是下载文件的类型的接口，可将方法返回值定义为 HttpBinaryResponse、HttpFileResponse、HttpInputStreamResponse 、File、InputStream、byte[]的任意一种，
+对于若是下载文件的类型的接口，可将方法返回值定义为 `HttpFileResponse<byte[]>`、`HttpFileResponse<File>`、`HttpFileResponse<InputStream>` 、File、InputStream、byte[]的任意一种，
 这样就可以拿到下载后的文件。
 
-HttpBinaryResponse: 表示下载的文件内容以二进制形式返回，如果是大文件请谨慎处理，因为会存放在内存中
+- `HttpFileResponse<byte[]>`: 表示下载的文件内容以二进制形式返回，如果是大文件请谨慎处理，因为会存放在内存中
 
-HttpFileResponse:  表示下载的文件内容以File对象返回，这时文件已经被下载到了本地磁盘
+- `HttpFileResponse<File>`:  表示下载的文件内容以File对象返回，这时文件已经被下载到了本地磁盘
 
-HttpInputStreamResponse: 表示下载的文件内容输入流的形式返回，这时文件其实还没被下载到客户端，调用者可以自行读取该输入流进行文件的下载
+- `HttpFileResponse<InputStream>`: 表示下载的文件内容以输入流的形式返回，这时文件其实还没被下载到客户端，调用者可以自行读取该输入流进行文件的下载
 
 
 

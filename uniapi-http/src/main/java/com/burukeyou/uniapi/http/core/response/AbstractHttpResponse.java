@@ -28,6 +28,7 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
     public AbstractHttpResponse(ResponseConvertContext context, T bodyResult) {
         this.httpMetadata = context.getHttpMetadata();
         this.response = context.getResponse();
+        this.bodyResult = bodyResult;
     }
 
     protected T bodyResult;
