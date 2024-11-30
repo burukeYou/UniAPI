@@ -41,7 +41,11 @@ public class OkHttpResponse extends AbstractUniHttpResponse {
 
     @Override
     public String getBodyToString() {
-        return response.body().toString();
+        try {
+            return response.body().string();
+        } catch (IOException e) {
+            throw new UniHttpResponseException(e);
+        }
     }
 
     @Override
