@@ -1,15 +1,5 @@
 package com.burukeyou.uniapi.http.core.channel;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Map;
-
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -22,15 +12,8 @@ import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.http.request.OkHttpRequest;
 import com.burukeyou.uniapi.http.core.http.response.OkHttpResponse;
-import com.burukeyou.uniapi.http.core.request.HttpBody;
-import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
-import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
-import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
-import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
-import com.burukeyou.uniapi.http.core.request.HttpBodyText;
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
-import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
+import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.extension.EmptyHttpApiProcessor;
@@ -39,17 +22,22 @@ import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.support.ClassUtil;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  * @author  caizhihao
@@ -280,7 +268,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                         builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
                     }else if (fileValue instanceof InputStream){
                         InputStream inputStream = (InputStream) fileValue;
-                        RequestBody fileBody = RequestBody.create(MultipartBody.FORM, streamToByteArray(inputStream));
+                        RequestBody fileBody = this.create(MultipartBody.FORM, inputStream);
                         builder.addFormDataPart(dataItem.getKey(), fileName,fileBody);
                     }else if (fileValue instanceof byte[]){
                         byte[] bytes = (byte[]) fileValue;
@@ -293,6 +281,26 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             requestBody = builder.build();
         }
         return requestBody;
+    }
+
+    /** Returns a new request body that transmits the content of {@code file}. */
+    public  RequestBody create(final MediaType contentType, final InputStream inputStream) {
+        if (inputStream == null) throw new NullPointerException("inputStream == null");
+        return new RequestBody() {
+            @Override public MediaType contentType() {
+                return contentType;
+            }
+
+            @Override public long contentLength() {
+                return -1;
+            }
+
+            @Override public void writeTo(BufferedSink sink) throws IOException {
+                try (Source source = Okio.source(inputStream)) {
+                    sink.writeAll(source);
+                }
+            }
+        };
     }
 
 
