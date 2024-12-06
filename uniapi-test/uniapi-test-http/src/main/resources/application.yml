@@ -1,6 +1,9 @@
 server:
   port: 8999
-
+  ssl:
+    key-store: classpath:ssl/server01.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
 
 channel:
   mtuan:
