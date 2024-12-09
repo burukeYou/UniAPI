@@ -1,20 +1,21 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.*;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
@@ -55,21 +56,46 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
     }
 
     private String formatOriginBodyStringByJsonStringPath(String originBodyString, String[] jsonStringFormatPath) {
-        DocumentContext documentContext = JsonPath.parse(originBodyString);
+        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL);
+        DocumentContext documentContext = JsonPath.using(conf).parse(originBodyString);
         Map<String,Object> jsonPathMap = new HashMap<>(jsonStringFormatPath.length);
         for (String jsonPath : jsonStringFormatPath) {
-            Object pathValue = documentContext.read(jsonPath);
-            if (pathValue != null){
-                jsonPathMap.put(jsonPath,pathValue);
+            Object pathValue = null;
+            try {
+                pathValue = documentContext.read(jsonPath);
+            } catch (PathNotFoundException e) {
+               continue;
+            }
+            if (pathValue == null){
+                continue;
+            }
+
+            // net.minidev.json.JSONArray
+            Object parseObject = null;
+            if (Collection.class.isAssignableFrom(pathValue.getClass())){
+                Collection<?> valueCollection = (Collection<?>) pathValue;
+                if (valueCollection.isEmpty()){
+                    continue;
+                }
+                parseObject = valueCollection.stream().filter(this::isJsonString).map(e -> JSON.parse(e.toString())).collect(Collectors.toList());
+            }else if (isJsonString(pathValue)){
+                parseObject = JSON.parse(pathValue.toString());
+            }
+            if (parseObject != null){
+                jsonPathMap.put(jsonPath, parseObject);
             }
         }
         if (jsonPathMap.isEmpty()){
             return originBodyString;
         }
         for (Map.Entry<String, Object> entry : jsonPathMap.entrySet()) {
-            documentContext.set(entry.getKey(),JSON.toJSONString(entry.getValue()));
+            documentContext = documentContext.set(entry.getKey(),entry.getValue());
         }
-        return documentContext.toString();
+        return documentContext.jsonString();
+    }
+
+    private boolean isJsonString(Object value){
+        return value != null && value.getClass().equals(String.class) && JSON.isValid(value.toString());
     }
 
     protected String[] getResponseJsonStringFormatPath(HttpApi httpApi, HttpInterface httpInterface) {
