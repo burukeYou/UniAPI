@@ -43,13 +43,17 @@ public abstract class AbstractInvokeCache {
         if (callConfigAnno == null){
             return defaultClient;
         }
-        methodClient = defaultClient.newBuilder()
-                .callTimeout(callConfigAnno.callTimeout(), TimeUnit.MILLISECONDS)
-                .readTimeout(callConfigAnno.readTimeout(), TimeUnit.MILLISECONDS)
-                .writeTimeout(callConfigAnno.writeTimeout(), TimeUnit.MILLISECONDS)
-                .connectTimeout(callConfigAnno.connectTimeout(), TimeUnit.MILLISECONDS)
-                .build();
-        httpClientCache.put(method,methodClient);
+        synchronized (httpClientCache){
+            if (httpClientCache.get(method) == null){
+                methodClient = defaultClient.newBuilder()
+                        .callTimeout(callConfigAnno.callTimeout(), TimeUnit.MILLISECONDS)
+                        .readTimeout(callConfigAnno.readTimeout(), TimeUnit.MILLISECONDS)
+                        .writeTimeout(callConfigAnno.writeTimeout(), TimeUnit.MILLISECONDS)
+                        .connectTimeout(callConfigAnno.connectTimeout(), TimeUnit.MILLISECONDS)
+                        .build();
+                httpClientCache.put(method,methodClient);
+            }
+        }
         return methodClient;
     }
 }

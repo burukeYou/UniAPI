@@ -234,6 +234,12 @@ public class HttpApiTest {
         String s = userApi.del04();
         System.out.println(s);
     }
+
+    @Test
+    public void testdel05(){
+        List<String> strings = userApi.del05();
+        System.out.println(strings);
+    }
 }
 
 

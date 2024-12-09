@@ -5,6 +5,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import com.alibaba.fastjson2.JSON;
 import com.burukeyou.demo.entity.Add4DTO;
@@ -208,4 +210,11 @@ public class UserController {
         }
         return "ok";
     }
+
+    @PostMapping(path = "/del05")
+    @ResponseBody
+    public List<String> del05(){
+        return Arrays.asList("444","555","666");
+    }
+
 }

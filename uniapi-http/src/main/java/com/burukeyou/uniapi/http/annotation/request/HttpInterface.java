@@ -1,10 +1,15 @@
 package com.burukeyou.uniapi.http.annotation.request;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import org.springframework.core.annotation.AliasFor;
-
-import java.lang.annotation.*;
 
 /** Http interface configuration
  *
@@ -69,4 +74,11 @@ public @interface HttpInterface {
      *       please see {@link HttpApiProcessor}
      */
     Class<? extends HttpApiProcessor<? extends Annotation>>[] processor() default {};
+
+    /**
+     *  If the response format of the http-interface is JSON,
+     *  and you want to convert some fields of the JSON from JSON strings to JSON objects,
+     *  you can use this method to set the path list of the JSON fields to be converted
+     */
+    String[] responseJsonPathFormat() default {};
 }
