@@ -1,12 +1,12 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
+import java.lang.reflect.Type;
+
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpTextResponse;
-import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.stereotype.Component;
-
-import java.lang.reflect.Type;
 
 @Component
 public class HttpTextResponseConverter  extends AbstractHttpResponseConverter {
@@ -32,6 +32,7 @@ public class HttpTextResponseConverter  extends AbstractHttpResponseConverter {
         HttpTextResponse response = new HttpTextResponse(bodyString,context);
         bodyString = super.postAfterBodyString(bodyString,response,context);
         response.setTextValue(bodyString);
+        response.setBodyResult(bodyString);
         return response;
     }
 }
