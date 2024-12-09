@@ -36,6 +36,12 @@ public class UserController {
     @Autowired
     private ResourceLoader resourceLoader;
 
+    @GetMapping("/get01")
+    @ResponseBody
+    public BaseRsp<String> get(){
+        return BaseRsp.ok( "999-1");
+    }
+
     @GetMapping("/add")
     @ResponseBody
     public BaseRsp<String> add(@RequestParam("name") String name){
