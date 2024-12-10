@@ -1,22 +1,29 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
-import com.alibaba.fastjson.JSON;
-import com.burukeyou.uniapi.http.annotation.HttpApi;
-import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
-import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import com.jayway.jsonpath.*;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+import com.burukeyou.uniapi.http.annotation.ResponseConfig;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
+import com.burukeyou.uniapi.http.support.MediaTypeEnum;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.MapFunction;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+@Slf4j
 @Component
 public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
 
@@ -33,12 +40,13 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
                 return httpJsonResponse;
             }
 
-            //
-            String[] jsonStringFormatPath = getResponseJsonStringFormatPath(context.getHttpApi(), context.getHttpInterface());
-            if (jsonStringFormatPath.length > 0){
-                originBodyString = formatOriginBodyStringByJsonStringPath(originBodyString,jsonStringFormatPath);
+            // json path field string to json object
+            String[] jsonStringFormatPath = getResponseJsonStringFormatPath(context);
+            if (jsonStringFormatPath != null && jsonStringFormatPath.length > 0){
+                originBodyString = formatOriginBodyStringByJsonStringPath2(originBodyString,jsonStringFormatPath);
             }
 
+            // post after body string
             originBodyString = super.postAfterBodyString(originBodyString,httpJsonResponse,context);
             httpJsonResponse.setJsonValue(originBodyString);
 
@@ -56,16 +64,13 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
     }
 
     private String formatOriginBodyStringByJsonStringPath(String originBodyString, String[] jsonStringFormatPath) {
-        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL);
+        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.using(conf).parse(originBodyString);
         Map<String,Object> jsonPathMap = new HashMap<>(jsonStringFormatPath.length);
         for (String jsonPath : jsonStringFormatPath) {
             Object pathValue = null;
-            try {
-                pathValue = documentContext.read(jsonPath);
-            } catch (PathNotFoundException e) {
-               continue;
-            }
+            pathValue = documentContext.read(jsonPath);
+
             if (pathValue == null){
                 continue;
             }
@@ -94,15 +99,43 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
         return documentContext.jsonString();
     }
 
+    private String formatOriginBodyStringByJsonStringPath2(String originBodyString, String[] jsonStringFormatPath) {
+        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+        DocumentContext documentContext = JsonPath.using(conf).parse(originBodyString);
+        for (String jsonPath : jsonStringFormatPath) {
+            try {
+                documentContext.map(jsonPath, new MapFunction() {
+                    @Override
+                    public Object map(Object currentValue, Configuration configuration) {
+                        if (isJsonString(currentValue)){
+                            return JSON.parse(currentValue.toString());
+                        }
+                        return currentValue;
+                    }
+                });
+            } catch (PathNotFoundException e) {
+                // ignore
+            }
+        }
+
+        return documentContext.jsonString();
+    }
+
     private boolean isJsonString(Object value){
         return value != null && value.getClass().equals(String.class) && JSON.isValid(value.toString());
     }
 
-    protected String[] getResponseJsonStringFormatPath(HttpApi httpApi, HttpInterface httpInterface) {
-        String[] pathFormat = httpInterface.responseJsonPathFormat();
-        if (pathFormat.length > 0){
-            return pathFormat;
+    protected String[] getResponseJsonStringFormatPath(ResponseConvertContext context) {
+        // todo cache
+        Method method = context.getMethodInvocation().getMethod();
+        ResponseConfig responseConfig = method.getAnnotation(ResponseConfig.class);
+        if (responseConfig != null && responseConfig.jsonPathStr2Obj().length > 0){
+            return responseConfig.jsonPathStr2Obj();
         }
-        return httpApi.responseJsonPathFormat();
+        ResponseConfig[] responseConfigArr = context.getHttpApi().responseConfig();
+        if (responseConfigArr == null || responseConfigArr.length == 0){
+            return null;
+        }
+        return responseConfigArr[0].jsonPathStr2Obj();
     }
 }

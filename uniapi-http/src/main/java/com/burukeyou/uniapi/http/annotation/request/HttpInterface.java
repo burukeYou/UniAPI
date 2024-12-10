@@ -75,10 +75,4 @@ public @interface HttpInterface {
      */
     Class<? extends HttpApiProcessor<? extends Annotation>>[] processor() default {};
 
-    /**
-     *  If the response format of the http-interface is JSON,
-     *  and you want to convert some fields of the JSON from JSON strings to JSON objects,
-     *  you can use this method to set the path list of the JSON fields to be converted
-     */
-    String[] responseJsonPathFormat() default {};
 }
