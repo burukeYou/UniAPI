@@ -53,6 +53,7 @@
 
     <unicore.version>${revision}</unicore.version>
     <unihttp.version>${revision}</unihttp.version>
+    <dp.name>${name}-${revision}</dp.name>
   </properties>
 
 
@@ -106,7 +107,7 @@
         <configuration>
           <publishingServerId>${sno.serviceId}</publishingServerId>
           <tokenAuth>true</tokenAuth>
-          <deploymentName>${name}</deploymentName>
+          <deploymentName>${dp.name}</deploymentName>
         </configuration>
       </plugin>
 
