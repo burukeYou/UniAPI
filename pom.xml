@@ -49,10 +49,11 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <sno.serviceId>central</sno.serviceId>
 
-    <revision>0.1.4</revision>
+    <revision>0.1.5</revision>
 
     <unicore.version>${revision}</unicore.version>
     <unihttp.version>${revision}</unihttp.version>
+    <dp.name>${name}-${revision}</dp.name>
   </properties>
 
 
@@ -106,7 +107,7 @@
         <configuration>
           <publishingServerId>${sno.serviceId}</publishingServerId>
           <tokenAuth>true</tokenAuth>
-          <deploymentName>${name}</deploymentName>
+          <deploymentName>${dp.name}</deploymentName>
         </configuration>
       </plugin>
 

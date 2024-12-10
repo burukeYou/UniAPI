@@ -1,10 +1,15 @@
 package com.burukeyou.uniapi.http.annotation;
 
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
-
-import java.lang.annotation.*;
 
 /**
  * HTTP API configuration
@@ -35,4 +40,9 @@ public @interface HttpApi {
      *  Config custom http client, if not config will use default http client
      */
     Class<? extends OkHttpClientFactory> httpClient()[] default {};
+
+    /**
+     *  Config Http Response
+     */
+    ResponseConfig[] responseConfig() default {};
 }

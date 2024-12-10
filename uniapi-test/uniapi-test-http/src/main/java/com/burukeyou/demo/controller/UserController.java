@@ -5,6 +5,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.alibaba.fastjson2.JSON;
 import com.burukeyou.demo.entity.Add4DTO;
@@ -214,4 +217,50 @@ public class UserController {
         }
         return "ok";
     }
+
+    @PostMapping(path = "/del05")
+    @ResponseBody
+    public Map<Object, Object> del05(){
+        /*
+            {
+                "son": "{\"detail\":\"{\\\"level\\\":\\\"三年级\\\",\\\"count\\\":3}\"}",
+                "id": 1,
+                "nums": "[1,2,3,4]",
+                "users": "[{\"name\":\"zs01\"},{\"name\":\"zs02\"}]",
+                "info": "{\"orderNo\":\"12345\"}",
+                 "configs": [
+                    {
+                        "detail": "{\"id\":3}"
+                    },
+                    {
+                        "detail": "{\"id\":4}"
+                    }
+                ]
+            }
+         */
+        Map<Object, Object> map = new HashMap<>();
+        map.put("id",1);
+
+        // 对象型json字符串
+        map.put("info","{\"orderNo\":\"12345\"}");
+
+        // 数组型json字符串
+        map.put("nums","[1,2,3,4]");
+
+        // 对象数组型json字符串
+        map.put("users","[{\"name\":\"zs01\"},{\"name\":\"zs02\"}]");
+
+        // son是json字符串，son.detail也是json字符串
+        map.put("son","{\"detail\":\"{\\\"level\\\":\\\"三年级\\\",\\\"count\\\":3}\"}");
+
+        // 数组的每个对象的detail字段是json字符串
+        Map<Object, Object> configMap1 = new HashMap<>();
+        configMap1.put("detail","{\"id\":3}");
+        Map<Object, Object> configMap2 = new HashMap<>();
+        configMap2.put("detail","{\"id\":4}");
+        map.put("configs", Arrays.asList(configMap1,configMap2));
+
+        return map;
+    }
+
 }

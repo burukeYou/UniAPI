@@ -12,6 +12,7 @@ import com.burukeyou.demo.entity.Add9DTO;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.annotation.HttpCallConfig;
+import com.burukeyou.uniapi.http.annotation.ResponseConfig;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
 import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
@@ -135,6 +136,10 @@ public interface UserServiceApi {
     @HttpCallConfig(connectTimeout = 3000)
     String del04();
 
-    @GetHttpInterface(url = "https://10.94.22.74:8999/user-web/get01")
+    @PostHttpInterface(path = "/user-web/del05")
+    @ResponseConfig(jsonPathStr2Obj =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
     String del05();
+
+    @GetHttpInterface(url = "https://10.94.22.74:8999/user-web/get01")
+    String del06();
 }

@@ -23,7 +23,7 @@ UniHttp
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>0.1.4</version>
+      <version>0.1.5</version>
     </dependency>
 ```
 
@@ -441,6 +441,57 @@ interface UserServiceApi {
                     writeTimeout = 3000,  // 进行写数据到服务端的超时时间
                     readTimeout = 3000)  // 从服务器读数据的超时时间
     BaseRsp<String> getUser();    
+```
+
+## json字符串自动转成json对象
+
+如果json响应存在很多类似如下的json字符串的字段, 则在反序列化的时候只能用String来接收，而不是具体的对象
+
+```json
+{
+  "son": "{\"detail\":\"{\\\"level\\\":\\\"三年级\\\",\\\"count\\\":3}\"}",
+  "id": 1,
+  "nums": "[1,2,3,4]",
+  "users": "[{\"name\":\"zs01\"},{\"name\":\"zs02\"}]",
+  "info": "{\"orderNo\":\"12345\"}",
+  "configs": [
+    {
+      "detail": "{\"id\":3}"
+    },
+    {
+      "detail": "{\"id\":4}"
+    }
+  ]
+}
+```
+
+为了能更好反序列化成我们需要的对象类型，可按如下方式进行配置需要进行转化的json字段路径，该路径的json字符串解析为json对象
+
+```java
+    // jsonPathStr2Obj 配置需要进行转换的json路径
+    @PostHttpInterface(path = "/user-web/del05")
+    @ResponseConfig(jsonPathStr2Obj =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
+    String del05();
+```
+
+经过上述配置后，则上面的原始json字符串会被处理成:
+
+```json
+{
+    "configs":[
+        {"detail":{"id":3}},
+        {"detail":{"id":4}}
+    ],
+    "son":{"detail":{"level":"三年级","count":3}},
+    "id":1,
+    "nums":[1,2,3,4],
+    "users":[
+        {"name":"zs01"},
+        {"name":"zs02"}
+    ],
+    "info":{"orderNo":"12345"}
+}
+
 ```
 
 
