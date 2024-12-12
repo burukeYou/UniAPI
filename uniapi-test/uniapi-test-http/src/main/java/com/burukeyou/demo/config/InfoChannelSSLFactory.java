@@ -1,7 +1,9 @@
 package com.burukeyou.demo.config;
 
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -25,7 +27,7 @@ public class InfoChannelSSLFactory implements OkHttpClientFactory {
     private  final OkHttpClient client;
 
     public InfoChannelSSLFactory() throws Exception {
-        String certPath = "classpath:ssl/server.crt";
+        String certPath = "classpath:ssl2/ca.crt";
         File file = ResourceUtils.getFile(certPath);
 
         Certificate certificate = CertificateFactory.getInstance("X.509")
@@ -43,7 +45,7 @@ public class InfoChannelSSLFactory implements OkHttpClientFactory {
 
         // 设置SSL
         this.client = new OkHttpClient.Builder()
-                //.hostnameVerifier(new OkHostnameVerifier())
+                .hostnameVerifier(getHostnameVerifier())
                 .sslSocketFactory(socketFactory, (X509TrustManager) tmf.getTrustManagers()[0])
                 .readTimeout(50, TimeUnit.SECONDS)
                 .writeTimeout(50, TimeUnit.SECONDS)
@@ -56,5 +58,14 @@ public class InfoChannelSSLFactory implements OkHttpClientFactory {
     @Override
     public OkHttpClient getHttpClient() {
         return client;
+    }
+
+    public HostnameVerifier getHostnameVerifier() {
+        return new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
     }
 }

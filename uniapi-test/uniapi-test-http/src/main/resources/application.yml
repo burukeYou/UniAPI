@@ -1,9 +1,11 @@
 server:
   port: 8999
   ssl:
-    key-store: classpath:ssl/server01.p12
-    key-store-password: changeit
-    key-store-type: PKCS12
+    certificate: classpath:ssl2/selft_server.crt
+    certificate-private-key: classpath:ssl2/ca_server.key
+    #key-store: classpath:ssl/server01.p12
+    #key-store-password: changeit
+    #key-store-type: PKCS12
 
 channel:
   mtuan:
