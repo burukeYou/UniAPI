@@ -7,9 +7,13 @@ selft_server.crt 是 ca_server.key 自己的私钥签发的证书
 server.crt 是 server.key 自己签发的证书
 server02.p12 密钥库包含 server.key 和 server.crt, 密码： changeit
 
+
 ca_client.crt 是 ca_client.key 自己签发自己的证书, CN是 www.client01.com
 ca_client.pkcs12 密钥库包含 ca_client.crt、ca_client.key 密码： 123abc
+ca_client_has_trust.pkcs12 比ca_client.pkcs12 多 import 进了 ca_client.crt 作为 trust条目, 密码一样
 
+
+ca_client_has_trust.pkcs12  密钥库包含 ca_server.crt、ca_server.key 密码： 123abcd
 
 # ==========================================================================================
 服务端提供: ca_server.crt
