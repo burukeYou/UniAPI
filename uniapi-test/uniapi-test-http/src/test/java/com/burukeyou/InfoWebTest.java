@@ -2,7 +2,7 @@ package com.burukeyou;
 
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.demo.DemoApplication;
-import com.burukeyou.demo.api.InfoServiceApi;
+import com.burukeyou.demo.api.SSLServiceApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class InfoWebTest {
 
     @Autowired
-    private InfoServiceApi infoServiceApi;
+    private SSLServiceApi infoServiceApi;
 
     @Test
     public void test() {

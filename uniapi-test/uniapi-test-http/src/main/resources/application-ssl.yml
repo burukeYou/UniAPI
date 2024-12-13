@@ -1,0 +1,9 @@
+server:
+  ssl:
+    certificate: classpath:ssl2/ca_server.crt
+    certificate-private-key: classpath:ssl2/ca_server.key
+    #key-store: classpath:ssl/server01.p12
+    #key-store-password: changeit
+    #key-store-type: PKCS12
+    client-auth: need
+    trust-certificate:  classpath:ssl2/ca_client.crt

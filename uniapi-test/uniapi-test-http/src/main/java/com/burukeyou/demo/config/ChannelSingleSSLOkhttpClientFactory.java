@@ -23,11 +23,11 @@ import org.springframework.util.ResourceUtils;
 
 @Slf4j
 @Component
-public class InfoChannelSSLFactory implements OkHttpClientFactory {
+public class ChannelSingleSSLOkhttpClientFactory implements OkHttpClientFactory {
     private  final OkHttpClient client;
 
-    public InfoChannelSSLFactory() throws Exception {
-        String certPath = "classpath:ssl2/ca.crt";
+    public ChannelSingleSSLOkhttpClientFactory() throws Exception {
+        String certPath = "classpath:ssl2/ca_server.crt";
         File file = ResourceUtils.getFile(certPath);
 
         Certificate certificate = CertificateFactory.getInstance("X.509")

@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Slf4j
-@RequestMapping("/info-web")
+@RequestMapping("/ssl-web")
 @Controller
-public class InfoController {
+public class SSLController {
 
     @GetMapping("/get01")
     @ResponseBody
