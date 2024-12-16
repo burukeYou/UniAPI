@@ -25,7 +25,7 @@
  *
  */
 
-package com.burukeyou.uniapi.http.core.ssl;
+package com.burukeyou.uniapi.http.core.ssl.ht;
 
 import java.lang.reflect.Array;
 import java.util.Collection;

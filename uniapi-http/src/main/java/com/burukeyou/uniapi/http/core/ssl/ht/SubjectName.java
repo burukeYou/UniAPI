@@ -24,7 +24,7 @@
  * <http://www.apache.org/>.
  *
  */
-package com.burukeyou.uniapi.http.core.ssl;
+package com.burukeyou.uniapi.http.core.ssl.ht;
 
 final class SubjectName {
 
