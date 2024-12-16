@@ -1,14 +1,15 @@
 server:
   ssl:
-    #certificate: classpath:ssl2/ca_server.crt
-    #certificate-private-key: classpath:ssl2/ca_server.key
-    key-store: classpath:ssl2/ca_server.p12
-    key-store-password: 123abcd
-    key-store-type: PKCS12
-    #key-alias: item01
+    certificate: classpath:ssl2/ca_server.crt
+    certificate-private-key: classpath:ssl2/ca_server.key
+#    key-store: classpath:ssl2/ca_server.p12
+#    key-store-password: 123abcd
+#    key-store-type: PKCS12
+    key-alias: item01
     client-auth: need
-    #trust-certificate:  classpath:ssl2/ca_client.crt
-    trust-store:  classpath:ssl2/ca_client_has_trust.pkcs12
-    trust-store-password: 123abc
-    trust-store-type: PKCS12
+    trust-certificate:  classpath:ssl2/ca_client.crt
+#    trust-certificate-private-key: classpath:ssl2/ca_client.key
+#    trust-store:  classpath:ssl2/ca_client_has_trust.pkcs12
+#    trust-store-password: 123abc
+#    trust-store-type: PKCS12
 
