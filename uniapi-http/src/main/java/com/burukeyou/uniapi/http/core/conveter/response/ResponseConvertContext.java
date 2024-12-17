@@ -8,7 +8,7 @@ import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.extension;
+package com.burukeyou.uniapi.http.extension.processor;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;

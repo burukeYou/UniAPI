@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.extension;
+package com.burukeyou.uniapi.http.extension.processor;
 
 import lombok.extern.slf4j.Slf4j;
 

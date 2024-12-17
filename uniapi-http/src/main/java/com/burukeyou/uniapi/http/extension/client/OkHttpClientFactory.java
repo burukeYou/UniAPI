@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.extension;
+package com.burukeyou.uniapi.http.extension.client;
 
 
 import okhttp3.OkHttpClient;

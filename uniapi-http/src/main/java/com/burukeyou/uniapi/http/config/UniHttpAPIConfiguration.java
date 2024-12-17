@@ -1,7 +1,7 @@
 package com.burukeyou.uniapi.http.config;
 
-import com.burukeyou.uniapi.http.extension.DefaultGlobalOkHttpClientFactory;
-import com.burukeyou.uniapi.http.extension.GlobalOkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.client.DefaultGlobalOkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.client.GlobalOkHttpClientFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;

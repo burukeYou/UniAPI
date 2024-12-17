@@ -1,7 +1,7 @@
 package com.burukeyou.uniapi.http.annotation.request;
 
 
-import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import org.springframework.core.annotation.AliasFor;
 

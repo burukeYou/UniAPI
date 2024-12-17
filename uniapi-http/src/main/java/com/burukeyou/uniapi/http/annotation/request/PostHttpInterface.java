@@ -8,7 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import org.springframework.core.annotation.AliasFor;
 

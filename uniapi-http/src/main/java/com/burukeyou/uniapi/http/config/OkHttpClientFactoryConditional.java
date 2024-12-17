@@ -1,6 +1,6 @@
 package com.burukeyou.uniapi.http.config;
 
-import com.burukeyou.uniapi.http.extension.GlobalOkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.client.GlobalOkHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;

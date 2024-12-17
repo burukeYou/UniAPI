@@ -1,9 +1,8 @@
 package com.burukeyou.demo.config;
 
-import com.burukeyou.uniapi.http.extension.GlobalOkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.client.GlobalOkHttpClientFactory;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 

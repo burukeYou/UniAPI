@@ -19,7 +19,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.client.OkHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;

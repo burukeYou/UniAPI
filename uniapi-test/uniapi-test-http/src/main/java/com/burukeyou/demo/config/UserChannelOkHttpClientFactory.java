@@ -1,6 +1,6 @@
 package com.burukeyou.demo.config;
 
-import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.client.OkHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;

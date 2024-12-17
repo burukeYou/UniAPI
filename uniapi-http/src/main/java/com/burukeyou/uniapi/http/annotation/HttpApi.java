@@ -8,8 +8,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.burukeyou.uniapi.http.extension.HttpApiProcessor;
-import com.burukeyou.uniapi.http.extension.OkHttpClientFactory;
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.client.OkHttpClientFactory;
 
 /**
  * HTTP API configuration
