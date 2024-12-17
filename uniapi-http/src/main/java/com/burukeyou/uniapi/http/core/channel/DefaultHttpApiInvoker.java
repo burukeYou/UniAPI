@@ -71,7 +71,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private final HttpResponseConverter responseChain;
 
 
-    private final Class<? extends HttpApiProcessor<?>> apiProcessor;
+    private final Class<? extends HttpApiProcessor<?>> apiProcessorClass;
     private  final HttpApiProcessor<Annotation> requestProcessor;
 
     private HttpApiMethodInvocationImpl httpApiMethodInvocation;
@@ -87,8 +87,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         this.client = httpClient;
         this.responseChain = new HttpResponseBodyConverterChain().getChain();
 
-        this.apiProcessor = getHttpApiProcessorClass(api,httpInterface);
-        this.requestProcessor = buildRequestHttpApiProcessor(apiProcessor);
+        this.apiProcessorClass = getHttpApiProcessorClass(api,httpInterface);
+        this.requestProcessor = buildRequestHttpApiProcessor(apiProcessorClass);
 
         httpApiMethodInvocation = new HttpApiMethodInvocationImpl();
         httpApiMethodInvocation.setProxyApiAnnotation(annotationMeta.getProxyAnnotation());
@@ -147,9 +147,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpMetadata httpMetadata = createHttpMetadata(methodInvocation);
 
         // check
-        ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessor, HttpApiProcessor.class);
+        ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessorClass, HttpApiProcessor.class);
         if (paramTypeHttpApiProcessor == null){
-            throw new IllegalArgumentException(apiProcessor.getName() + " must be implement interface HttpApiProcessor");
+            throw new IllegalArgumentException(apiProcessorClass.getName() + " must be implement interface HttpApiProcessor");
         }
         Type actualTypeArgument = paramTypeHttpApiProcessor.getActualTypeArguments()[0];
         Annotation proxyAnnotation = annotationMeta.getProxyAnnotation();
