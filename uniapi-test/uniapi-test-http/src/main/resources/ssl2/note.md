@@ -2,10 +2,19 @@
 ca私钥文件密码: changeitCa
 ca_server.crt 是ca.key对ca_server.csr签发的SAN证书， CA是10.94.22.74、SAN是10.94.22.74、*.burukeyou.com、www.bkt01.com
 ca_server_no_san.crt,  是ca.key对ca_server.csr签发的SAN证书， 不带san
+ca_server.p12 密钥库包含 ca_server.key 和 ca_server.crt, 密码： 123abcd  key密码同上. 
+
+ca_server_multi_item.p12 同ca_server.p12， 只是多个条目 
+    条目sb01、sb02.  从其他地方导入的crt
+    条目sb03是随机新增的privateKeyEntry ， 条目密码是 123456
+    条目sb04 是 ca_client.p12的 条目1 copy过来。 密码应该跟原条目密码一样 123abc，可能由于是PKCS12，默认条目密码与store密码一样 123abcd
+    条目 sb06 是 ca_server.crt
+
+ca_server_multi_item_del01.p12 同ca_server_multi_item.p12，只是删除了条目1的 privateKeyEntry
 
 selft_server.crt 是 ca_server.key 自己的私钥签发的证书
 server.crt 是 server.key 自己签发的证书
-server02.p12 密钥库包含 server.key 和 server.crt, 密码： changeit
+server02.p12 密钥库包含 server.key 和 server.crt, 密码： changeit.   条目名是 item01
 
 
 ca_client.crt 是 ca_client.key 自己签发自己的证书, CN是 www.client01.com
