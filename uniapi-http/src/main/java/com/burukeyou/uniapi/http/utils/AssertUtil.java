@@ -25,16 +25,15 @@
  *
  */
 
-package com.burukeyou.uniapi.http.core.ssl.ht;
+package com.burukeyou.uniapi.http.utils;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 
-public class Args {
+public class AssertUtil {
 
     public static void check(final boolean expression, final String message) {
         if (!expression) {
@@ -53,7 +52,6 @@ public class Args {
             throw new IllegalArgumentException(String.format(message, arg));
         }
     }
-
 
 
     public static int checkRange(final int value, final int lowInclusive, final int highInclusive,
@@ -75,7 +73,6 @@ public class Args {
     }
 
 
-
     private static IllegalArgumentException illegalArgumentException(final String format, final Object... args) {
         return new IllegalArgumentException(String.format(format, args));
     }
@@ -86,10 +83,27 @@ public class Args {
 
     public static <T extends CharSequence> T notBlank(final T argument, final String name) {
         notNull(argument, name);
-        if (StringUtils.isBlank(argument)) {
+        if (isBlank(argument)) {
             throw new IllegalArgumentException(name + " must not be blank");
         }
         return argument;
+    }
+
+    public static boolean isBlank(final CharSequence s) {
+        final int strLen = length(s);
+        if (strLen == 0) {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(s.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static int length(final CharSequence cs) {
+        return cs == null ? 0 : cs.length();
     }
 
     public static <T extends CharSequence> T notEmpty(final T argument, final String name) {
@@ -204,12 +218,11 @@ public class Args {
         return n;
     }
 
-
     /**
      * Private constructor so that no instances can be created. This class
      * contains only static utility methods.
      */
-    private Args() {
+    private AssertUtil() {
     }
 
 }

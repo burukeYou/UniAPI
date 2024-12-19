@@ -119,7 +119,7 @@ public class SslConfig implements Serializable {
     private boolean closeHostnameVerify = false;
 
     /**
-     *  whether to close certificate sign verify , if true will trust all certificates
+     *  whether to close certificate trust verify , if true will trust all certificates
      */
-    private boolean closeCertificateSignVerify = false;
+    private boolean closeCertificateTrustVerify = false;
 }

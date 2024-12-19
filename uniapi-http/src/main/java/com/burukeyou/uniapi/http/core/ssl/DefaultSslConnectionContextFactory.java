@@ -3,9 +3,10 @@ package com.burukeyou.uniapi.http.core.ssl;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.TrustManager;
 
-import com.burukeyou.uniapi.http.utils.ssl.SslUtil;
+import com.burukeyou.uniapi.http.core.ssl.hostnameverify.UniHttpHostnameVerifier;
 import com.burukeyou.uniapi.http.utils.ssl.CertificateParam;
 import com.burukeyou.uniapi.http.utils.ssl.KeyStoreParam;
+import com.burukeyou.uniapi.http.utils.ssl.SslUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,8 @@ public class DefaultSslConnectionContextFactory implements SslConnectionContextF
 
     private static final HostnameVerifier trustAllHostnameVerifier = new TrustAllHostNameVerify();
 
+    private static final HostnameVerifier defaultHostnameVerifier = new UniHttpHostnameVerifier();
+
     @Override
     public SslConnectionContext create(SslConfig sslConfig) {
         SslUtil.SSLBuilder builder = SslUtil.builder()
@@ -32,6 +35,7 @@ public class DefaultSslConnectionContextFactory implements SslConnectionContextF
             builder.setHostnameVerifier(trustAllHostnameVerifier);
         }else {
             // todo set default hostnameVerify
+            builder.setHostnameVerifier(defaultHostnameVerifier);
         }
         initTrustStore(sslConfig, builder);
         initKeyStore(sslConfig, builder);
@@ -68,7 +72,7 @@ public class DefaultSslConnectionContextFactory implements SslConnectionContextF
     }
 
     private void initTrustStore(SslConfig sslConfig, SslUtil.SSLBuilder builder) {
-        boolean trustAllCertificates = sslConfig.isCloseCertificateSignVerify();
+        boolean trustAllCertificates = sslConfig.isCloseCertificateTrustVerify();
         if (Boolean.TRUE.equals(trustAllCertificates)){
             builder.clearAndSetTrustManagers(trustAllTrustManager);
             return;

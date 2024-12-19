@@ -25,7 +25,7 @@
  *
  */
 
-package com.burukeyou.uniapi.http.core.ssl.ht;
+package com.burukeyou.uniapi.http.core.ssl.hostnameverify;
 
 import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
@@ -49,8 +49,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.burukeyou.uniapi.http.utils.IpDnsUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.Assert;
 
 
 /**
@@ -58,7 +60,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @since 4.4
  */
-public final class DefaultHostnameVerifier implements HostnameVerifier {
+public final class UniHttpHostnameVerifier implements HostnameVerifier {
 
     enum HostNameType {
 
@@ -76,11 +78,11 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
 
     private final PublicSuffixMatcher publicSuffixMatcher;
 
-    public DefaultHostnameVerifier(final PublicSuffixMatcher publicSuffixMatcher) {
+    public UniHttpHostnameVerifier(final PublicSuffixMatcher publicSuffixMatcher) {
         this.publicSuffixMatcher = publicSuffixMatcher;
     }
 
-    public DefaultHostnameVerifier() {
+    public UniHttpHostnameVerifier() {
         this(null);
     }
 
@@ -157,11 +159,11 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
 
     static void matchDNSName(final String host, final List<SubjectName> subjectAlts,
                              final PublicSuffixMatcher publicSuffixMatcher) throws SSLException {
-        final String normalizedHost = DnsUtils.normalize(host);
+        final String normalizedHost = IpDnsUtils.normalize(host);
         for (int i = 0; i < subjectAlts.size(); i++) {
             final SubjectName subjectAlt = subjectAlts.get(i);
             if (subjectAlt.getType() == SubjectName.DNS) {
-                final String normalizedSubjectAlt = DnsUtils.normalize(subjectAlt.getValue());
+                final String normalizedSubjectAlt = IpDnsUtils.normalize(subjectAlt.getValue());
                 if (matchIdentityStrict(normalizedHost, normalizedSubjectAlt, publicSuffixMatcher)) {
                     return;
                 }
@@ -173,8 +175,8 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
 
     static void matchCN(final String host, final String cn,
                  final PublicSuffixMatcher publicSuffixMatcher) throws SSLException {
-        final String normalizedHost = DnsUtils.normalize(host);
-        final String normalizedCn = DnsUtils.normalize(cn);
+        final String normalizedHost = IpDnsUtils.normalize(host);
+        final String normalizedCn = IpDnsUtils.normalize(cn);
         if (!matchIdentityStrict(normalizedHost, normalizedCn, publicSuffixMatcher)) {
             throw new SSLPeerUnverifiedException("Certificate for <" + host + "> doesn't match " +
                     "common name of the certificate subject: " + cn);
@@ -288,14 +290,14 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
     }
 
     static HostNameType determineHostFormat(final String host) {
-        if (InetAddressUtils.isIPv4Address(host)) {
+        if (IpDnsUtils.isIPv4Address(host)) {
             return HostNameType.IPv4;
         }
         String s = host;
         if (s.startsWith("[") && s.endsWith("]")) {
             s = host.substring(1, host.length() - 1);
         }
-        if (InetAddressUtils.isIPv6Address(s)) {
+        if (IpDnsUtils.isIPv6Address(s)) {
             return HostNameType.IPv6;
         }
         return HostNameType.DNS;
@@ -341,4 +343,45 @@ public final class DefaultHostnameVerifier implements HostnameVerifier {
             return hostname;
         }
     }
+
+    static final class SubjectName {
+
+        static final int DNS = 2;
+        static final int IP = 7;
+
+        private final String value;
+        private final int type;
+
+        static SubjectName IP(final String value) {
+            return new SubjectName(value, IP);
+        }
+
+        static SubjectName DNS(final String value) {
+            return new SubjectName(value, DNS);
+        }
+
+        SubjectName(final String value, final int type) {
+            if (type < 0 ){
+                throw new IllegalArgumentException(type + " may not be negative or zero");
+            }
+            Assert.notNull(value, "value must not be null");
+            this.value = value;
+            this.type = type;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+
+    }
+
 }

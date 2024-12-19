@@ -25,40 +25,37 @@
  *
  */
 
-package com.burukeyou.uniapi.http.core.ssl.ht;
+package com.burukeyou.uniapi.http.utils;
 
 import java.util.regex.Pattern;
 
 /**
- * A collection of utilities relating to InetAddresses.
+ * A collection of utilities relating to Domain Name System.
  *
- * @since 4.0
+ * @since 4.5
  */
-public class InetAddressUtils {
-
-    private InetAddressUtils() {
-    }
+public class IpDnsUtils {
 
     private static final String IPV4_BASIC_PATTERN_STRING =
             "(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){1}" + // initial first field, 1-255
-            "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){2}" + // following 2 fields, 0-255 followed by .
-             "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"; // final field, 0-255
+                    "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){2}" + // following 2 fields, 0-255 followed by .
+                    "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"; // final field, 0-255
 
     private static final Pattern IPV4_PATTERN =
-        Pattern.compile("^" + IPV4_BASIC_PATTERN_STRING + "$");
+            Pattern.compile("^" + IPV4_BASIC_PATTERN_STRING + "$");
 
     private static final Pattern IPV4_MAPPED_IPV6_PATTERN = // TODO does not allow for redundant leading zeros
             Pattern.compile("^::[fF]{4}:" + IPV4_BASIC_PATTERN_STRING + "$");
 
     private static final Pattern IPV6_STD_PATTERN =
-        Pattern.compile(
-                "^[0-9a-fA-F]{1,4}(:[0-9a-fA-F]{1,4}){7}$");
+            Pattern.compile(
+                    "^[0-9a-fA-F]{1,4}(:[0-9a-fA-F]{1,4}){7}$");
 
     private static final Pattern IPV6_HEX_COMPRESSED_PATTERN =
-        Pattern.compile(
-                "^(([0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4}){0,5})?)" + // 0-6 hex fields
-                 "::" +
-                 "(([0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4}){0,5})?)$"); // 0-6 hex fields
+            Pattern.compile(
+                    "^(([0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4}){0,5})?)" + // 0-6 hex fields
+                            "::" +
+                            "(([0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4}){0,5})?)$"); // 0-6 hex fields
 
     /*
      *  The above pattern is not totally rigorous as it allows for more than 7 hex fields in total
@@ -67,6 +64,47 @@ public class InetAddressUtils {
 
     // Must not have more than 7 colons (i.e. 8 fields)
     private static final int MAX_COLON_COUNT = 7;
+
+    private IpDnsUtils() {
+    }
+
+    private static boolean isUpper(final char c) {
+        return c >= 'A' && c <= 'Z';
+    }
+
+    public static String normalize(final String s) {
+        if (s == null) {
+            return null;
+        }
+        int pos = 0;
+        int remaining = s.length();
+        while (remaining > 0) {
+            if (isUpper(s.charAt(pos))) {
+                break;
+            }
+            pos++;
+            remaining--;
+        }
+        if (remaining > 0) {
+            final StringBuilder buf = new StringBuilder(s.length());
+            buf.append(s, 0, pos);
+            while (remaining > 0) {
+                final char c = s.charAt(pos);
+                if (isUpper(c)) {
+                    buf.append((char) (c + ('a' - 'A')));
+                } else {
+                    buf.append(c);
+                }
+                pos++;
+                remaining--;
+            }
+            return buf.toString();
+        } else {
+            return s;
+        }
+    }
+
+
 
     /**
      * Checks whether the parameter is a valid IPv4 address
@@ -117,5 +155,6 @@ public class InetAddressUtils {
     public static boolean isIPv6Address(final String input) {
         return isIPv6StdAddress(input) || isIPv6HexCompressedAddress(input);
     }
+
 
 }

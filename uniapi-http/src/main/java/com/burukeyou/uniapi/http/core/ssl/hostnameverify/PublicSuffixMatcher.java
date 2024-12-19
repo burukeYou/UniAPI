@@ -24,26 +24,25 @@
  * <http://www.apache.org/>.
  *
  */
-package com.burukeyou.uniapi.http.core.ssl.ht;
+package com.burukeyou.uniapi.http.core.ssl.hostnameverify;
 
 import java.net.IDN;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.util.Assert;
+import com.burukeyou.uniapi.http.utils.AssertUtil;
+import com.burukeyou.uniapi.http.utils.IpDnsUtils;
 
 /**
  * Utility class that can test if DNS names match the content of the Public Suffix List.
- * <p>
- * An up-to-date list of suffixes can be obtained from
- * <a href="http://publicsuffix.org/">publicsuffix.org</a>
  *
  *
  * @since 4.4
  */
-public final class PublicSuffixMatcher {
+ final class PublicSuffixMatcher {
 
     private final Map<String, DomainType> rules;
     private final Map<String, DomainType> exceptions;
@@ -57,8 +56,8 @@ public final class PublicSuffixMatcher {
      */
     public PublicSuffixMatcher(
             final DomainType domainType, final Collection<String> rules, final Collection<String> exceptions) {
-        Assert.notNull(domainType,  "Domain type");
-        Assert.notNull(rules,  "Domain suffix rules");
+        AssertUtil.notNull(domainType,  "Domain type");
+        AssertUtil.notNull(rules,  "Domain suffix rules");
         this.rules = new ConcurrentHashMap<String, DomainType>(rules.size());
         for (final String rule: rules) {
             this.rules.put(rule, domainType);
@@ -75,7 +74,7 @@ public final class PublicSuffixMatcher {
      * @since 4.5
      */
     public PublicSuffixMatcher(final Collection<PublicSuffixList> lists) {
-        Assert.notNull(lists,  "Domain suffix lists");
+        AssertUtil.notNull(lists,  "Domain suffix lists");
         this.rules = new ConcurrentHashMap<String, DomainType>();
         this.exceptions = new ConcurrentHashMap<String, DomainType>();
         for (final PublicSuffixList list: lists) {
@@ -132,7 +131,7 @@ public final class PublicSuffixMatcher {
         if (domain.startsWith(".")) {
             return null;
         }
-        final String normalized = DnsUtils.normalize(domain);
+        final String normalized = IpDnsUtils.normalize(domain);
         String segment = normalized;
         String result = null;
         while (segment != null) {
@@ -198,6 +197,48 @@ public final class PublicSuffixMatcher {
         final String domainRoot = getDomainRoot(
                 domain.startsWith(".") ? domain.substring(1) : domain, expectedType);
         return domainRoot == null;
+    }
+
+    /**
+     * Public suffix is a set of DNS names or wildcards concatenated with dots. It represents
+     * the part of a domain name which is not under the control of the individual registrant
+     *
+     * @since 4.4
+     */
+    public final class PublicSuffixList {
+
+        private final DomainType type;
+        private final List<String> rules;
+        private final List<String> exceptions;
+
+        /**
+         * @since 4.5
+         */
+        public PublicSuffixList(final DomainType type, final List<String> rules, final List<String> exceptions) {
+            this.type = AssertUtil.notNull(type, "Domain type");
+            this.rules = Collections.unmodifiableList(AssertUtil.notNull(rules, "Domain suffix rules"));
+            this.exceptions = Collections.unmodifiableList(exceptions != null ? exceptions : Collections.<String>emptyList());
+        }
+
+        public PublicSuffixList(final List<String> rules, final List<String> exceptions) {
+            this(DomainType.UNKNOWN, rules, exceptions);
+        }
+
+        /**
+         * @since 4.5
+         */
+        public DomainType getType() {
+            return type;
+        }
+
+        public List<String> getRules() {
+            return rules;
+        }
+
+        public List<String> getExceptions() {
+            return exceptions;
+        }
+
     }
 
 }

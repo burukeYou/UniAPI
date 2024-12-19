@@ -1,0 +1,5 @@
+server:
+  ssl:
+    certificate: classpath:ssl2/ca_server_no_san.crt
+    certificate-private-key: classpath:ssl2/ca_server.key
+    trust-certificate:  classpath:ssl2/ca_client.crt

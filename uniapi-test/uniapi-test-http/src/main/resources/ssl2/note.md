@@ -1,7 +1,7 @@
 
 ca私钥文件密码: changeitCa
 ca_server.crt 是ca.key对ca_server.csr签发的SAN证书， CA是10.94.22.74、SAN是10.94.22.74、*.burukeyou.com、www.bkt01.com
-ca_server_no_san.crt,  是ca.key对ca_server.csr签发的SAN证书， 不带san
+ca_server_no_san.crt,  是ca.key对ca_server.csr签发的证书， 不带san
 ca_server.p12 密钥库包含 ca_server.key 和 ca_server.crt, 密码： 123abcd  key密码同上. 
 
 ca_server_multi_item.p12 同ca_server.p12， 只是多个条目 
