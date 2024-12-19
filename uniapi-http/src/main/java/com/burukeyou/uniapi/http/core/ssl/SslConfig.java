@@ -1,12 +1,14 @@
 package com.burukeyou.uniapi.http.core.ssl;
 
 import java.io.Serializable;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * SSL configuration.
+ * SSL configuration
+ *
  * @author caizhihao
  */
 
@@ -22,14 +24,14 @@ public class SslConfig implements Serializable {
     private boolean enabled = true;
 
     /**
-     * the supported SSL ciphers.
+     * the supported SSL ciphers suite.
      */
-    private String[] ciphers;
+    private List<String> ciphers;
 
     /**
-     * the enabled SSL protocols.
+     * the enabled SSL protocols.  tls version
      */
-    private String[] enabledProtocols;
+    private List<String> enabledProtocols;
 
     /**
      * the alias that identifies the key in the key store.
@@ -39,7 +41,7 @@ public class SslConfig implements Serializable {
     /**
      * the password used to access the key in the key store.
      */
-    private String keyPassword;
+    private String keyPassword = "";
 
     /**
      * the path to the key store that holds the SSL certificate (typically a jks file).
@@ -49,7 +51,7 @@ public class SslConfig implements Serializable {
     /**
      * the password used to access the key store
      */
-    private String keyStorePassword;
+    private String keyStorePassword = "";
 
     /**
      * the type of the key store
@@ -62,6 +64,16 @@ public class SslConfig implements Serializable {
     private String keyStoreProvider;
 
     /**
+     *  the location of the certificate or certificate content.
+     */
+    private String certificate;
+
+    /**
+     * the location of the private key for the certificate  or the private key content.
+     */
+    private String certificatePrivateKey;
+
+    /**
      * the trust store that holds SSL certificates
      */
     private String trustStore;
@@ -69,7 +81,12 @@ public class SslConfig implements Serializable {
     /**
      * the password used to access the trust store
      */
-    private String trustStorePassword;
+    private String trustStorePassword = "";
+
+    /**
+     * the alias that identifies the key in the trust store.
+     */
+    private String trustAlias;
 
     /**
      * the type of the trust store
@@ -82,22 +99,12 @@ public class SslConfig implements Serializable {
     private String trustStoreProvider;
 
     /**
-     *  the location of the certificate in PEM format.
-     */
-    private String certificate;
-
-    /**
-     * the location of the private key for the certificate in PEM format.
-     */
-    private String certificatePrivateKey;
-
-    /**
-     * the location of the trust certificate authority chain in PEM format
+     * the location of the trust certificate authority chain or the  certificate content.
      */
     private String trustCertificate;
 
     /**
-     * the location of the private key for the trust certificate in PEM format.
+     * the location of the private key for the trust certificate or the private key content
      */
     private String trustCertificatePrivateKey;
 
@@ -107,12 +114,12 @@ public class SslConfig implements Serializable {
     private String protocol = "TLS";
 
     /**
-     *  do not verify the host address of the access
+     * whether to close hostname verify
      */
-    private boolean closeHostnameVerifier = false;
+    private boolean closeHostnameVerify = false;
 
     /**
-     *  whether to trust all certificates
+     *  whether to close certificate sign verify , if true will trust all certificates
      */
-    private boolean trustAllCertificates = false;
+    private boolean closeCertificateSignVerify = false;
 }
