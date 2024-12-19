@@ -33,6 +33,8 @@ import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.ssl.SslConfig;
+import com.burukeyou.uniapi.http.extension.config.HttpApiConfigFactory;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
@@ -74,7 +76,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private final Class<? extends HttpApiProcessor<?>> apiProcessorClass;
     private  final HttpApiProcessor<Annotation> requestProcessor;
 
-    private HttpApiMethodInvocationImpl httpApiMethodInvocation;
+    private final HttpApiMethodInvocationImpl httpApiMethodInvocation;
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -207,7 +209,14 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
         Request request = requestBuilder.build();
 
-        OkHttpClient callClient = getCallHttpClient(methodInvocation.getMethod(),client);
+        // todo
+        SslConfig sslConfig = null;
+        HttpApiConfigFactory apiConfigFactory = SpringBeanContext.getBean(HttpApiConfigFactory.class);
+        if (apiConfigFactory != null){
+             sslConfig = apiConfigFactory.getSslConfig(httpApiMethodInvocation);
+        }
+
+        OkHttpClient callClient = getCallHttpClient(httpApiMethodInvocation,client,sslConfig);
         Call call = callClient.newCall(request);
         try (Response response = call.execute()) {
             if (!response.isSuccessful()){

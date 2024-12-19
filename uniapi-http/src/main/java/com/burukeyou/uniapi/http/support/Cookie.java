@@ -15,12 +15,6 @@
  */
 package com.burukeyou.uniapi.http.support;
 
-import com.burukeyou.uniapi.util.TimeUtil;
-import lombok.Getter;
-import lombok.Setter;
-import okhttp3.internal.Util;
-import org.springframework.lang.Nullable;
-
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,7 +23,15 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static okhttp3.internal.Util.*;
+import com.burukeyou.uniapi.util.TimeUtil;
+import lombok.Getter;
+import lombok.Setter;
+import okhttp3.internal.Util;
+import org.springframework.lang.Nullable;
+
+import static okhttp3.internal.Util.UTC;
+import static okhttp3.internal.Util.canonicalizeHost;
+import static okhttp3.internal.Util.verifyAsIpAddress;
 
 
 /**
@@ -309,7 +311,8 @@ public class Cookie implements Serializable {
    * #domain() domain} values must all be set before calling {@link #build}.
    */
   public static final class Builder {
-    @Nullable String name;
+    @Nullable
+    String name;
     @Nullable String value;
     long expiresAt = 253402300799999L;
     @Nullable String domain;
