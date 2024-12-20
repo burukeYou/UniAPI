@@ -161,6 +161,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         // before processor
         httpMetadata = requestProcessor.postBeforeHttpMetadata(httpMetadata,httpApiMethodInvocation);
+        if (httpMetadata == null){
+            return null;
+        }
 
         // sendHttpRequest processor
         HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,httpApiMethodInvocation);
