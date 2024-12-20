@@ -44,7 +44,7 @@ public class SslConfig implements Serializable {
     private String keyPassword = "";
 
     /**
-     * the path to the key store that holds the SSL certificate (typically a jks file).
+     * the path to the key store that holds the SSL certificate (typically a jks file). or key store file content
      */
     private String keyStore;
 
@@ -74,7 +74,7 @@ public class SslConfig implements Serializable {
     private String certificatePrivateKey;
 
     /**
-     * the trust store that holds SSL certificates
+     * the trust store that holds SSL certificates or trust store file content
      */
     private String trustStore;
 

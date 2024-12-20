@@ -6,6 +6,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -24,12 +25,14 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
 
@@ -132,8 +135,16 @@ public class SslUtil {
                 return this;
             }
             try {
-                URL url = ResourceUtils.getURL(trustStore);
-                TrustManager[] tmp = getTrustManagersByUrl(url, keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                TrustManager[] tmp;
+                if (BizUtil.isFilePath(trustStore)){
+                    // load for file path
+                    URL url = ResourceUtils.getURL(trustStore);
+                    tmp = getTrustManagersByUrl(url, keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                }else {
+                    // load for content
+                    byte[] trustStoreByte = BizUtil.base64DecodeToByte(trustStore);
+                    tmp = getTrustManagersByInputStream(new ByteArrayInputStream(trustStoreByte),keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                }
                 trustManagers.addAll(Arrays.asList(tmp));
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -162,8 +173,15 @@ public class SslUtil {
                 return this;
             }
             try {
-                URL url = ResourceUtils.getURL(keyStore);
-                KeyManager[] tmp = getKeyManagersByUrl(url, keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyPassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                KeyManager[] tmp;
+                if (BizUtil.isFilePath(keyStore)){
+                    // load for file
+                     URL url = ResourceUtils.getURL(keyStore);
+                     tmp = getKeyManagersByUrl(url, keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyPassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                }else {
+                    // load for content
+                    tmp = getKeyManagersByInputStream(new ByteArrayInputStream(BizUtil.base64DecodeToByte(keyStore)), keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyPassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                }
                 keyManagers.addAll(Arrays.asList(tmp));
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -212,7 +230,13 @@ public class SslUtil {
             KeyStore keyStore = getKeyStoreInstance(storeType, storeProvider);
             keyStore.load(null);
             X509Certificate[] certificates = CertificateParserUtil.parseSmart(certPath);
-            PrivateKey privateKey = (keyPath != null) ? PrivateKeyParserUtil.parseSmart(keyPath) : null;
+            if (StringUtils.isNotBlank(certPath) && certificates.length == 0) {
+                throw new IllegalArgumentException("Error loading certificates from " + certPath);
+            }
+            PrivateKey privateKey =  PrivateKeyParserUtil.parseSmart(keyPath);
+            if (StringUtils.isNotBlank(keyPath) && privateKey == null) {
+                throw new IllegalArgumentException("Error loading private key from " + keyPath);
+            }
             try {
                 String alias = StringUtils.isNotBlank(keyAlias)? keyAlias : "1";
                 if (privateKey != null) {
@@ -229,6 +253,18 @@ public class SslUtil {
         }
         catch (GeneralSecurityException | IOException ex) {
             throw new IllegalStateException("Error creating KeyStore: " + ex.getMessage(), ex);
+        }
+    }
+
+    private static String base64DecodeFilter(String content) {
+        if (StringUtils.isBlank(content) || content.startsWith("/") || content.startsWith("classpath") || content.startsWith("file") || content.startsWith("http")){
+            return content;
+        }
+        try {
+            content = content.trim();
+            return new String(Base64.getDecoder().decode(content.getBytes()));
+        } catch (Exception e) {
+           return content;
         }
     }
 

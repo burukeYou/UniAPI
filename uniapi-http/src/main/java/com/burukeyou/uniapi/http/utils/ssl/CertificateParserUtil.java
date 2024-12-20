@@ -3,7 +3,6 @@
 package com.burukeyou.uniapi.http.utils.ssl;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -12,11 +11,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.FileCopyUtils;
@@ -49,22 +50,24 @@ public class CertificateParserUtil {
 		if (isFilePath(content)){
 			return parse(content);
 		}
+		content = base64DecodeFilter(content);
 		return readCertificatesForContent(content).toArray(new X509Certificate[0]);
+	}
+
+	private static String base64DecodeFilter(String content) {
+		try {
+			content = content.trim();
+			return new String(Base64.getDecoder().decode(content.getBytes()));
+		} catch (Exception e) {
+			return content;
+		}
 	}
 
 	/**
 	 * Rude judgment on whether it is a file path or not
 	 */
 	private static boolean isFilePath(String content) {
-		return  content.startsWith("/") ||
-				content.startsWith("classpath:") ||
-				content.length() < 30 ||
-				content.endsWith(".pem") ||
-				content.endsWith(".crt") ||
-				content.endsWith(".rsa") ||
-				content.endsWith(".p10") ||
-				new File(content).exists() ||
-				content.length() < 100;
+		return  BizUtil.isFilePath(content);
 	}
 
 

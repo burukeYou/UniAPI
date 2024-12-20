@@ -24,6 +24,8 @@ ca_client_has_trust.pkcs12 比ca_client.pkcs12 多 import 进了 ca_client.crt �
 
 ca_client_has_trust.pkcs12  密钥库包含 ca_server.crt、ca_server.key 密码： 123abcd
 
+server01.p12 密码 changeit
+
 # ==========================================================================================
 服务端提供: ca_server.crt
 客户端可以导入信任证书:  ca_server.crt、和 ca.crt，

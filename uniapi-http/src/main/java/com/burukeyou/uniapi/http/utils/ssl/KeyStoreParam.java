@@ -13,6 +13,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class KeyStoreParam implements Serializable {
 
+    /**
+     *  the path to the key store or key store file content
+     */
     private String keyStore;
 
     /**

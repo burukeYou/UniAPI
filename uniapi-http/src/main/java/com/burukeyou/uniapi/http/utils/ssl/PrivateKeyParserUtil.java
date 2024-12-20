@@ -2,7 +2,6 @@
 package com.burukeyou.uniapi.http.utils.ssl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -14,12 +13,14 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.Base64Utils;
@@ -138,15 +139,7 @@ public class PrivateKeyParserUtil {
 	 * Rude judgment on whether it is a file path or not
 	 */
 	private static boolean isFilePath(String content) {
-		return  content.startsWith("/") ||
-				content.startsWith("classpath:") ||
-				content.length() < 30 ||
-				content.endsWith(".key") ||
-				content.endsWith(".p10") ||
-				content.endsWith(".p12") ||
-				content.endsWith(".jks") ||
-				new File(content).exists() ||
-				content.length() < 100;
+		return  BizUtil.isFilePath(content);
 	}
 
 	/**
@@ -159,9 +152,18 @@ public class PrivateKeyParserUtil {
 		if (isFilePath(content)){
 			return parse(content);
 		}
+		content = base64DecodeFilter(content);
 		return parseContent(content);
 	}
 
+	private static String base64DecodeFilter(String content) {
+		try {
+			content = content.trim();
+			return new String(Base64.getDecoder().decode(content.getBytes()));
+		} catch (Exception e) {
+			return content;
+		}
+	}
 
 	/**
 	 * Load a private key from the specified resource.
