@@ -26,6 +26,10 @@ public class DefaultSslConnectionContextFactory implements SslConnectionContextF
 
     @Override
     public SslConnectionContext create(SslConfig sslConfig) {
+        if(!Boolean.TRUE.equals(sslConfig.isEnabled())){
+            return null;
+        }
+
         SslUtil.SSLBuilder builder = SslUtil.builder()
                 .setProtocol(sslConfig.getProtocol())
                 .addCipherSuites(sslConfig.getCiphers())

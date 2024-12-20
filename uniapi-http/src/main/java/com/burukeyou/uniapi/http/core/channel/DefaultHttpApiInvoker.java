@@ -371,8 +371,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         if (sslCfgAnno == null) {
             return null;
         }
+        Boolean enable = getEnvironmentValue(sslCfgAnno.enabled());
+        if(!Boolean.TRUE.equals(enable)){
+            return null;
+        }
         SslConfig sslConfig = new SslConfig();
-        sslConfig.setEnabled(getEnvironmentValue(sslCfgAnno.enabled()));
+        sslConfig.setEnabled(enable);
         sslConfig.setCiphers(getEnvironmentValueList(sslCfgAnno.ciphers()));
         sslConfig.setEnabledProtocols(getEnvironmentValueList(sslCfgAnno.enabledProtocols()));
         sslConfig.setKeyAlias(getEnvironmentValue(sslCfgAnno.keyAlias()));

@@ -89,7 +89,7 @@ public abstract class AbstractInvokeCache {
         }
 
         SslConfig sslConfig = apiConfigContext.getSslConfig();
-        if (sslConfig != null){
+        if (sslConfig != null && Boolean.TRUE.equals(sslConfig.isEnabled())){
             SslConnectionContext sslConnectionContext = sslConnectionContextFactory.create(sslConfig);
             configSslForOkhttp(sslConnectionContext, newBuilder);
         }
@@ -98,6 +98,9 @@ public abstract class AbstractInvokeCache {
     }
 
     private static void configSslForOkhttp(SslConnectionContext sslConnectionContext, OkHttpClient.Builder newBuilder) {
+        if (sslConnectionContext == null){
+            return;
+        }
         SSLContext sslContext = sslConnectionContext.getSslContext();
         List<TrustManager> trustManagers = sslConnectionContext.getTrustManagers();
         if (sslContext != null){
