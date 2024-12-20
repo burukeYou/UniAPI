@@ -13,7 +13,7 @@ import com.burukeyou.uniapi.http.extension.client.OkHttpClientFactory;
 
 /**
  * HTTP API configuration
- *
+ *      suggest config channel-related parameters
  *      The HTTP API annotation of UniAPI can be marked on a class or interface,
  *      indicating that the proxy logic of HTTP API can be applied to the methods of that class or interface,
  *      helping us quickly send and deserialize an HTTP request

@@ -1,11 +1,11 @@
 package com.burukeyou.uniapi.http.extension.processor;
 
+import java.lang.annotation.Annotation;
+
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
-
-import java.lang.annotation.Annotation;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -35,6 +35,7 @@ public interface HttpApiProcessor<T extends Annotation> {
     /**
      * Before sending the request
      *          you can revise the requested data for HttpMetadata
+     *          if return null will stop to send the request
      * @param httpMetadata              request data
      * @param methodInvocation          the method of proxy execution
      * @return                          the new request data
