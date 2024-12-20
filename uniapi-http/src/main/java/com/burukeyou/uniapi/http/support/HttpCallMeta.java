@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class HttpCallConfig2 implements Serializable {
+public class HttpCallMeta implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
@@ -18,7 +18,6 @@ public class HttpCallConfig2 implements Serializable {
      *
      */
     private long callTimeout = 0L;
-
 
     /**
      * connect timeout is applied when connecting a TCP socket to the target host.

@@ -14,12 +14,12 @@ public class HttpApiConfigContext implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
-    private HttpCallConfig2 httpCallConfig2;
+    private HttpCallMeta httpCallMeta;
 
     private SslConfig sslConfig;
 
     public boolean isNotClientConfig(){
-        Object[] arr = {httpCallConfig2,sslConfig};
+        Object[] arr = {httpCallMeta,sslConfig};
         return  Arrays.stream(arr).allMatch(Objects::isNull);
     }
 }

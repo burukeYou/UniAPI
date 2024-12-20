@@ -21,7 +21,7 @@ import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
 import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
 import com.burukeyou.uniapi.http.core.ssl.TrustAllX509ExtendedTrustManager;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
-import com.burukeyou.uniapi.http.support.HttpCallConfig2;
+import com.burukeyou.uniapi.http.support.HttpCallMeta;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -80,7 +80,7 @@ public abstract class AbstractInvokeCache {
     private OkHttpClient createCallHttpClient(OkHttpClient defaultClient,HttpApiConfigContext apiConfigContext){
         OkHttpClient.Builder newBuilder = defaultClient.newBuilder();
 
-        HttpCallConfig2 callConfig = apiConfigContext.getHttpCallConfig2();
+        HttpCallMeta callConfig = apiConfigContext.getHttpCallMeta();
         if (callConfig != null){
             newBuilder.callTimeout(callConfig.getCallTimeout(), TimeUnit.MILLISECONDS)
                     .readTimeout(callConfig.getReadTimeout(), TimeUnit.MILLISECONDS)
