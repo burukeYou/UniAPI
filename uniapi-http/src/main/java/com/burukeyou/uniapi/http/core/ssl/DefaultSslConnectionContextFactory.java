@@ -34,7 +34,6 @@ public class DefaultSslConnectionContextFactory implements SslConnectionContextF
         if (Boolean.TRUE.equals(sslConfig.isCloseHostnameVerify())){
             builder.setHostnameVerifier(trustAllHostnameVerifier);
         }else {
-            // todo set default hostnameVerify
             builder.setHostnameVerifier(defaultHostnameVerifier);
         }
         initTrustStore(sslConfig, builder);

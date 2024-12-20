@@ -12,6 +12,8 @@ import java.util.Map;
 
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
+import com.burukeyou.uniapi.http.annotation.HttpCallConfig;
+import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverterChain;
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
@@ -34,10 +36,11 @@ import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
-import com.burukeyou.uniapi.http.extension.config.HttpApiConfigFactory;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig2;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.support.ClassUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +79,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private final Class<? extends HttpApiProcessor<?>> apiProcessorClass;
     private  final HttpApiProcessor<Annotation> requestProcessor;
 
-    private final HttpApiMethodInvocationImpl httpApiMethodInvocation;
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -212,20 +214,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
         Request request = requestBuilder.build();
 
-        // todo
-        SslConfig sslConfig = null;
-        HttpApiConfigFactory apiConfigFactory = SpringBeanContext.getBean(HttpApiConfigFactory.class);
-        if (apiConfigFactory != null){
-             sslConfig = apiConfigFactory.getSslConfig(httpApiMethodInvocation);
-        }
-
-        OkHttpClient callClient = getCallHttpClient(httpApiMethodInvocation,client,sslConfig);
+        HttpApiConfigContext apiConfigContext = getHttpApiConfigContext();
+        OkHttpClient callClient = getCallHttpClient(client,apiConfigContext);
         Call call = callClient.newCall(request);
         try (Response response = call.execute()) {
             if (!response.isSuccessful()){
                 throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
             }
-
             ResponseConvertContext responseConvertContext = new ResponseConvertContext();
             responseConvertContext.setRequest(new OkHttpRequest(request));
             responseConvertContext.setResponse(new OkHttpResponse(request,response));
@@ -351,6 +346,55 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
+    private HttpApiConfigContext getHttpApiConfigContext() {
+        HttpApiConfigContext apiConfigContext = new HttpApiConfigContext();
+        apiConfigContext.setHttpCallConfig2(getHttpCallConfig());
+        apiConfigContext.setSslConfig(getSslConfig());
+        return apiConfigContext;
+    }
+
+    private HttpCallConfig2 getHttpCallConfig() {
+        HttpCallConfig anno = getMergeAnnotationFormObjectOrMethod(httpApiMethodInvocation, HttpCallConfig.class);
+        if (anno == null){
+            return null;
+        }
+        HttpCallConfig2 config = new HttpCallConfig2();
+        config.setCallTimeout(getEnvironmentValue(anno.callTimeout()));
+        config.setConnectTimeout(getEnvironmentValue(anno.connectTimeout()));
+        config.setWriteTimeout(getEnvironmentValue(anno.writeTimeout()));
+        config.setReadTimeout(getEnvironmentValue(anno.readTimeout()));
+        return config;
+    }
+
+    private SslConfig getSslConfig() {
+        SslCfg sslCfgAnno = getMergeAnnotationFormObjectOrMethod(httpApiMethodInvocation,SslCfg.class);
+        if (sslCfgAnno == null) {
+            return null;
+        }
+        SslConfig sslConfig = new SslConfig();
+        sslConfig.setEnabled(getEnvironmentValue(sslCfgAnno.enabled()));
+        sslConfig.setCiphers(getEnvironmentValueList(sslCfgAnno.ciphers()));
+        sslConfig.setEnabledProtocols(getEnvironmentValueList(sslCfgAnno.enabledProtocols()));
+        sslConfig.setKeyAlias(getEnvironmentValue(sslCfgAnno.keyAlias()));
+        sslConfig.setKeyPassword(getEnvironmentValue(sslCfgAnno.keyPassword()));
+        sslConfig.setKeyStore(getEnvironmentValue(sslCfgAnno.keyStore()));
+        sslConfig.setKeyStorePassword(getEnvironmentValue(sslCfgAnno.keyStorePassword()));
+        sslConfig.setKeyStoreType(getEnvironmentValue(sslCfgAnno.keyStoreType()));
+        sslConfig.setKeyStoreProvider(getEnvironmentValue(sslCfgAnno.keyStoreProvider()));
+        sslConfig.setCertificate(getEnvironmentValue(sslCfgAnno.certificate()));
+        sslConfig.setCertificatePrivateKey(getEnvironmentValue(sslCfgAnno.certificatePrivateKey()));
+        sslConfig.setTrustStore(getEnvironmentValue(sslCfgAnno.trustStore()));
+        sslConfig.setTrustStorePassword(getEnvironmentValue(sslCfgAnno.trustStorePassword()));
+        sslConfig.setTrustAlias(getEnvironmentValue(sslCfgAnno.trustAlias()));
+        sslConfig.setTrustStoreType(getEnvironmentValue(sslCfgAnno.trustStoreType()));
+        sslConfig.setTrustStoreProvider(getEnvironmentValue(sslCfgAnno.trustStoreProvider()));
+        sslConfig.setTrustCertificate(getEnvironmentValue(sslCfgAnno.trustCertificate()));
+        sslConfig.setTrustCertificatePrivateKey(getEnvironmentValue(sslCfgAnno.trustCertificatePrivateKey()));
+        sslConfig.setProtocol(getEnvironmentValue(sslCfgAnno.protocol()));
+        sslConfig.setCloseHostnameVerify(getEnvironmentValue(sslCfgAnno.closeHostnameVerify()));
+        sslConfig.setCloseCertificateTrustVerify(getEnvironmentValue(sslCfgAnno.closeCertificateTrustVerify()));
+        return sslConfig;
+    }
 
 
 

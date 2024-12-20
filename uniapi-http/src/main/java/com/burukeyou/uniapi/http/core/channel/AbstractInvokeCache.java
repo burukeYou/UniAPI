@@ -5,6 +5,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -13,13 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.burukeyou.uniapi.exception.BaseUniApiException;
-import com.burukeyou.uniapi.http.annotation.HttpCallConfig;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
 import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
 import com.burukeyou.uniapi.http.core.ssl.TrustAllX509ExtendedTrustManager;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig2;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -37,6 +39,18 @@ public abstract class AbstractInvokeCache {
 
     protected static final SslConnectionContextFactory sslConnectionContextFactory = new DefaultSslConnectionContextFactory();
 
+    protected HttpApiMethodInvocationImpl httpApiMethodInvocation;
+
+    protected  <T  extends Annotation> T getMergeAnnotationFormObjectOrMethod(HttpApiMethodInvocation<Annotation> methodInvocation, Class<T> clz) {
+        Method method = methodInvocation.getMethod();
+        T annotation = AnnotatedElementUtils.getMergedAnnotation(method, clz);
+        if (annotation == null) {
+            Class<?> proxyClass = httpApiMethodInvocation.getProxyClass();
+            annotation =  AnnotatedElementUtils.getMergedAnnotation(proxyClass, clz);
+        }
+        return annotation;
+    }
+
     protected HttpInterface getHttpInterfaceInfo(Method method) {
         HttpInterface httpInterface = httpInterfaceCache.get(method);
         if (httpInterface == null){
@@ -49,34 +63,32 @@ public abstract class AbstractInvokeCache {
         return httpInterface;
     }
 
-    protected OkHttpClient getCallHttpClient(HttpApiMethodInvocation<?> methodInvocation, OkHttpClient defaultClient, SslConfig sslConfig) {
-        Method method = methodInvocation.getMethod();
+    protected OkHttpClient getCallHttpClient(OkHttpClient defaultClient, HttpApiConfigContext apiConfigContext) {
+        Method method = httpApiMethodInvocation.getMethod();
         OkHttpClient methodClient = httpClientCache.get(method);
         if (methodClient != null){
             return methodClient;
         }
-        OkHttpClient callHttpClient = createCallHttpClient(methodInvocation, defaultClient, sslConfig);
-        if (callHttpClient == null){
+
+        if (apiConfigContext.isNotClientConfig()){
             return defaultClient;
         }
+        OkHttpClient callHttpClient = createCallHttpClient(defaultClient, apiConfigContext);
         httpClientCache.put(method,callHttpClient);
         return callHttpClient;
     }
-    private OkHttpClient createCallHttpClient(HttpApiMethodInvocation<?> methodInvocation,  OkHttpClient defaultClient,SslConfig sslConfig){
-        Method method = methodInvocation.getMethod();
-        HttpCallConfig callConfigAnno = method.getAnnotation(HttpCallConfig.class);
-        if (callConfigAnno == null && sslConfig == null){
-            return null;
-        }
-
+    private OkHttpClient createCallHttpClient(OkHttpClient defaultClient,HttpApiConfigContext apiConfigContext){
         OkHttpClient.Builder newBuilder = defaultClient.newBuilder();
-        if (callConfigAnno != null){
-                    newBuilder.callTimeout(callConfigAnno.callTimeout(), TimeUnit.MILLISECONDS)
-                              .readTimeout(callConfigAnno.readTimeout(), TimeUnit.MILLISECONDS)
-                              .writeTimeout(callConfigAnno.writeTimeout(), TimeUnit.MILLISECONDS)
-                              .connectTimeout(callConfigAnno.connectTimeout(), TimeUnit.MILLISECONDS);
+
+        HttpCallConfig2 callConfig = apiConfigContext.getHttpCallConfig2();
+        if (callConfig != null){
+            newBuilder.callTimeout(callConfig.getCallTimeout(), TimeUnit.MILLISECONDS)
+                    .readTimeout(callConfig.getReadTimeout(), TimeUnit.MILLISECONDS)
+                    .writeTimeout(callConfig.getWriteTimeout(), TimeUnit.MILLISECONDS)
+                    .connectTimeout(callConfig.getConnectTimeout(), TimeUnit.MILLISECONDS);
         }
 
+        SslConfig sslConfig = apiConfigContext.getSslConfig();
         if (sslConfig != null){
             SslConnectionContext sslConnectionContext = sslConnectionContextFactory.create(sslConfig);
             configSslForOkhttp(sslConnectionContext, newBuilder);

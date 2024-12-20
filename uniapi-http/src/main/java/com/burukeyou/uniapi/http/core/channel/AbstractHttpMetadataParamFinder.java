@@ -56,6 +56,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     protected HttpApi api;
     protected HttpInterface httpInterface;
 
+    // todo 升级为支持实时更新的环境变量上下文
     protected Environment environment;
 
     protected  MethodInvocation methodInvocation;
@@ -117,6 +118,17 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         }
         return (T)environment.resolvePlaceholders(value.toString());
     }
+
+    public <T> List<T> getEnvironmentValueList(T[] value){
+        if (value == null || value.length == 0){
+            return  Collections.emptyList();
+        }
+        for (int i = 0; i < value.length; i++) {
+            value[i] = getEnvironmentValue(value[i]);
+        }
+        return Arrays.asList(value);
+    }
+
 
     private List<Cookie> findCookies(ArgList argList) {
         List<Cookie> cookies = new ArrayList<>(parseCookie(getEnvironmentValue(httpInterface.cookie())));
