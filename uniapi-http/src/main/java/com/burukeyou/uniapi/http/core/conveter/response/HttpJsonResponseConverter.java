@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
-import com.burukeyou.uniapi.http.annotation.ResponseConfig;
+import com.burukeyou.uniapi.http.annotation.HttpResponseConfig;
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
@@ -128,14 +128,14 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
     protected String[] getResponseJsonStringFormatPath(ResponseConvertContext context) {
         // todo cache
         Method method = context.getMethodInvocation().getMethod();
-        ResponseConfig responseConfig = method.getAnnotation(ResponseConfig.class);
-        if (responseConfig != null && responseConfig.jsonPathStr2Obj().length > 0){
-            return responseConfig.jsonPathStr2Obj();
+        HttpResponseConfig responseConfig = method.getAnnotation(HttpResponseConfig.class);
+        if (responseConfig != null && responseConfig.jsonPathUnPack().length > 0){
+            return responseConfig.jsonPathUnPack();
         }
-        ResponseConfig[] responseConfigArr = context.getHttpApi().responseConfig();
+        HttpResponseConfig[] responseConfigArr = context.getHttpApi().responseConfig();
         if (responseConfigArr == null || responseConfigArr.length == 0){
             return null;
         }
-        return responseConfigArr[0].jsonPathStr2Obj();
+        return responseConfigArr[0].jsonPathUnPack();
     }
 }
