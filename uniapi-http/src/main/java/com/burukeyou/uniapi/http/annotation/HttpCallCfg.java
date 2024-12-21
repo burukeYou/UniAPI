@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Inherited
 @Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HttpCallConfig {
+public @interface HttpCallCfg {
 
     /**
      * The call timeout spans the entire call: resolving DNS, connecting, writing the request body,

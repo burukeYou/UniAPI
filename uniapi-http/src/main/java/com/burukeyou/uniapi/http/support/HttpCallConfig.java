@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class HttpCallMeta implements Serializable {
+public class HttpCallConfig implements Serializable {
 
     private static final long serialVersionUID = -1L;
 

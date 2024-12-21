@@ -12,7 +12,7 @@ import java.util.Map;
 
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
-import com.burukeyou.uniapi.http.annotation.HttpCallConfig;
+import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverterChain;
@@ -40,7 +40,7 @@ import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
-import com.burukeyou.uniapi.http.support.HttpCallMeta;
+import com.burukeyou.uniapi.http.support.HttpCallConfig;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.support.ClassUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -353,12 +353,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return apiConfigContext;
     }
 
-    private HttpCallMeta getHttpCallConfig() {
-        HttpCallConfig anno = getMergeAnnotationFormObjectOrMethod(httpApiMethodInvocation, HttpCallConfig.class);
+    private HttpCallConfig getHttpCallConfig() {
+        HttpCallCfg anno = getMergeAnnotationFormObjectOrMethod(httpApiMethodInvocation, HttpCallCfg.class);
         if (anno == null){
             return null;
         }
-        HttpCallMeta config = new HttpCallMeta();
+        HttpCallConfig config = new HttpCallConfig();
         config.setCallTimeout(getEnvironmentValue(anno.callTimeout()));
         config.setConnectTimeout(getEnvironmentValue(anno.connectTimeout()));
         config.setWriteTimeout(getEnvironmentValue(anno.writeTimeout()));
