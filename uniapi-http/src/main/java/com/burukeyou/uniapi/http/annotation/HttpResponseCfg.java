@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Inherited
 @Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HttpResponseConfig {
+public @interface HttpResponseCfg {
 
     /**
      *  If the response format of the http-interface is JSON,

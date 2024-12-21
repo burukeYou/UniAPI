@@ -44,5 +44,5 @@ public @interface HttpApi {
     /**
      *  Config Http Response
      */
-    HttpResponseConfig[] responseConfig() default {};
+    HttpResponseCfg[] responseConfig() default {};
 }

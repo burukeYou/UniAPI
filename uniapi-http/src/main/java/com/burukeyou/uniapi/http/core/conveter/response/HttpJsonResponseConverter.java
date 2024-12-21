@@ -1,27 +1,22 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
+import com.alibaba.fastjson.JSON;
+import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
+import com.burukeyou.uniapi.http.support.MediaTypeEnum;
+import com.jayway.jsonpath.*;
+import lombok.extern.slf4j.Slf4j;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSON;
-import com.burukeyou.uniapi.http.annotation.HttpResponseConfig;
-import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
-import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.MapFunction;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.PathNotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -128,11 +123,11 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
     protected String[] getResponseJsonStringFormatPath(ResponseConvertContext context) {
         // todo cache
         Method method = context.getMethodInvocation().getMethod();
-        HttpResponseConfig responseConfig = method.getAnnotation(HttpResponseConfig.class);
+        HttpResponseCfg responseConfig = method.getAnnotation(HttpResponseCfg.class);
         if (responseConfig != null && responseConfig.jsonPathUnPack().length > 0){
             return responseConfig.jsonPathUnPack();
         }
-        HttpResponseConfig[] responseConfigArr = context.getHttpApi().responseConfig();
+        HttpResponseCfg[] responseConfigArr = context.getHttpApi().responseConfig();
         if (responseConfigArr == null || responseConfigArr.length == 0){
             return null;
         }
