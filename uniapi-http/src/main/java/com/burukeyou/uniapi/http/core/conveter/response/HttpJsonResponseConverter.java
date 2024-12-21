@@ -1,21 +1,20 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
 import com.alibaba.fastjson.JSON;
-import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpResponseConfig;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.jayway.jsonpath.*;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,8 +35,8 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
             }
 
             // json path field string to json object
-            String[] jsonStringFormatPath = getResponseJsonStringFormatPath(context);
-            if (jsonStringFormatPath != null && jsonStringFormatPath.length > 0){
+            List<String> jsonStringFormatPath = getResponseJsonStringFormatPath(context);
+            if (!CollectionUtils.isEmpty(jsonStringFormatPath)){
                 originBodyString = formatOriginBodyStringByJsonStringPath2(originBodyString,jsonStringFormatPath);
             }
 
@@ -94,7 +93,7 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
         return documentContext.jsonString();
     }
 
-    private String formatOriginBodyStringByJsonStringPath2(String originBodyString, String[] jsonStringFormatPath) {
+    private String formatOriginBodyStringByJsonStringPath2(String originBodyString, List<String> jsonStringFormatPath) {
         Configuration conf = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
         DocumentContext documentContext = JsonPath.using(conf).parse(originBodyString);
         for (String jsonPath : jsonStringFormatPath) {
@@ -120,17 +119,12 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
         return value != null && value.getClass().equals(String.class) && JSON.isValid(value.toString());
     }
 
-    protected String[] getResponseJsonStringFormatPath(ResponseConvertContext context) {
-        // todo cache
-        Method method = context.getMethodInvocation().getMethod();
-        HttpResponseCfg responseConfig = method.getAnnotation(HttpResponseCfg.class);
-        if (responseConfig != null && responseConfig.jsonPathUnPack().length > 0){
-            return responseConfig.jsonPathUnPack();
+    protected List<String> getResponseJsonStringFormatPath(ResponseConvertContext context) {
+        HttpApiConfigContext configContext = context.getConfigContext();
+        HttpResponseConfig responseConfig = configContext.getHttpResponseConfig();
+        if (responseConfig == null){
+            return Collections.emptyList();
         }
-        HttpResponseCfg[] responseConfigArr = context.getHttpApi().responseConfig();
-        if (responseConfigArr == null || responseConfigArr.length == 0){
-            return null;
-        }
-        return responseConfigArr[0].jsonPathUnPack();
+        return responseConfig.getJsonPathUnPack();
     }
 }

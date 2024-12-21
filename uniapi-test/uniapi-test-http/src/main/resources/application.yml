@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active:  ssl02
+    active:  dev
 
 channel:
   mtuan:

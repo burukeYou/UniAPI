@@ -1,8 +1,6 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 
-import com.burukeyou.uniapi.exception.BaseUniApiException;
-import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.ssl.*;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
@@ -20,7 +18,9 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,17 +28,19 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractInvokeCache {
 
-    private static final Map<Method, HttpInterface> httpInterfaceCache = new ConcurrentHashMap<>();
-
-
     private static final Map<Method, OkHttpClient> httpClientCache = new ConcurrentHashMap<>();
+
+    private static final Map<Method, Map<Class<? extends  Annotation>,Annotation>> methodAnnotationCache = new ConcurrentHashMap<>();
+
+    private static final Map<Method, Set<Class<? extends  Annotation>>> methodNotAnnotationCache = new ConcurrentHashMap<>();
 
     protected static final SslConnectionContextFactory sslConnectionContextFactory = new DefaultSslConnectionContextFactory();
 
     protected HttpApiMethodInvocationImpl httpApiMethodInvocation;
 
-    protected  <T  extends Annotation> T getMergeAnnotationFormObjectOrMethod(HttpApiMethodInvocation<Annotation> methodInvocation, Class<T> clz) {
-        Method method = methodInvocation.getMethod();
+
+    private  <T  extends Annotation> T getMergeAnnotationFormObjectOrMethod(Class<T> clz) {
+        Method method = httpApiMethodInvocation.getMethod();
         T annotation = AnnotatedElementUtils.getMergedAnnotation(method, clz);
         if (annotation == null) {
             Class<?> proxyClass = httpApiMethodInvocation.getProxyClass();
@@ -47,17 +49,39 @@ public abstract class AbstractInvokeCache {
         return annotation;
     }
 
-    protected HttpInterface getHttpInterfaceInfo(Method method) {
-        HttpInterface httpInterface = httpInterfaceCache.get(method);
-        if (httpInterface == null){
-            httpInterface = AnnotatedElementUtils.getMergedAnnotation(method, HttpInterface.class);
-            if (httpInterface == null) {
-                throw new BaseUniApiException("please mask @HttpInterface in this method " + method.getName() + "and config http path");
-            }
-            httpInterfaceCache.put(method,httpInterface);
+    protected  <T  extends Annotation> T getMergeAnnotationFormObjectOrMethodCache(Class<T> clz) {
+        // check is not exist
+        Method method = httpApiMethodInvocation.getMethod();
+        Set<Class<? extends Annotation>> notExistSet = methodNotAnnotationCache.get(method);
+        if (notExistSet != null && notExistSet.contains(clz)){
+            return null;
         }
-        return httpInterface;
+
+        // check from cache
+        Map<Class<? extends Annotation>, Annotation> annoMap = methodAnnotationCache.get(method);
+        if (annoMap != null && annoMap.containsKey(clz)){
+            Annotation annotation = annoMap.get(clz);
+            if (annotation != null){
+                return (T)annotation;
+            }
+        }
+
+        // check is contain
+        T annotation = getMergeAnnotationFormObjectOrMethod(clz);
+        if (annotation == null){
+            // record this method not thi clz annotation
+            methodNotAnnotationCache.putIfAbsent(method,new CopyOnWriteArraySet<>());
+            notExistSet = methodNotAnnotationCache.get(method);
+            if (notExistSet != null){
+                notExistSet.add(clz);
+            }
+            return null;
+        }
+        methodAnnotationCache.putIfAbsent(method,new ConcurrentHashMap<>());
+        methodAnnotationCache.get(method).put(clz,annotation);
+        return annotation;
     }
+
 
     protected OkHttpClient getCallHttpClient(OkHttpClient defaultClient, HttpApiConfigContext apiConfigContext) {
         Method method = httpApiMethodInvocation.getMethod();
@@ -76,7 +100,7 @@ public abstract class AbstractInvokeCache {
     private OkHttpClient createCallHttpClient(OkHttpClient defaultClient,HttpApiConfigContext apiConfigContext){
         OkHttpClient.Builder newBuilder = defaultClient.newBuilder();
 
-        HttpCallConfig callConfig = apiConfigContext.getHttpCallMeta();
+        HttpCallConfig callConfig = apiConfigContext.getHttpCallConfig();
         if (callConfig != null){
             newBuilder.callTimeout(callConfig.getCallTimeout(), TimeUnit.MILLISECONDS)
                     .readTimeout(callConfig.getReadTimeout(), TimeUnit.MILLISECONDS)
