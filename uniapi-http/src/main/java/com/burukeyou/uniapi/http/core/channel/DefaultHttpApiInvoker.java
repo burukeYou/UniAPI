@@ -128,7 +128,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         try {
-            // 如果不存在则直接手动new一个 todo cache
             return (HttpApiProcessor<Annotation>) apiProcessor.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new BaseUniHttpException(e);
