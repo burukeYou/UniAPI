@@ -12,6 +12,8 @@ import com.burukeyou.uniapi.http.core.response.HttpResponse;
  *
  * execution flow:
  *
+ * <pre>
+ *
  *                postBeforeHttpMetadata
  *                        |
  *                        V
@@ -25,7 +27,7 @@ import com.burukeyou.uniapi.http.core.response.HttpResponse;
  *                        |
  *                        V
  *             postAfterMethodReturnValue
- *
+ *</pre>
  *
  * @author caizhihao
  * @param <T>
