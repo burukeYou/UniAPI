@@ -1,8 +1,19 @@
 package com.burukeyou.uniapi.http.core.channel;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Map;
+
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
+import com.burukeyou.uniapi.http.annotation.HttpRequestCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
 import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -15,32 +26,42 @@ import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.core.http.request.OkHttpRequest;
 import com.burukeyou.uniapi.http.core.http.response.OkHttpResponse;
+import com.burukeyou.uniapi.http.core.request.HttpBody;
+import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
+import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
+import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
+import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
+import com.burukeyou.uniapi.http.core.request.HttpBodyText;
+import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
-import com.burukeyou.uniapi.http.core.request.*;
+import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
-import com.burukeyou.uniapi.http.support.*;
+import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpRequestConfig;
+import com.burukeyou.uniapi.http.support.HttpResponseConfig;
+import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.support.ClassUtil;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.FormBody;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Map;
 
 /**
  * @author  caizhihao
@@ -332,12 +353,22 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private HttpApiConfigContext getHttpApiConfigContext() {
         HttpApiConfigContext apiConfigContext = new HttpApiConfigContext();
+        apiConfigContext.setHttpRequestConfig(getHttpRequestConfig());
         apiConfigContext.setHttpCallConfig(getHttpCallConfig());
         apiConfigContext.setSslConfig(getSslConfig());
         apiConfigContext.setHttpResponseConfig(getHttpResponseConfig());
         return apiConfigContext;
     }
 
+    private HttpRequestConfig getHttpRequestConfig() {
+        HttpRequestCfg anno = getMergeAnnotationFormObjectOrMethodCache(HttpRequestCfg.class);
+        if (anno == null){
+            return null;
+        }
+        HttpRequestConfig config = new HttpRequestConfig();
+        config.setJsonPathPack(getEnvironmentValueList(anno.jsonPathPack()));
+        return config;
+    }
 
 
     private HttpCallConfig getHttpCallConfig() {
