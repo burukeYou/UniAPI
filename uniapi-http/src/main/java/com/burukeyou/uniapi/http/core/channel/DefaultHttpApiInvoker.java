@@ -419,6 +419,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
         HttpResponseConfig config = new HttpResponseConfig();
         config.setJsonPathUnPack(getEnvironmentValueList(anno.jsonPathUnPack()));
+        config.setAfterJsonPathUnPack(getEnvironmentValueList(anno.afterJsonPathUnPack()));
         return config;
     }
 

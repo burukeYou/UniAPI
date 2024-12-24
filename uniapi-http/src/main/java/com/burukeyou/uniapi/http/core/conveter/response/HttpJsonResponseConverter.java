@@ -1,21 +1,31 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpJsonResponse;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import com.jayway.jsonpath.*;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.MapFunction;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -42,6 +52,14 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
 
             // post after body string
             originBodyString = super.postAfterBodyString(originBodyString,httpJsonResponse,context);
+
+            // after json string format path
+            List<String> afterJsonStringFormatPath = getResponseAfterJsonStringFormatPath(context);
+            if (!CollectionUtils.isEmpty(afterJsonStringFormatPath)){
+                originBodyString  = formatOriginBodyStringByJsonStringPath2(originBodyString,afterJsonStringFormatPath);
+            }
+
+            // update value
             httpJsonResponse.setJsonValue(originBodyString);
 
             //
@@ -126,5 +144,12 @@ public class HttpJsonResponseConverter extends AbstractHttpResponseConverter {
             return Collections.emptyList();
         }
         return responseConfig.getJsonPathUnPack();
+    }
+
+    protected static List<String> getResponseAfterJsonStringFormatPath(ResponseConvertContext context) {
+        return Optional.ofNullable(context.getConfigContext())
+                       .map(HttpApiConfigContext::getHttpResponseConfig)
+                       .map(HttpResponseConfig::getAfterJsonPathUnPack)
+                       .orElse(Collections.emptyList());
     }
 }

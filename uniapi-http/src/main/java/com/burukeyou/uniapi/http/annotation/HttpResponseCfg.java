@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
+
 /**
  * Http Response Config
  *
@@ -18,9 +20,20 @@ import java.lang.annotation.Target;
 public @interface HttpResponseCfg {
 
     /**
-     *  If the response format of the http-interface is JSON,
-     *  and you want to convert some fields of the JSON from JSON strings to JSON objects,
-     *  you can use this method to set the path list of the JSON fields to be converted
+     * <p>Unpacking of the original response body
+     * <p>If the response format of the http-interface is JSON,
+     *   and you want to convert some fields of the JSON from JSON strings to JSON objects,
+     *   you can use this method to set the path list of the JSON fields to be converted
+     *
      */
      String[] jsonPathUnPack() default {};
+
+    /**
+     * <p>Unpacking of the response body string after the {@link HttpApiProcessor#postAfterHttpResponseBodyString}
+     * <p>if the response body string format of the http-interface is JSON, and you want to convert some fields of the JSON from JSON strings to JSON objects,
+     *    you can use this method to set the path list of the JSON fields to be converted
+     *
+     * @see com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor#postAfterHttpResponseBodyString
+     */
+    String[] afterJsonPathUnPack() default {};
 }
