@@ -1,15 +1,15 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 /**
  *
@@ -62,10 +62,17 @@ public class HttpUrl implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append(url).append(fillPath());
         if (queryParam != null && !queryParam.isEmpty()){
-            String urlParam = queryParam.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).reduce((a, b) -> a + "&" + b).orElse("");
+            String urlParam = queryParam.entrySet().stream().map(entry -> entry.getKey() + "=" + getValue(entry.getValue())).reduce((a, b) -> a + "&" + b).orElse("");
             sb.append("?").append(urlParam);
         }
         return sb.toString();
+    }
+
+    private String getValue(Object value) {
+        if (value == null){
+            return "";
+        }
+        return value.toString();
     }
 
     public void setUrl(String url) {
