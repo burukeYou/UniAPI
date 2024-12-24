@@ -1,8 +1,8 @@
 package com.burukeyou.uniapi.http.support;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Arrays;
+
+import org.apache.commons.lang3.StringUtils;
 
 public enum MediaTypeEnum {
 
@@ -63,6 +63,9 @@ public enum MediaTypeEnum {
     }
 
     public static boolean isTextType(String contentType){
+        if (StringUtils.isBlank(contentType)){
+            return false;
+        }
         final String mediaType = contentType.trim();
         if(StringUtils.isBlank(mediaType)){
             return false;

@@ -10,6 +10,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
@@ -45,6 +46,7 @@ import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestConfig;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
+import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.support.ClassUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,7 @@ import okio.Okio;
 import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author  caizhihao
@@ -83,6 +86,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private final Class<? extends HttpApiProcessor<?>> apiProcessorClass;
     private  final HttpApiProcessor<Annotation> requestProcessor;
 
+    private final HttpApiConfigContext apiConfigContext;
+
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -103,6 +108,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         httpApiMethodInvocation.setProxyInterface(httpInterface);
         httpApiMethodInvocation.setProxyClass(targetClass);
         httpApiMethodInvocation.setMethodInvocation(methodInvocation);
+
+        apiConfigContext = getHttpApiConfigContext();
     }
 
 
@@ -170,6 +177,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
 
+        // todo pre handle
+        //httpMetadata = requestPreInterceptor(httpMetadata);
+
         // sendHttpRequest processor
         HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,httpApiMethodInvocation);
 
@@ -180,6 +190,26 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         // MethodReturnValue processor
         return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,httpApiMethodInvocation);
+    }
+
+    private HttpMetadata requestPreInterceptor(HttpMetadata httpMetadata) {
+        // todo
+        HttpRequestConfig httpRequestConfig = apiConfigContext.getHttpRequestConfig();
+        if (httpRequestConfig == null){
+            return httpMetadata;
+        }
+
+       if (!CollectionUtils.isEmpty(httpRequestConfig.getJsonPathPack()) && httpMetadata.getBody() != null){
+           String contentType = httpMetadata.getBody().getContentType();
+           if (contentType != null && MediaTypeEnum.isTextType(contentType)){
+               String stringBody = httpMetadata.getBody().toStringBody();
+               if (StringUtils.isNotBlank(stringBody) && JSON.isValid(stringBody)){
+                   // todo
+               }
+           }
+       }
+
+       return httpMetadata;
     }
 
     public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata)  {
@@ -217,7 +247,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
         Request request = requestBuilder.build();
 
-        HttpApiConfigContext apiConfigContext = getHttpApiConfigContext();
         OkHttpClient callClient = getCallHttpClient(client,apiConfigContext);
         Call call = callClient.newCall(request);
         try (Response response = call.execute()) {
