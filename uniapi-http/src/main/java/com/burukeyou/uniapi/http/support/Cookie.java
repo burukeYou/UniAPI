@@ -16,22 +16,13 @@
 package com.burukeyou.uniapi.http.support;
 
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.burukeyou.uniapi.util.TimeUtil;
 import lombok.Getter;
 import lombok.Setter;
 import okhttp3.internal.Util;
 import org.springframework.lang.Nullable;
-
-import static okhttp3.internal.Util.UTC;
-import static okhttp3.internal.Util.canonicalizeHost;
-import static okhttp3.internal.Util.verifyAsIpAddress;
 
 
 /**
@@ -41,18 +32,9 @@ import static okhttp3.internal.Util.verifyAsIpAddress;
 @Setter
 public class Cookie implements Serializable {
 
-  private static final long serialVersionUID = 135197726278905756L;
+  private static final long serialVersionUID = -1L;
 
   public static final long MAX_DATE = 253402300799999L;
-
-  private static final Pattern YEAR_PATTERN
-      = Pattern.compile("(\\d{2,4})[^\\d]*");
-  private static final Pattern MONTH_PATTERN
-      = Pattern.compile("(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec).*");
-  private static final Pattern DAY_OF_MONTH_PATTERN
-      = Pattern.compile("(\\d{1,2})[^\\d]*");
-  private static final Pattern TIME_PATTERN
-      = Pattern.compile("(\\d{1,2}):(\\d{1,2}):(\\d{1,2})[^\\d]*");
 
   private  String name;   // cookie pair name
   private  String value;    // cookie pair value
@@ -73,8 +55,8 @@ public class Cookie implements Serializable {
     this.value = value;
   }
 
-  private Cookie(String name, String value, long expiresAt, String domain, String path,
-                 boolean secure, boolean httpOnly, boolean hostOnly, boolean persistent) {
+  public Cookie(String name, String value, long expiresAt, String domain, String path,
+                boolean secure, boolean httpOnly, boolean hostOnly, boolean persistent) {
     this.name = name;
     this.value = value;
     this.expiresAt = expiresAt;
@@ -86,7 +68,7 @@ public class Cookie implements Serializable {
     this.persistent = persistent;
   }
 
-  Cookie(Builder builder) {
+  public Cookie(Builder builder) {
     if (builder.name == null) throw new NullPointerException("builder.name == null");
     if (builder.value == null) throw new NullPointerException("builder.value == null");
     if (builder.domain == null) throw new NullPointerException("builder.domain == null");
@@ -173,138 +155,6 @@ public class Cookie implements Serializable {
   public boolean secure() {
     return secure;
   }
-
-
-  private static boolean domainMatch(String urlHost, String domain) {
-    if (urlHost.equals(domain)) {
-      return true; // As in 'example.com' matching 'example.com'.
-    }
-
-    if (urlHost.endsWith(domain)
-        && urlHost.charAt(urlHost.length() - domain.length() - 1) == '.'
-        && !verifyAsIpAddress(urlHost)) {
-      return true; // As in 'example.com' matching 'www.example.com'.
-    }
-
-    return false;
-  }
-
-
-
-
-
-  /** Parse a date as specified in RFC 6265, section 5.1.1. */
-  private static long parseExpires(String s, int pos, int limit) {
-    pos = dateCharacterOffset(s, pos, limit, false);
-
-    int hour = -1;
-    int minute = -1;
-    int second = -1;
-    int dayOfMonth = -1;
-    int month = -1;
-    int year = -1;
-    Matcher matcher = TIME_PATTERN.matcher(s);
-
-    while (pos < limit) {
-      int end = dateCharacterOffset(s, pos + 1, limit, true);
-      matcher.region(pos, end);
-
-      if (hour == -1 && matcher.usePattern(TIME_PATTERN).matches()) {
-        hour = Integer.parseInt(matcher.group(1));
-        minute = Integer.parseInt(matcher.group(2));
-        second = Integer.parseInt(matcher.group(3));
-      } else if (dayOfMonth == -1 && matcher.usePattern(DAY_OF_MONTH_PATTERN).matches()) {
-        dayOfMonth = Integer.parseInt(matcher.group(1));
-      } else if (month == -1 && matcher.usePattern(MONTH_PATTERN).matches()) {
-        String monthString = matcher.group(1).toLowerCase(Locale.US);
-        month = MONTH_PATTERN.pattern().indexOf(monthString) / 4; // Sneaky! jan=1, dec=12.
-      } else if (year == -1 && matcher.usePattern(YEAR_PATTERN).matches()) {
-        year = Integer.parseInt(matcher.group(1));
-      }
-
-      pos = dateCharacterOffset(s, end + 1, limit, false);
-    }
-
-    // Convert two-digit years into four-digit years. 99 becomes 1999, 15 becomes 2015.
-    if (year >= 70 && year <= 99) year += 1900;
-    if (year >= 0 && year <= 69) year += 2000;
-
-    // If any partial is omitted or out of range, return -1. The date is impossible. Note that leap
-    // seconds are not supported by this syntax.
-    if (year < 1601) throw new IllegalArgumentException();
-    if (month == -1) throw new IllegalArgumentException();
-    if (dayOfMonth < 1 || dayOfMonth > 31) throw new IllegalArgumentException();
-    if (hour < 0 || hour > 23) throw new IllegalArgumentException();
-    if (minute < 0 || minute > 59) throw new IllegalArgumentException();
-    if (second < 0 || second > 59) throw new IllegalArgumentException();
-
-    Calendar calendar = new GregorianCalendar(UTC);
-    calendar.setLenient(false);
-    calendar.set(Calendar.YEAR, year);
-    calendar.set(Calendar.MONTH, month - 1);
-    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-    calendar.set(Calendar.HOUR_OF_DAY, hour);
-    calendar.set(Calendar.MINUTE, minute);
-    calendar.set(Calendar.SECOND, second);
-    calendar.set(Calendar.MILLISECOND, 0);
-    return calendar.getTimeInMillis();
-  }
-
-  /**
-   * Returns the index of the next date character in {@code input}, or if {@code invert} the index
-   * of the next non-date character in {@code input}.
-   */
-  private static int dateCharacterOffset(String input, int pos, int limit, boolean invert) {
-    for (int i = pos; i < limit; i++) {
-      int c = input.charAt(i);
-      boolean dateCharacter = (c < ' ' && c != '\t') || (c >= '\u007f')
-          || (c >= '0' && c <= '9')
-          || (c >= 'a' && c <= 'z')
-          || (c >= 'A' && c <= 'Z')
-          || (c == ':');
-      if (dateCharacter == !invert) return i;
-    }
-    return limit;
-  }
-
-  /**
-   * Returns the positive value if {@code attributeValue} is positive, or {@link Long#MIN_VALUE} if
-   * it is either 0 or negative. If the value is positive but out of range, this returns {@link
-   * Long#MAX_VALUE}.
-   *
-   * @throws NumberFormatException if {@code s} is not an integer of any precision.
-   */
-  private static long parseMaxAge(String s) {
-    try {
-      long parsed = Long.parseLong(s);
-      return parsed <= 0L ? Long.MIN_VALUE : parsed;
-    } catch (NumberFormatException e) {
-      // Check if the value is an integer (positive or negative) that's too big for a long.
-      if (s.matches("-?\\d+")) {
-        return s.startsWith("-") ? Long.MIN_VALUE : Long.MAX_VALUE;
-      }
-      throw e;
-    }
-  }
-
-  /**
-   * Returns a domain string like {@code example.com} for an input domain like {@code EXAMPLE.COM}
-   * or {@code .example.com}.
-   */
-  private static String parseDomain(String s) {
-    if (s.endsWith(".")) {
-      throw new IllegalArgumentException();
-    }
-    if (s.startsWith(".")) {
-      s = s.substring(1);
-    }
-    String canonicalDomain = canonicalizeHost(s);
-    if (canonicalDomain == null) {
-      throw new IllegalArgumentException();
-    }
-    return canonicalDomain;
-  }
-
 
   /**
    * Builds a cookie. The {@linkplain #name() name}, {@linkplain #value() value}, and {@linkplain

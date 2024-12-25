@@ -1,5 +1,12 @@
 package com.burukeyou.uniapi.http.core.http.response;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
 import com.burukeyou.uniapi.http.support.Cookie;
 import lombok.Getter;
@@ -8,13 +15,6 @@ import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.BeanUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author      caizhihao
