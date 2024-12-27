@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.burukeyou.uniapi.http.utils.AssertUtil;
+import com.burukeyou.uniapi.util.AssertUtil;
 import com.burukeyou.uniapi.http.utils.IpDnsUtils;
 
 /**

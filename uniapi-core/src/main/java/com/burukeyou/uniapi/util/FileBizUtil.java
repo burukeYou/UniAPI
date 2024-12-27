@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.utils;
+package com.burukeyou.uniapi.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,7 +18,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 
 /**
- *
+ * @author caizhihao
  */
 public class FileBizUtil {
 

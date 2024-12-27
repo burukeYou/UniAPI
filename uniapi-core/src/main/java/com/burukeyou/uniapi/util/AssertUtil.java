@@ -25,7 +25,7 @@
  *
  */
 
-package com.burukeyou.uniapi.http.utils;
+package com.burukeyou.uniapi.util;
 
 import java.lang.reflect.Array;
 import java.util.Collection;

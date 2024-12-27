@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.utils.FileBizUtil;
+import com.burukeyou.uniapi.util.FileBizUtil;
 
 /**
  * @author caizhihao

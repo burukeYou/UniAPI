@@ -61,7 +61,7 @@ import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.http.support.UniHttpInputStream;
 import com.burukeyou.uniapi.http.utils.BizUtil;
-import com.burukeyou.uniapi.http.utils.FileBizUtil;
+import com.burukeyou.uniapi.util.FileBizUtil;
 import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
