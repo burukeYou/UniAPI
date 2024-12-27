@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.utils.ssl;
+package com.burukeyou.uniapi.util.ssl;
 
 import java.io.Serializable;
 

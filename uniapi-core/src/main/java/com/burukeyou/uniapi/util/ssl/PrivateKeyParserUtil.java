@@ -1,5 +1,5 @@
 
-package com.burukeyou.uniapi.http.utils.ssl;
+package com.burukeyou.uniapi.util.ssl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.util.FileBizUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.Base64Utils;
@@ -139,7 +139,7 @@ public class PrivateKeyParserUtil {
 	 * Rude judgment on whether it is a file path or not
 	 */
 	private static boolean isFilePath(String content) {
-		return  BizUtil.isFilePath(content);
+		return  FileBizUtil.isFilePathSimilar(content);
 	}
 
 	/**

@@ -4,9 +4,10 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.TrustManager;
 
 import com.burukeyou.uniapi.http.core.ssl.hostnameverify.UniHttpHostnameVerifier;
-import com.burukeyou.uniapi.http.utils.ssl.CertificateParam;
-import com.burukeyou.uniapi.http.utils.ssl.KeyStoreParam;
-import com.burukeyou.uniapi.http.utils.ssl.SslUtil;
+import com.burukeyou.uniapi.util.ssl.CertificateParam;
+import com.burukeyou.uniapi.util.ssl.KeyStoreParam;
+import com.burukeyou.uniapi.util.ssl.SslContextInfo;
+import com.burukeyou.uniapi.util.ssl.SslUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +43,19 @@ public class DefaultSslConnectionContextFactory implements SslConnectionContextF
         }
         initTrustStore(sslConfig, builder);
         initKeyStore(sslConfig, builder);
-        return builder.build();
+        SslContextInfo contextInfo = builder.build();
+        return convert(contextInfo);
+    }
+
+    private SslConnectionContext convert(SslContextInfo contextInfo) {
+        SslConnectionContext context = new SslConnectionContext();
+        context.setSslContext(contextInfo.getSslContext());
+        context.setKeyManagers(contextInfo.getKeyManagers());
+        context.setTrustManagers(contextInfo.getTrustManagers());
+        context.setHostnameVerifier(contextInfo.getHostnameVerifier());
+        context.setCipherSuites(contextInfo.getCipherSuites());
+        context.setEnableProtocols(contextInfo.getEnableProtocols());
+        return context;
     }
 
     private void initKeyStore(SslConfig sslConfig, SslUtil.SSLBuilder builder) {

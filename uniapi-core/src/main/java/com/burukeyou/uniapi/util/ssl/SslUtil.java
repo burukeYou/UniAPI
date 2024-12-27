@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.utils.ssl;
+package com.burukeyou.uniapi.util.ssl;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
@@ -31,8 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
-import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.util.EncodeUtil;
+import com.burukeyou.uniapi.util.FileBizUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
 
@@ -136,13 +136,13 @@ public class SslUtil {
             }
             try {
                 TrustManager[] tmp;
-                if (BizUtil.isFilePath(trustStore)){
+                if (FileBizUtil.isFilePathSimilar(trustStore)){
                     // load for file path
                     URL url = ResourceUtils.getURL(trustStore);
                     tmp = getTrustManagersByUrl(url, keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
                 }else {
                     // load for content
-                    byte[] trustStoreByte = BizUtil.base64DecodeToByte(trustStore);
+                    byte[] trustStoreByte = EncodeUtil.base64DecodeToByte(trustStore);
                     tmp = getTrustManagersByInputStream(new ByteArrayInputStream(trustStoreByte),keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
                 }
                 trustManagers.addAll(Arrays.asList(tmp));
@@ -174,13 +174,13 @@ public class SslUtil {
             }
             try {
                 KeyManager[] tmp;
-                if (BizUtil.isFilePath(keyStore)){
+                if (FileBizUtil.isFilePathSimilar(keyStore)){
                     // load for file
                      URL url = ResourceUtils.getURL(keyStore);
                      tmp = getKeyManagersByUrl(url, keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyPassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
                 }else {
                     // load for content
-                    tmp = getKeyManagersByInputStream(new ByteArrayInputStream(BizUtil.base64DecodeToByte(keyStore)), keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyPassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
+                    tmp = getKeyManagersByInputStream(new ByteArrayInputStream(EncodeUtil.base64DecodeToByte(keyStore)), keyStoreKey.getKeyStorePassword(), keyStoreKey.getKeyPassword(), keyStoreKey.getKeyAlias(),keyStoreKey.getKeyStoreType(), keyStoreKey.getKeyStoreProvider());
                 }
                 keyManagers.addAll(Arrays.asList(tmp));
             } catch (Exception e) {
@@ -190,11 +190,11 @@ public class SslUtil {
         }
 
 
-        public SslConnectionContext build() {
+        public SslContextInfo build() {
             if (StringUtils.isBlank(protocol)){
                 protocol = "TLS";
             }
-            SslConnectionContext context = new SslConnectionContext();
+            SslContextInfo context = new SslContextInfo();
 
             try {
                 SSLContext sslcontext = SSLContext.getInstance(protocol);

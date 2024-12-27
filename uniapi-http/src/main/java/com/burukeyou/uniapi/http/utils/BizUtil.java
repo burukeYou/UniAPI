@@ -21,21 +21,7 @@ public class BizUtil {
     /**
      * Rude judgment on whether it is a file path or not
      */
-    public static boolean isFilePath(String content) {
-        return  content.startsWith("/") ||
-                content.startsWith("classpath:") ||
-                content.startsWith("file:") ||
-                content.startsWith("http:") ||
-                content.length() < 30 ||
-                content.endsWith(".key") ||
-                content.endsWith(".p10") ||
-                content.endsWith(".p12") ||
-                content.endsWith(".cem") ||
-                content.endsWith(".pem") ||
-                content.endsWith(".crt") ||
-                new File(content).exists() ||
-                content.length() < 100;
-    }
+
 
     public static String base64Decode(String content) {
         if (StringUtils.isBlank(content)){

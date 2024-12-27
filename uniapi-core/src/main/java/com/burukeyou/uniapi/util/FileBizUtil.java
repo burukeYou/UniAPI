@@ -272,4 +272,35 @@ public class FileBizUtil {
             throw new RuntimeException("save file error ",e);
         }
     }
+
+    /**
+     * Rough judgment on whether it is a file path or not
+     * @param content       file path content
+     */
+    public static boolean isFilePathSimilar(String content) {
+        return  content.startsWith("classpath:") ||
+                content.startsWith("file:") ||
+                content.startsWith("http:") ||
+                content.startsWith(File.separator) ||
+                content.endsWith(".txt") ||
+                content.endsWith(".xls") ||
+                content.endsWith(".xlsx") ||
+                content.endsWith(".csv") ||
+                content.endsWith(".pdf") ||
+                content.endsWith(".mp4") ||
+                content.endsWith(".mp3") ||
+                content.endsWith(".key") ||
+                content.endsWith(".keyStore") ||
+                content.endsWith(".p10") ||
+                content.endsWith(".p12") ||
+                content.endsWith(".cem") ||
+                content.endsWith(".pem") ||
+                content.endsWith(".crt") ||
+                content.startsWith("C:") ||
+                content.startsWith("D:") ||
+                content.startsWith("E:") ||
+                content.startsWith("F:") ||
+                new File(content).exists() ||
+                content.length() < 100;
+    }
 }
