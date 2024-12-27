@@ -3,7 +3,6 @@ package com.burukeyou.uniapi.http.core.response;
 import java.io.File;
 import java.io.InputStream;
 
-import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.util.FileBizUtil;
 
 /**

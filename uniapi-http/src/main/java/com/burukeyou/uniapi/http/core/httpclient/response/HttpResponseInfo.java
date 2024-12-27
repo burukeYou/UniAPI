@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.core.http.response;
+package com.burukeyou.uniapi.http.core.httpclient.response;
 
 import java.io.InputStream;
 import java.util.List;

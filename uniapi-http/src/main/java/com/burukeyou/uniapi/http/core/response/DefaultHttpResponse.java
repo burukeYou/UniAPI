@@ -2,7 +2,6 @@ package com.burukeyou.uniapi.http.core.response;
 
 import java.io.InputStream;
 
-import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import lombok.Getter;
 import lombok.Setter;
 

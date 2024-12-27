@@ -1,10 +1,9 @@
-package com.burukeyou.uniapi.http.core.http.response;
+package com.burukeyou.uniapi.http.core.response;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -15,7 +14,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
+import com.burukeyou.uniapi.http.core.httpclient.response.HttpResponseInfo;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.support.Cookie;
@@ -24,8 +23,6 @@ import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.utils.cookie.CookieUtil;
 import okhttp3.MediaType;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.FileCopyUtils;
 
 /**
  *  Http Response data
@@ -47,7 +44,7 @@ public class UniHttpResponse implements Closeable {
     /**
      *  Response info
      */
-    private HttpResponseInfo httpResponseInfo;
+    private HttpResponseInfo originHttpResponse;
 
     /**
      * Response Code
@@ -69,11 +66,11 @@ public class UniHttpResponse implements Closeable {
 
     private final String contentType;
 
-    public UniHttpResponse(HttpMetadata httpMetadata, HttpResponseInfo httpResponseInfo) {
+    public UniHttpResponse(HttpMetadata httpMetadata, HttpResponseInfo originHttpResponse) {
         this.request = httpMetadata;
-        this.httpResponseInfo = httpResponseInfo;
-        this.code = httpResponseInfo.getHttpCode();
-        Map<String, List<String>> headerMap = httpResponseInfo.getHeaderMap();
+        this.originHttpResponse = originHttpResponse;
+        this.code = originHttpResponse.getHttpCode();
+        Map<String, List<String>> headerMap = originHttpResponse.getHeaderMap();
         this.headersMap = headerMap == null ? new HashMap<>() : headerMap;
         this.contentType = getContentType();
 
@@ -84,7 +81,7 @@ public class UniHttpResponse implements Closeable {
 
     @Override
     public void close() throws IOException {
-        httpResponseInfo.closeResource();
+        originHttpResponse.closeResource();
     }
 
     /**
@@ -108,7 +105,7 @@ public class UniHttpResponse implements Closeable {
             this.bodyString = new String(bodyBytes, getBodyCharset());
         }else {
             // read from server
-            this.bodyString = httpResponseInfo.getBodyToString();
+            this.bodyString = originHttpResponse.getBodyToString();
         }
 
         this.isUpdateBodyString = true;
@@ -138,7 +135,7 @@ public class UniHttpResponse implements Closeable {
             this.bodyBytes = bodyString.getBytes(getBodyCharset());
         }else {
             // read from server
-            this.bodyBytes = httpResponseInfo.getBodyBytes();
+            this.bodyBytes = originHttpResponse.getBodyBytes();
         }
 
         this.isUpdateBodyByte = true;
@@ -157,7 +154,7 @@ public class UniHttpResponse implements Closeable {
             // already read from server to string
             return new ByteArrayInputStream(bodyString.getBytes(getBodyCharset()));
         }
-        return httpResponseInfo.getBodyToInputStream();
+        return originHttpResponse.getBodyToInputStream();
     }
 
 
@@ -227,21 +224,13 @@ public class UniHttpResponse implements Closeable {
         return getHeader("Content-Type");
     }
 
+    /**
+     * get response body content-length
+     */
     public String getContentLength(){
         return getHeader("Content-Length");
     }
 
-    /**
-     *  set response body content-type
-     */
-    public void setContentType(String contentType){
-        List<String> values = headersMap.get(contentType);
-        if (CollectionUtils.isEmpty(values)){
-            headersMap.put("Content-Type",Collections.singletonList(contentType));
-        }else {
-            values.add(contentType);
-        }
-    }
 
     /**
      * get response set-cookie header string
@@ -275,94 +264,40 @@ public class UniHttpResponse implements Closeable {
         }
     }
 
+    /**
+     * update response body content
+     */
     public void updateBody(String bodyString){
         this.bodyString = bodyString;
         this.isUpdateBodyString = true;
     }
 
+    /**
+     * update response body content
+     */
     public void updateBody(byte[] bodyBytes){
         this.bodyBytes = bodyBytes;
         this.isUpdateBodyByte = true;
     }
 
-    private <T> T convertBodyContentToType(Object bodyContent, Class<T> bodyTargetClass) {
-        if (bodyContent == null){
-            return null;
-        }
-        Class<?> actualClass = bodyContent.getClass();
-        if (bodyTargetClass.equals(actualClass) || bodyTargetClass.isAssignableFrom(actualClass)){
-            return (T)bodyContent;
-        }
-
-        // convert string to other type
-        if (actualClass.equals(String.class)){
-            // string ==> inputStream
-            if (InputStream.class.isAssignableFrom(bodyTargetClass)){
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(bodyContent.toString().getBytes());
-                return bodyTargetClass.cast(inputStream);
-            }
-
-            // string ==> byte[]
-            if (byte[].class.equals(bodyTargetClass)){
-                byte[] bytes = bodyContent.toString().getBytes();
-                return bodyTargetClass.cast(bytes);
-            }
-        }
-
-        // convert byte[] to other type
-        if (actualClass.equals(byte[].class)){
-            // byte[] ==> inputStream
-            if (InputStream.class.isAssignableFrom(bodyTargetClass)){
-                ByteArrayInputStream inputStream = new ByteArrayInputStream((byte[])bodyContent);
-                return bodyTargetClass.cast(inputStream);
-            }
-
-            // byte[] ==> string
-            if (String.class.equals(bodyTargetClass)){
-                String string = new String((byte[])bodyContent);
-                return bodyTargetClass.cast(string);
-            }
-        }
-
-        // convert inputStream to other type
-        if (InputStream.class.isAssignableFrom(actualClass)){
-            // inputStream ==> string
-            if (String.class.equals(bodyTargetClass)){
-                try {
-                    String string = FileCopyUtils.copyToString(new InputStreamReader(castBodyInputStream(bodyContent)));
-                    return bodyTargetClass.cast(string);
-                } catch (IOException e) {
-                    throw new UniHttpResponseException(e);
-                }
-            }
-
-            // inputStream ==> byte[]
-            if (byte[].class.equals(bodyTargetClass)){
-                try {
-                    byte[] bytes = FileCopyUtils.copyToByteArray(castBodyInputStream(bodyContent));
-                    return bodyTargetClass.cast(bytes);
-                } catch (IOException e) {
-                    throw new UniHttpResponseException(e);
-                }
-            }
-        }
-
-        throw new IllegalStateException("Unsupported body type conversion from " + actualClass + " to " + bodyTargetClass);
-    }
-
-    private static InputStream castBodyInputStream(Object bodyContent) {
-        return (InputStream)bodyContent;
-    }
-
+    /**
+     * get request data
+     */
     public HttpMetadata getRequest() {
         return request;
     }
 
-    public HttpResponseInfo getUniHttpResponse() {
-        return httpResponseInfo;
+    /**
+     * get origin response info
+     */
+    public HttpResponseInfo getOriginHttpResponse() {
+        return originHttpResponse;
     }
 
 
+    /**
+     * is file download type  response
+     */
     public boolean isFileResponse(){
         String contentType = getContentType();
         if (MediaTypeEnum.isFileType(contentType)){
@@ -382,6 +317,9 @@ public class UniHttpResponse implements Closeable {
         return false;
     }
 
+    /**
+     * is text type response
+     */
     public boolean isTextResponse(){
         return !isFileResponse();
     }
@@ -402,11 +340,9 @@ public class UniHttpResponse implements Closeable {
         return fileName;
     }
 
-    public String toHttpProtocolIntact(){
-        String requestProtocol = request.toHttpProtocol();
-        return requestProtocol + toHttpProtocol();
-    }
-
+    /**
+     * convert to http response protocol string
+     */
     public String toHttpProtocol() {
         StringBuilder sb = new StringBuilder();
         RequestMethod requestMethod = request.getRequestMethod();
@@ -442,5 +378,13 @@ public class UniHttpResponse implements Closeable {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * convert to http protocol string, include request
+     */
+    public String toHttpProtocolIntact(){
+        String requestProtocol = request.toHttpProtocol();
+        return requestProtocol + toHttpProtocol();
     }
 }

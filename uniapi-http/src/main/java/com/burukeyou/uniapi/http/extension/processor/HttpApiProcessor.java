@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
-import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 
 /**
