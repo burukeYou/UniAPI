@@ -1,14 +1,15 @@
 package com.burukeyou.uniapi.http.core.conveter.request;
 
+import java.util.Collections;
+
 import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import com.burukeyou.uniapi.support.arg.Param;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Collections;
 
 /**
  * @author  caizhihao
@@ -30,8 +31,8 @@ public class BodyFormParHttpBodyConverter extends AbstractHttpRequestBodyConvert
     @Override
     protected HttpBody doConvert(Param param, BodyFormPar annotation) {
         Object argValue = param.getValue();
-        if (paramFinder.isObjOrMap(argValue.getClass())){
-            return new HttpBodyFormData(paramFinder.objToMap(argValue));
+        if (param.isObjectOrMap()){
+            return new HttpBodyFormData(BizUtil.objToMap(argValue));
         }else if (!param.isCollection()){
             if (StringUtils.isBlank(annotation.value())){
                 throw new BaseUniHttpException("use @BodyFormPar for single value please specify the parameter name ");

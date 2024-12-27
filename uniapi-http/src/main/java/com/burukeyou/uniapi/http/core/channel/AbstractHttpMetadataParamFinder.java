@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.param.ComposePar;
 import com.burukeyou.uniapi.http.annotation.param.CookiePar;
@@ -28,9 +27,9 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
 import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
 import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
-import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.support.arg.ArgList;
@@ -272,11 +271,6 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         }
 
         throw new BaseUniHttpException("http body build exception can not combine body");
-    }
-
-
-    public Map<String, String> objToMap(Object argValue) {
-        return JSON.parseObject(JSON.toJSONString(argValue), new TypeReference<Map<String, String>>() {});
     }
 
 
@@ -532,10 +526,6 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             return true;
         }
         return false;
-    }
-
-    public  boolean isObjOrArrOrMap(Class<?> valueClass){
-        return isObjOrArr(valueClass) || isObjOrMap(valueClass);
     }
 
 

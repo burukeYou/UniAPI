@@ -8,7 +8,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -74,6 +78,14 @@ public class BizUtil {
         }
         return false;
     }
+
+    public static Map<String, String> objToMap(Object argValue) {
+        if (argValue == null){
+            return new HashMap<>(0);
+        }
+        return JSON.parseObject(JSON.toJSONString(argValue), new TypeReference<Map<String, String>>() {});
+    }
+
 
 
 }

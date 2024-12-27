@@ -66,6 +66,11 @@ public interface Param {
     boolean isObject();
 
     /**
+     * In addition to being the same as {@link #isObject}, it will also determine whether it is a map type
+     */
+    boolean isObjectOrMap();
+
+    /**
      * Determine whether the parameter type is an array or collection
      */
     boolean isCollection();

@@ -35,7 +35,7 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
 
     private List<MultipartDataItem> processBodyMultiParAnnoItem(Param param, BodyMultiPartPar multipartParam) {
         List<MultipartDataItem> dataItems;
-        if (paramFinder.isObjOrMap(param.getType())){
+        if (param.isObjectOrMap()){
              dataItems = getHttpBodyMultipartFormData(param.getValue(), param.getType());
         }else {
              dataItems = Collections.singletonList(getOneMultipartDataItem(param, multipartParam));
@@ -66,7 +66,7 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
         List<MultipartDataItem> dataItems = new ArrayList<>();
         ArgList argList = paramFinder.autoGetArgList(argValue);
         for (Param param : argList) {
-            if (paramFinder.isObjOrMap(param.getType())){
+            if (param.isObjectOrMap()){
                 continue;
             }
 

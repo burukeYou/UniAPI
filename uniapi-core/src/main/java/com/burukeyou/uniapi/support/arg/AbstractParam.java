@@ -126,6 +126,12 @@ public abstract class AbstractParam implements Param {
     }
 
     @Override
+    public boolean isObjectOrMap() {
+        Class<?> type = getType();
+        return Map.class.isAssignableFrom(type) || isObject();
+    }
+
+    @Override
     public boolean isCollection() {
         Class<?> type = getType();
         if (type.isArray()  || Collection.class.isAssignableFrom(type)){
