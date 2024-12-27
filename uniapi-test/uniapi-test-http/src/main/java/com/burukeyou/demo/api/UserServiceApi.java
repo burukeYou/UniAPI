@@ -46,6 +46,11 @@ public interface UserServiceApi {
     @PostHttpInterface("/user-web/add4")
     BaseRsp<Add4DTO> add4(@BodyJsonPar Add4DTO req);
 
+    @PostHttpInterface("/user-web/add4")
+    BaseRsp<Add4DTO> add42(@BodyJsonPar Add4DTO req,
+                          @BodyJsonPar("sex") String sex,
+                          @BodyJsonPar("$.bbq.kk.age") Integer age);
+
     @PostHttpInterface("/user-web/add41")
     BaseRsp<String> add41(@BodyJsonPar String req);
 
