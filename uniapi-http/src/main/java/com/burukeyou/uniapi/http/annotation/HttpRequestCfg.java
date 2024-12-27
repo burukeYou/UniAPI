@@ -19,6 +19,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HttpRequestCfg {
 
+    /**
+     * Whether to enable follow redirects
+     */
+    boolean followRedirect() default true;
 
+    /**
+     * Whether to enable  follow redirects from HTTPS to HTTP and from HTTP to HTTPS
+     */
+    boolean followSslRedirect() default true;
 
 }

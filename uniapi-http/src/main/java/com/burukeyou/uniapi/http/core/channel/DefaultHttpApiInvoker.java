@@ -387,6 +387,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
         HttpRequestConfig config = new HttpRequestConfig();
+        config.setFollowRedirect(anno.followRedirect());
+        config.setFollowSslRedirect(anno.followSslRedirect());
         return config;
     }
 

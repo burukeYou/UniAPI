@@ -1,14 +1,6 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 
-import com.burukeyou.uniapi.http.core.ssl.*;
-import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
-import com.burukeyou.uniapi.http.support.HttpCallConfig;
-import okhttp3.ConnectionSpec;
-import okhttp3.OkHttpClient;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.util.CollectionUtils;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -22,6 +14,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+
+import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
+import com.burukeyou.uniapi.http.core.ssl.SslConfig;
+import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
+import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
+import com.burukeyou.uniapi.http.core.ssl.TrustAllX509ExtendedTrustManager;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpRequestConfig;
+import okhttp3.ConnectionSpec;
+import okhttp3.OkHttpClient;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author caizhihao
@@ -90,6 +95,7 @@ public abstract class AbstractInvokeCache {
             return methodClient;
         }
 
+        // check is not config
         if (apiConfigContext.isNotClientConfig()){
             return defaultClient;
         }
@@ -112,6 +118,12 @@ public abstract class AbstractInvokeCache {
         if (sslConfig != null && Boolean.TRUE.equals(sslConfig.isEnabled())){
             SslConnectionContext sslConnectionContext = sslConnectionContextFactory.create(sslConfig);
             configSslForOkhttp(sslConnectionContext, newBuilder);
+        }
+
+        HttpRequestConfig requestConfig = apiConfigContext.getHttpRequestConfig();
+        if (requestConfig != null){
+            newBuilder.followRedirects(requestConfig.getFollowRedirect());
+            newBuilder.followSslRedirects(requestConfig.getFollowSslRedirect());
         }
 
         return newBuilder.build();

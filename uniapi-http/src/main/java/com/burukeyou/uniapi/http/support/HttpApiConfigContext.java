@@ -23,7 +23,7 @@ public class HttpApiConfigContext implements Serializable {
     private HttpResponseConfig httpResponseConfig;
 
     public boolean isNotClientConfig(){
-        Object[] arr = {httpCallConfig,sslConfig};
+        Object[] arr = {httpCallConfig,sslConfig,httpRequestConfig};
         return  Arrays.stream(arr).allMatch(Objects::isNull);
     }
 }
