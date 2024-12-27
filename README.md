@@ -124,7 +124,7 @@ class UserAppService {
     BaseRsp<String> getUser();
 ```
 
-这些@HttpInterface注解上的参数建议配置写死的固定的参数，如果需要动态的传参。 请重写具体的 HttpApiProcessor#postBeforeHttpMetadata 针对不同渠道做不同的调用前传参或者修改覆盖
+这些@HttpInterface注解上的参数建议配置写死的固定的参数，如果需要动态的传参。 请重写具体的 HttpApiProcessor#postBeforeHttpRequest 针对不同渠道做不同的调用前传参或者修改覆盖
 
 
 ##  各种@Par注解
@@ -339,7 +339,7 @@ HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接
 
 ```
 
-                  postBeforeHttpMetadata                (请求发送前)在发送请求之前，对Http请求体后置处理
+                  postBeforeHttpRequest                (请求发送前)在发送请求之前，对Http请求体后置处理
                          |
                          V
                   postSendingHttpRequest                (请求发送时)在Http请求发送时处理
@@ -356,7 +356,7 @@ HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接
 
 
 
-1、postBeforeHttpMetadata: 可在发送http请求之前对请求体进行二次处理，比如加签之类
+1、postBeforeHttpRequest: 可在发送http请求之前对请求体进行二次处理，比如加签之类
 
 2、postSendHttpRequest:    Http请求发送时会回调该方法，可以在该方法执行自定义的发送逻辑或者打印发送日志
 
@@ -368,7 +368,7 @@ HttpApiProcessor表示是一个发送和响应和反序列化一个Http请求接
 
 
 其他
-- HttpMetadata: 表示此次Http请求的请求体，包含请求url，请求头、请求方式、请求cookie、请求体、请求参数等等。
+- UniHttpRequest: 表示此次Http请求的请求体，包含请求url，请求头、请求方式、请求cookie、请求体、请求参数等等。
 - HttpApiMethodInvocation: 继承自MethodInvocation， 表示被代理的方法调用上下文，可以拿到被代理的类，被代理的方法，被代理的HttpAPI注解、HttpInterface注解等信息
 
 
@@ -470,7 +470,7 @@ interface UserServiceApi {
 ```java
     // jsonPathStr2Obj 配置需要进行转换的json路径
     @PostHttpInterface(path = "/user-web/del05")
-    @ResponseConfig(jsonPathStr2Obj =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
+    @HttpResponseCfg(jsonPathStr2Obj =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
     String del05();
 ```
 
@@ -517,7 +517,7 @@ channel:
 ## 4.2、自定义该渠道方的HttpAPI注解
 假设现在对接的是某团，所以叫@MTuanHttpApi吧，然后需要在该注解上标记@HttpApi注解，并且需要配置processor字段，需要去自定义实现一个HttpApiProcessor这个具体实现后续讲。
 有了这个注解后就可以自定义该注解与对接渠道方相关的各种字段配置，当然也可以不定义。 注意这里url的字段是使用 @AliasFor(annotation = HttpApi.class)，
-这样构建的HttpMetadata中会默认解析填充要请求体，不标记则也可自行处理。
+这样构建的UniHttpRequest中会默认解析填充要请求体，不标记则也可自行处理。
 
 ```java
 @Inherited
@@ -607,7 +607,7 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      * @return                          新的请求体
      */
     @Override
-    public HttpMetadata postBeforeHttpMetadata(HttpMetadata uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+    public UniHttpRequest postBeforeHttpRequest(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         /**
          * 在查询参数中添加提供的appId字段
          */
@@ -674,14 +674,15 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      *  实现-postBeforeHttpMetadata： 发送Http请求时，可定义发送请求的行为 或者打印请求和响应日志。
      */
     @Override
-    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata uniHttpRequest) {
+    public UniHttpResponse postSendingHttpRequest(HttpSender httpSender, UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         //  忽略 weatherApi.getToken的方法回调，否则该方法也会回调此方法会递归死循环。 或者该接口指定自定义的HttpApiProcessor重写postSendingHttpRequest
         Method getTokenMethod = ReflectionUtils.findMethod(WeatherServiceApi.class, "getToken",String.class,String.class);
         if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
             return httpSender.sendHttpRequest(uniHttpRequest);
         }
-        
-        // 1、动态获取token和sessionId
+
+        // 1、动态获取token和sessionId.
+        // 这个接口不应该回调这个方法,否则会递归死循环
         HttpResponse<String> httpResponse = weatherApi.getToken(appId, publicKey);
 
         // 从响应体获取令牌token
@@ -692,14 +693,12 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         // 把这两个值放到此次的请求cookie中
         uniHttpRequest.addCookie(new Cookie("token",token));
         uniHttpRequest.addCookie(new Cookie("sessionId",sessionId));
-        
-        log.info("开始发送Http请求 请求接口:{} 请求体:{}",uniHttpRequest.getHttpUrl().toUrl(),uniHttpRequest.toHttpProtocol());
 
-        // 使用框架内置工具实现发送请求
-        HttpResponse<?> rsp =  httpSender.sendHttpRequest(uniHttpRequest);
+        // 使用框架内置实现发送请求
+        UniHttpResponse rsp = httpSender.sendHttpRequest(uniHttpRequest);
 
-        log.info("开始发送Http请求 响应结果:{}",rsp.toHttpProtocol());
-        
+        log.info("开始发送Http请求 请求响应报文:{}",rsp.toHttpProtocol());
+
         return rsp;
     }
 
@@ -707,24 +706,25 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      *  实现-postAfterHttpResponseBodyResult： 反序列化后Http响应体的内容后回调，可对该结果进行二次处理返回
      * @param bodyResult                     Http响应体反序列化后的结果
      * @param rsp                            原始Http响应对象
-     * @param method                         被代理的方法
-     * @param uniHttpRequest                   Http请求体
+     * @param methodInvocation               被代理的方法
+     * @param httpMetadata                   Http请求体
+     * @return
      */
     @Override
-    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata uniHttpRequest) {
+    public Object postAfterHttpResponseBodyResult(Object bodyResult, UniHttpResponse rsp, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         if (bodyResult instanceof BaseRsp){
             BaseRsp baseRsp = (BaseRsp) bodyResult;
             // 设置
             baseRsp.setCode(999);
         }
-        
+
         return bodyResult;
     }
 }
 
 ```
 
-上面我们分别重写了postBeforeHttpMetadata、postSendHttpRequest、postAfterHttpResponseBodyResult三个生命周期的钩子方法去完成我们的需求，实现他们可以方便的发送一个Http请求的
+上面我们分别重写了postBeforeHttpRequest、postSendHttpRequest、postAfterHttpResponseBodyResult三个生命周期的钩子方法去完成我们的需求，实现他们可以方便的发送一个Http请求的
 过程中去织入我们的对接行为
 
 
