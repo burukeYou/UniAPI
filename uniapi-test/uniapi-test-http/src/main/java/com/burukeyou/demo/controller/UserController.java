@@ -257,4 +257,10 @@ public class UserController {
         return map;
     }
 
+    @GetMapping(path = "/del06")
+    @ResponseBody()
+    public BaseRsp<String> del06(@RequestParam("name") String name){
+        log.info("收到请求1- name:{}",name);
+        return BaseRsp.ok(name + "-1");
+    }
 }

@@ -1,11 +1,22 @@
 package com.burukeyou;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
-import com.burukeyou.demo.entity.*;
-import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.demo.entity.Add4DTO;
+import com.burukeyou.demo.entity.Add6DTO;
+import com.burukeyou.demo.entity.Add9DTO;
+import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
 import org.junit.Test;
@@ -14,13 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
+import org.springframework.util.FileCopyUtils;
 
 
 @SpringBootTest(classes = DemoApplication.class)
@@ -133,8 +138,9 @@ public class HttpApiTest {
 
     @Test
     public void test10(){
-        HttpFileResponse<byte[]> httpFileResponse = userApi.add10();
-        byte[] bytes = userApi.add101();
+        //HttpResponse<byte[]> HttpResponse = userApi.add10();
+        Object HttpResponse = userApi.add1011();
+        //byte[] bytes = userApi.add101();
         System.out.println();
     }
 
@@ -142,7 +148,7 @@ public class HttpApiTest {
     public void test11(){
         File file = userApi.add11();
 
-        HttpFileResponse<File> rsp = userApi.add111();
+        HttpResponse<File> rsp = userApi.add111();
         File file2 = rsp.getBodyResult();
         file2.getName();
         System.out.println();
@@ -150,14 +156,19 @@ public class HttpApiTest {
 
 
     @Test
-    public void test112(){
-        HttpFileResponse<InputStream> fileResponse = userApi.add113();
-        InputStream inputStream = userApi.add112();
+    public void test112() throws IOException {
+        HttpResponse<InputStream> fileResponse = userApi.add113();
+        InputStream inputStream = fileResponse.getBodyResult();
+        String bodyToString = fileResponse.getBodyToString();
+
+        //InputStream inputStream = userApi.add112();
+        String s = FileCopyUtils.copyToString(new InputStreamReader(inputStream));
+
         System.out.println();
     }
 
     @Test
-    public void test114(){
+    public void test114() throws IOException {
         //HttpResponse<InputStream> httpResponse = userApi.add114();
         HttpResponse<byte[]> httpResponse2 = userApi.add115();
         //HttpResponse<File> httpResponse3 = userApi.add116();
@@ -166,7 +177,7 @@ public class HttpApiTest {
 
     @Test
     public void test12(){
-        String savePath = "/Users/burukeyou/dev/tmp/tmp7/jou";
+        String savePath = "D:\\dev\\tmp\\tmp03";
         String savePath2 = "/Users/burukeyou/dev/tmp/tmp7/jou/用户列表.txt";
         File file = userApi.add12(savePath);
         System.out.println();
@@ -204,19 +215,19 @@ public class HttpApiTest {
     @Test
     public void testSimple(){
         String add = simpleServiceApi.add2("1");
-        System.out.println();
+        System.out.println(add);
     }
 
     @Test
     public void testdel01(){
         String sb = userApi.del01("sb");
-        System.out.println();
+        System.out.println(sb);
     }
 
     @Test
     public void testdel02(){
         String sb = userApi.del02();
-        System.out.println();
+        System.out.println(sb);
     }
 
     @Test

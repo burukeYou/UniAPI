@@ -602,12 +602,12 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
 
     /** 实现-postBeforeHttpMetadata： 发送Http请求之前会回调该方法，可对Http请求体的内容进行二次处理
      *
-     * @param httpMetadata              原来的请求体
+     * @param uniHttpRequest              原来的请求体
      * @param methodInvocation          被代理的方法
      * @return                          新的请求体
      */
     @Override
-    public HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+    public HttpMetadata postBeforeHttpMetadata(HttpMetadata uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         /**
          * 在查询参数中添加提供的appId字段
          */
@@ -619,24 +619,24 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         appIdVar = environment.resolvePlaceholders(appIdVar);
 
         // 添加到查询参数中
-        httpMetadata.putQueryParam("appId",appIdVar);
+        uniHttpRequest.putQueryParam("appId",appIdVar);
 
         /**
          *  生成签名sign字段
          */
         // 获取所有查询参数
-        Map<String, Object> queryParam = httpMetadata.getHttpUrl().getQueryParam();
+        Map<String, Object> queryParam = uniHttpRequest.getHttpUrl().getQueryParam();
 
         // 获取请求体参数
-        HttpBody body = httpMetadata.getBody();
+        HttpBody body = uniHttpRequest.getBody();
 
         // 生成签名
         String signKey = createSignKey(queryParam,body);
 
         // 将签名添加到请求头中
-        httpMetadata.putHeader("sign",signKey);
+        uniHttpRequest.putHeader("sign",signKey);
 
-        return httpMetadata;
+        return uniHttpRequest;
     }
 
     private String createSignKey(Map<String, Object> queryParam, HttpBody body) {
@@ -674,11 +674,11 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      *  实现-postBeforeHttpMetadata： 发送Http请求时，可定义发送请求的行为 或者打印请求和响应日志。
      */
     @Override
-    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata) {
+    public HttpResponse<?> postSendHttpRequest(HttpSender httpSender, HttpMetadata uniHttpRequest) {
         //  忽略 weatherApi.getToken的方法回调，否则该方法也会回调此方法会递归死循环。 或者该接口指定自定义的HttpApiProcessor重写postSendingHttpRequest
         Method getTokenMethod = ReflectionUtils.findMethod(WeatherServiceApi.class, "getToken",String.class,String.class);
         if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
-            return httpSender.sendHttpRequest(httpMetadata);
+            return httpSender.sendHttpRequest(uniHttpRequest);
         }
         
         // 1、动态获取token和sessionId
@@ -690,13 +690,13 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         String sessionId = httpResponse.getHeader("sessionId");
 
         // 把这两个值放到此次的请求cookie中
-        httpMetadata.addCookie(new Cookie("token",token));
-        httpMetadata.addCookie(new Cookie("sessionId",sessionId));
+        uniHttpRequest.addCookie(new Cookie("token",token));
+        uniHttpRequest.addCookie(new Cookie("sessionId",sessionId));
         
-        log.info("开始发送Http请求 请求接口:{} 请求体:{}",httpMetadata.getHttpUrl().toUrl(),httpMetadata.toHttpProtocol());
+        log.info("开始发送Http请求 请求接口:{} 请求体:{}",uniHttpRequest.getHttpUrl().toUrl(),uniHttpRequest.toHttpProtocol());
 
         // 使用框架内置工具实现发送请求
-        HttpResponse<?> rsp =  httpSender.sendHttpRequest(httpMetadata);
+        HttpResponse<?> rsp =  httpSender.sendHttpRequest(uniHttpRequest);
 
         log.info("开始发送Http请求 响应结果:{}",rsp.toHttpProtocol());
         
@@ -708,10 +708,10 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      * @param bodyResult                     Http响应体反序列化后的结果
      * @param rsp                            原始Http响应对象
      * @param method                         被代理的方法
-     * @param httpMetadata                   Http请求体
+     * @param uniHttpRequest                   Http请求体
      */
     @Override
-    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata httpMetadata) {
+    public Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp, Method method, HttpMetadata uniHttpRequest) {
         if (bodyResult instanceof BaseRsp){
             BaseRsp baseRsp = (BaseRsp) bodyResult;
             // 设置

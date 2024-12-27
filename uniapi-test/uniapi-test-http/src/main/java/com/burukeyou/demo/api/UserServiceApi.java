@@ -27,7 +27,6 @@ import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
-import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import org.springframework.http.MediaType;
 
@@ -73,7 +72,10 @@ public interface UserServiceApi {
                           @BodyMultiPartPar(value = "logoImg",fileName = "娃啊.xlsx") File file2);
 
     @PostHttpInterface("/user-web/add10")
-    HttpFileResponse<byte[]> add10();
+    HttpResponse<byte[]> add10();
+
+    @PostHttpInterface("/user-web/add10")
+    HttpResponse<UserServiceApi> add1011();
 
 
     @PostHttpInterface("/user-web/add10")
@@ -85,14 +87,14 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/add10")
     @ResponseFile(saveDir = "/Users/burukeyou/dev/tmp/tmp7/{YYYYMMDD}")
-    HttpFileResponse<File> add111();
+    HttpResponse<File> add111();
 
 
     @PostHttpInterface("/user-web/add10")
     InputStream add112();
 
     @PostHttpInterface("/user-web/add10")
-    HttpFileResponse<InputStream> add113();
+    HttpResponse<InputStream> add113();
 
     @PostHttpInterface("/user-web/add10")
     HttpResponse<InputStream> add114();
@@ -105,7 +107,7 @@ public interface UserServiceApi {
 
     // 保存路径savePath可以是具体路径，也可以是具体目录，如果是具体目录则默认文件名是下载的文件名
     @PostHttpInterface("/user-web/add10")
-    File add12(@ResponseFile String savePath);
+    File add12(@ResponseFile(overwrite = false) String savePath);
 
     @PostHttpInterface(path = "/user-web/update",
             headers = {"clientType=sys-app","userId=99"},
@@ -133,11 +135,11 @@ public interface UserServiceApi {
     void del03();
 
     @PostHttpInterface(path = "/user-web/del04")
-    @HttpCallCfg(connectTimeout = 3000)
+    @HttpCallCfg(readTimeout = 3000)
     String del04();
 
     @PostHttpInterface(path = "/user-web/del05")
-    @HttpResponseCfg(jsonPathUnPack =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
+    @HttpResponseCfg(afterJsonPathUnPack =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
     String del05();
 
 }
