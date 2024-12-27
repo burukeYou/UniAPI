@@ -2,17 +2,20 @@ package com.burukeyou.uniapi.http.annotation.param;
 
 import java.lang.annotation.*;
 
+import com.burukeyou.uniapi.http.support.Cookie;
+
 
 /**
  * Mark cookies for HTTP requests
  *
+ * <pre>
  * Support parameter types for tags：
  *       Map
- *       com.burukeyou.uniapi.http.support.Cookie
- *       com.burukeyou.uniapi.http.support.Cookie Collection
+ *       {@link com.burukeyou.uniapi.http.support.Cookie}
+ *       Collection<{@link Cookie}>
  *       String (specify name)           Treat as a single cookie key value pair
  *       String (not specify name)       Treat as a complete cookie string
- *
+ *</pre>
  *
  * @author caizhihao
  */

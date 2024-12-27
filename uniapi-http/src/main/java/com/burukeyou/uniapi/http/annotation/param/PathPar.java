@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * Mark HTTP request path variable parameters
  *
- * Support parameter types for tags: Normal value
+ * <pre></pre>Support parameter types for tags: Normal value
  *
  *
  *

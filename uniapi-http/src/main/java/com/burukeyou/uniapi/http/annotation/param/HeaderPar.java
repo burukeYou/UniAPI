@@ -6,11 +6,12 @@ import java.lang.annotation.*;
 /**
  * Mark HTTP request header
  *
+ * <pre>
  * support parameter types for tags:
  *       Custom Object
  *       Map
  *       Normal value
- *
+ *</pre>
  *
  * @author caizhihao
  */

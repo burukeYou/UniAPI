@@ -6,11 +6,12 @@ import java.lang.annotation.*;
  * Mark the HTTP request body as a regular form:
  *      the corresponding content type is application/x-www form urlencoded
  *
- *      Support parameter types for tags:
+ * <pre>
+ * Support parameter types for tags:
  *          Custom Object
  *          Map
  *          Normal value
- *
+ *</pre>
  *
  * @author caizhihao
  */

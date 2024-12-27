@@ -5,12 +5,13 @@ import java.lang.annotation.*;
 /**
  * Query parameters for marking HTTP request URLs
  *
+ * <pre>
  *  Support parameter types for tags
  *     Map
  *     Custom Object
  *     Normal value
  *     Normal value Collection
- *
+ *</pre>
  *
  * @author caizhihao
  */
