@@ -33,6 +33,7 @@ import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
 import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
@@ -40,7 +41,6 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
 import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
 import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
 import com.burukeyou.uniapi.http.core.request.HttpBodyText;
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.core.response.DefaultHttpFileResponse;
@@ -164,7 +164,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     public Object invoke() {
         Method method = methodInvocation.getMethod();
-        HttpMetadata requestMetadata = createHttpMetadata(methodInvocation);
+        UniHttpRequest requestMetadata = createHttpMetadata(methodInvocation);
 
         // check
         ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessorClass, HttpApiProcessor.class);
@@ -222,10 +222,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    public UniHttpResponse sendHttpRequest(HttpMetadata httpMetadata)  {
-        RequestMethod requestMethod = httpMetadata.getRequestMethod();
-        HttpUrl httpUrl = httpMetadata.getHttpUrl();
-        Map<String, String> headers = httpMetadata.getHeaders();
+    public UniHttpResponse sendHttpRequest(UniHttpRequest uniHttpRequest)  {
+        RequestMethod requestMethod = uniHttpRequest.getRequestMethod();
+        HttpUrl httpUrl = uniHttpRequest.getHttpUrl();
+        Map<String, String> headers = uniHttpRequest.getHeaders();
 
         Request.Builder requestBuilder = new Request.Builder();
         requestBuilder = requestBuilder.url(httpUrl.toUrl());
@@ -238,23 +238,23 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // config cookie
-        String cookie = httpMetadata.getCookiesToString();
+        String cookie = uniHttpRequest.getCookiesToString();
         if (StringUtils.isNotBlank(cookie)){
             requestBuilder.header("Cookie", cookie);
         }
 
         // config requestBody
         RequestBody requestBody = null;
-        if (httpMetadata.getBody()!= null && !httpMetadata.getBody().emptyContent()){
-            requestBody = convertToRequestBody(httpMetadata);
+        if (uniHttpRequest.getBody()!= null && !uniHttpRequest.getBody().emptyContent()){
+            requestBody = convertToRequestBody(uniHttpRequest);
             requestBuilder = requestBuilder.post(requestBody);
         }
 
         if (requestBody == null && requestMethod.needBody()){
-            requestBody = RequestBody.create(MediaType.parse(httpMetadata.getContentType()), "");
+            requestBody = RequestBody.create(MediaType.parse(uniHttpRequest.getContentType()), "");
         }
 
-        requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(), requestBody);
+        requestBuilder = requestBuilder.method(uniHttpRequest.getRequestMethod().name(), requestBody);
         Request request = requestBuilder.build();
 
         try {
@@ -264,7 +264,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             if (!response.isSuccessful()) {
                 throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code() + "】结果:【" + response.body().string() + "】");
             }
-            return new UniHttpResponse(httpMetadata, new OkHttpResponse(response));
+            return new UniHttpResponse(uniHttpRequest, new OkHttpResponse(response));
         } catch (IOException e) {
             throw new SendHttpRequestException("Http请求网络IO异常", e);
         } catch (HttpResponseException e) {
@@ -274,32 +274,32 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
-    private HttpMetadata requestPreInterceptor(HttpMetadata httpMetadata) {
+    private UniHttpRequest requestPreInterceptor(UniHttpRequest uniHttpRequest) {
         // todo
         HttpRequestConfig httpRequestConfig = apiConfigContext.getHttpRequestConfig();
         if (httpRequestConfig == null) {
-            return httpMetadata;
+            return uniHttpRequest;
         }
 
-        if (!CollectionUtils.isEmpty(httpRequestConfig.getJsonPathPack()) && httpMetadata.getBody() != null) {
-            String contentType = httpMetadata.getBody().getContentType();
+        if (!CollectionUtils.isEmpty(httpRequestConfig.getJsonPathPack()) && uniHttpRequest.getBody() != null) {
+            String contentType = uniHttpRequest.getBody().getContentType();
             if (contentType != null && MediaTypeEnum.isTextType(contentType)) {
-                String stringBody = httpMetadata.getBody().toStringBody();
+                String stringBody = uniHttpRequest.getBody().toStringBody();
                 if (StringUtils.isNotBlank(stringBody) && JSON.isValid(stringBody)) {
                     // todo
                 }
             }
         }
 
-        return httpMetadata;
+        return uniHttpRequest;
     }
 
-    private HttpMetadata createHttpMetadata(MethodInvocation methodInvocation) {
+    private UniHttpRequest createHttpMetadata(MethodInvocation methodInvocation) {
         return find(methodInvocation);
     }
 
 
-    protected RequestBody convertToRequestBody(HttpMetadata metadata) {
+    protected RequestBody convertToRequestBody(UniHttpRequest metadata) {
         HttpBody body = metadata.getBody();
         if (body.emptyContent()) {
             return null;

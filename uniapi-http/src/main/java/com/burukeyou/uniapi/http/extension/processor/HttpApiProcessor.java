@@ -4,8 +4,8 @@ import java.lang.annotation.Annotation;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -38,22 +38,22 @@ public interface HttpApiProcessor<T extends Annotation> {
      * Before sending the request
      *          you can revise the requested data for HttpMetadata
      *          if return null will stop to send the request
-     * @param httpMetadata              request data
+     * @param uniHttpRequest              request data
      * @param methodInvocation          the method of proxy execution
      * @return                          the new request data
      */
-    default HttpMetadata postBeforeHttpMetadata(HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
-        return httpMetadata;
+    default UniHttpRequest postBeforeHttpMetadata(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
+        return uniHttpRequest;
     }
 
     /**
      * When sending HTTP requests
      *          Send an HTTP request using HttpMetadata
      * @param httpSender                 Request Sender
-     * @param httpMetadata               request data
+     * @param uniHttpRequest               request data
      */
-    default UniHttpResponse postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
-        return httpSender.sendHttpRequest(httpMetadata);
+    default UniHttpResponse postSendingHttpRequest(HttpSender httpSender, UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
+        return httpSender.sendHttpRequest(uniHttpRequest);
     }
 
     /**

@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.burukeyou.uniapi.http.core.httpclient.response.HttpResponseInfo;
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
@@ -39,7 +39,7 @@ public class UniHttpResponse implements Closeable {
     /**
      *  Request Data
      */
-    private HttpMetadata request;
+    private UniHttpRequest request;
 
     /**
      *  Response info
@@ -66,8 +66,8 @@ public class UniHttpResponse implements Closeable {
 
     private final String contentType;
 
-    public UniHttpResponse(HttpMetadata httpMetadata, HttpResponseInfo originHttpResponse) {
-        this.request = httpMetadata;
+    public UniHttpResponse(UniHttpRequest uniHttpRequest, HttpResponseInfo originHttpResponse) {
+        this.request = uniHttpRequest;
         this.originHttpResponse = originHttpResponse;
         this.code = originHttpResponse.getHttpCode();
         Map<String, List<String>> headerMap = originHttpResponse.getHeaderMap();
@@ -283,7 +283,7 @@ public class UniHttpResponse implements Closeable {
     /**
      * get request data
      */
-    public HttpMetadata getRequest() {
+    public UniHttpRequest getRequest() {
         return request;
     }
 

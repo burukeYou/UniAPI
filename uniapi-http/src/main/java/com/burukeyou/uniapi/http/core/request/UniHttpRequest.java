@@ -30,7 +30,7 @@ import org.springframework.util.CollectionUtils;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HttpMetadata implements Serializable {
+public class UniHttpRequest implements Serializable {
 
     private static final long serialVersionUID = 3712288492261896042L;
 

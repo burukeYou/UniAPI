@@ -28,7 +28,7 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
 import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
 import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.support.Cookie;
@@ -75,7 +75,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     }
 
     @Override
-    public HttpMetadata find(Method method, Object[] args) {
+    public UniHttpRequest find(Method method, Object[] args) {
         HttpUrl httpUrl = HttpUrl.builder()
                 .path(httpInterface.path())
                 .build();
@@ -86,26 +86,26 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             httpUrl.setUrl(getEnvironmentValue(api.url()));
         }
 
-        HttpMetadata httpMetadata = new HttpMetadata();
-        httpMetadata.setRequestMethod(httpInterface.method());
-        httpMetadata.setHttpUrl(httpUrl);
+        UniHttpRequest uniHttpRequest = new UniHttpRequest();
+        uniHttpRequest.setRequestMethod(httpInterface.method());
+        uniHttpRequest.setHttpUrl(httpUrl);
 
         MethodArgList argList = new MethodArgList(method, args);
-        fillHttpMetadata(httpMetadata,argList);
-        parseCombineParam(httpMetadata, argList);
-        initBase(httpMetadata);
-        return httpMetadata;
+        fillHttpMetadata(uniHttpRequest,argList);
+        parseCombineParam(uniHttpRequest, argList);
+        initBase(uniHttpRequest);
+        return uniHttpRequest;
     }
 
-    private void initBase(HttpMetadata httpMetadata) {
-        if (httpMetadata.getBody() != null){
-            httpMetadata.setContentType(httpMetadata.getBody().getContentType());
+    private void initBase(UniHttpRequest uniHttpRequest) {
+        if (uniHttpRequest.getBody() != null){
+            uniHttpRequest.setContentType(uniHttpRequest.getBody().getContentType());
         }
         if (StringUtils.isNotBlank(httpInterface.contentType())){
-            httpMetadata.setContentType(httpInterface.contentType().trim());
+            uniHttpRequest.setContentType(httpInterface.contentType().trim());
         }
-        if (StringUtils.isBlank(httpMetadata.getContentType()) && httpMetadata.getRequestMethod().needBody()){
-            httpMetadata.setContentType(MediaTypeEnum.APPLICATION_JSON.getType());
+        if (StringUtils.isBlank(uniHttpRequest.getContentType()) && uniHttpRequest.getRequestMethod().needBody()){
+            uniHttpRequest.setContentType(MediaTypeEnum.APPLICATION_JSON.getType());
         }
     }
 
@@ -198,7 +198,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         return cookieList;
     }
 
-    public HttpMetadata find(MethodInvocation methodInvocation){
+    public UniHttpRequest find(MethodInvocation methodInvocation){
         Method method = methodInvocation.getMethod();
         Object[] args = methodInvocation.getArguments();
         return find(method,args);
@@ -452,7 +452,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     }
 
 
-    public void parseCombineParam(HttpMetadata httpMetadata, ArgList list) {
+    public void parseCombineParam(UniHttpRequest uniHttpRequest, ArgList list) {
         for (Param methodArg : list) {
             if (methodArg.getValue() == null){
                 continue;
@@ -461,16 +461,16 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             if (annotation == null || methodArg.isCollection() || !methodArg.isObject()){
                 continue;
             }
-            fillHttpMetadata(httpMetadata, new ClassFieldArgList(methodArg.getValue()));
+            fillHttpMetadata(uniHttpRequest, new ClassFieldArgList(methodArg.getValue()));
         }
     }
 
-    private void fillHttpMetadata(HttpMetadata httpMetadata, ArgList paramArgList) {
-        httpMetadata.putQueryParams(findQueryParam(paramArgList));
-        httpMetadata.putPathParams(findPathParam(paramArgList));
-        httpMetadata.setBodyIfAbsent(findHttpBody(paramArgList));
-        httpMetadata.putHeaders(findHeaders(paramArgList));
-        httpMetadata.addCookiesList(findCookies(paramArgList));
+    private void fillHttpMetadata(UniHttpRequest uniHttpRequest, ArgList paramArgList) {
+        uniHttpRequest.putQueryParams(findQueryParam(paramArgList));
+        uniHttpRequest.putPathParams(findPathParam(paramArgList));
+        uniHttpRequest.setBodyIfAbsent(findHttpBody(paramArgList));
+        uniHttpRequest.putHeaders(findHeaders(paramArgList));
+        uniHttpRequest.addCookiesList(findCookies(paramArgList));
     }
 
     public boolean isEmpty(Object arg){

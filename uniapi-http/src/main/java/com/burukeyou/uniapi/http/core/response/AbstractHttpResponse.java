@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.support.Cookie;
 import lombok.Getter;
 import lombok.Setter;
@@ -78,7 +78,7 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     @Override
     public String toHttpProtocol() {
-        HttpMetadata request = responseMetadata.getRequest();
+        UniHttpRequest request = responseMetadata.getRequest();
         String requestProtocol = request.toHttpProtocol();
         StringBuilder sb = new StringBuilder(requestProtocol);
         Map<String, List<String>> stringListMap = getHeaderMap();

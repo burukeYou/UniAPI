@@ -1,7 +1,7 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 import com.burukeyou.uniapi.http.core.request.HttpBody;
-import com.burukeyou.uniapi.http.core.request.HttpMetadata;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -21,7 +21,7 @@ public interface HttpMetadataFinder {
      * @param method          proxy method
      * @param args            proxy method args
      */
-    HttpMetadata find(Method method, Object[] args);
+    UniHttpRequest find(Method method, Object[] args);
 
     /**
      * find Url Query Param
