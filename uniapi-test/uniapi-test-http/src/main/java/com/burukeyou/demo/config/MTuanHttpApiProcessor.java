@@ -53,7 +53,7 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
      * @return                          新的请求体
      */
     @Override
-    public UniHttpRequest postBeforeHttpMetadata(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
+    public UniHttpRequest postBeforeHttpRequest(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         /**
          * 在查询参数中添加提供的appId字段
          */

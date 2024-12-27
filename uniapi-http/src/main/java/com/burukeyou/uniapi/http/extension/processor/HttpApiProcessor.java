@@ -14,7 +14,7 @@ import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
  *
  * <pre>
  *
- *                postBeforeHttpMetadata
+ *                postBeforeHttpRequest
  *                        |
  *                        V
  *                 postSendingHttpRequest
@@ -36,13 +36,13 @@ public interface HttpApiProcessor<T extends Annotation> {
 
     /**
      * Before sending the request
-     *          you can revise the requested data for HttpMetadata
+     *          you can revise the requested data for UniHttpRequest
      *          if return null will stop to send the request
      * @param uniHttpRequest              request data
      * @param methodInvocation          the method of proxy execution
-     * @return                          the new request data
+     * @return                          the new request data,if return null will stop to send the request
      */
-    default UniHttpRequest postBeforeHttpMetadata(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
+    default UniHttpRequest postBeforeHttpRequest(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
         return uniHttpRequest;
     }
 

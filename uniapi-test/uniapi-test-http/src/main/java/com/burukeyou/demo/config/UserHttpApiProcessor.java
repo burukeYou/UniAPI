@@ -19,8 +19,8 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
     private String appId;
 
     @Override
-    public UniHttpRequest postBeforeHttpMetadata(UniHttpRequest uniHttpRequest,
-                                                 HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
+    public UniHttpRequest postBeforeHttpRequest(UniHttpRequest uniHttpRequest,
+                                                HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
 
         return uniHttpRequest;
     }
