@@ -56,7 +56,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     protected HttpApi api;
     protected HttpInterface httpInterface;
 
-    // todo 升级为支持实时更新的环境变量上下文
+    // todo  升级为支持实时更新的环境变量上下文
     protected Environment environment;
 
     protected  MethodInvocation methodInvocation;

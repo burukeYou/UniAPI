@@ -1,11 +1,11 @@
 package com.burukeyou.uniapi.http.core.conveter.response;
 
-import com.burukeyou.uniapi.config.SpringBeanContext;
-
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.burukeyou.uniapi.config.SpringBeanContext;
 
 /**
  * @author  caizhihao
@@ -14,14 +14,7 @@ public class HttpResponseBodyConverterChain {
 
     private static volatile HttpResponseConverter chain;
 
-    private static final List<Class<? extends HttpResponseConverter>> orderClassList = Arrays.asList(
-            HttpJsonResponseConverter.class,
-            HttpTextResponseConverter.class,
-            HttpBinaryResponseConverter.class,
-            HttpFileDownloadLocalResponseConverter.class,
-            HttpInputStreamResponseConverter.class,
-            HttpEmptyResponseConverter.class
-    );
+    private static  List<Class<? extends HttpResponseConverter>> orderClassList = new ArrayList<>();
 
     public HttpResponseBodyConverterChain() {
         if (chain == null){

@@ -1,7 +1,7 @@
 package com.burukeyou.uniapi.http.core.channel;
 
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
 
 /**
  * @author  caizhihao
@@ -13,6 +13,6 @@ public interface HttpSender {
      * @param httpMetadata          request data
      * @return                      response result
      */
-    HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata);
+    UniHttpResponse sendHttpRequest(HttpMetadata httpMetadata);
 
 }

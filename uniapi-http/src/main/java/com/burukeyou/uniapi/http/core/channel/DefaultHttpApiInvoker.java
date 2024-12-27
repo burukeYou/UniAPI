@@ -8,7 +8,16 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import com.alibaba.fastjson.JSON;
 import com.burukeyou.uniapi.config.SpringBeanContext;
@@ -16,17 +25,15 @@ import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.HttpRequestCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseBodyConverterChain;
-import com.burukeyou.uniapi.http.core.conveter.response.HttpResponseConverter;
-import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
-import com.burukeyou.uniapi.http.core.exception.UniHttpResponseException;
-import com.burukeyou.uniapi.http.core.http.request.OkHttpRequest;
+import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
 import com.burukeyou.uniapi.http.core.http.response.OkHttpResponse;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
@@ -36,11 +43,14 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyText;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
-import com.burukeyou.uniapi.http.core.response.AbstractHttpResponse;
+import com.burukeyou.uniapi.http.core.response.DefaultHttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
+import com.burukeyou.uniapi.http.support.BodyParseResult;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
@@ -48,7 +58,20 @@ import com.burukeyou.uniapi.http.support.HttpRequestConfig;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
+import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
+import com.burukeyou.uniapi.http.support.UniHttpInputStream;
+import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.http.utils.FileBizUtil;
 import com.burukeyou.uniapi.support.ClassUtil;
+import com.burukeyou.uniapi.support.arg.MethodArgList;
+import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.util.TimeUtil;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.MapFunction;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
 import okhttp3.FormBody;
@@ -64,10 +87,11 @@ import okio.Okio;
 import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.CollectionUtils;
 
 /**
- * @author  caizhihao
+ * @author caizhihao
  */
 @Slf4j
 public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder implements HttpSender {
@@ -80,11 +104,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private static final EmptyHttpApiProcessor emptyHttpProcessor = new EmptyHttpApiProcessor();
 
-    private final HttpResponseConverter responseChain;
-
-
     private final Class<? extends HttpApiProcessor<?>> apiProcessorClass;
-    private  final HttpApiProcessor<Annotation> requestProcessor;
+    private final HttpApiProcessor<Annotation> requestProcessor;
 
     private final HttpApiConfigContext apiConfigContext;
 
@@ -92,15 +113,14 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
                                  HttpInterface httpInterface,
-                                 MethodInvocation methodInvocation,OkHttpClient httpClient) {
-        super(annotationMeta.getHttpApi(),httpInterface,annotationMeta.getProxySupport().getEnvironment());
+                                 MethodInvocation methodInvocation, OkHttpClient httpClient) {
+        super(annotationMeta.getHttpApi(), httpInterface, annotationMeta.getProxySupport().getEnvironment());
         this.targetClass = targetClass;
         this.annotationMeta = annotationMeta;
         this.methodInvocation = methodInvocation;
         this.client = httpClient;
-        this.responseChain = new HttpResponseBodyConverterChain().getChain();
 
-        this.apiProcessorClass = getHttpApiProcessorClass(api,httpInterface);
+        this.apiProcessorClass = getHttpApiProcessorClass(api, httpInterface);
         this.requestProcessor = buildRequestHttpApiProcessor(apiProcessorClass);
 
         httpApiMethodInvocation = new HttpApiMethodInvocationImpl();
@@ -109,28 +129,28 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         httpApiMethodInvocation.setProxyClass(targetClass);
         httpApiMethodInvocation.setMethodInvocation(methodInvocation);
 
-        apiConfigContext = getHttpApiConfigContext();
+        apiConfigContext = initHttpApiConfigContext();
     }
 
 
-    public  Class<? extends HttpApiProcessor<?>> getHttpApiProcessorClass(HttpApi api, HttpInterface httpInterface){
-        if (httpInterface.processor().length > 0){
+    public Class<? extends HttpApiProcessor<?>> getHttpApiProcessorClass(HttpApi api, HttpInterface httpInterface) {
+        if (httpInterface.processor().length > 0) {
             return httpInterface.processor()[0];
         }
-        if (api.processor().length > 0){
+        if (api.processor().length > 0) {
             return api.processor()[0];
         }
         return EmptyHttpApiProcessor.class;
     }
 
-    public HttpApiProcessor<Annotation> buildRequestHttpApiProcessor(Class<? extends HttpApiProcessor<?>> apiProcessor){
-        if (EmptyHttpApiProcessor.class.equals(apiProcessor)){
+    public HttpApiProcessor<Annotation> buildRequestHttpApiProcessor(Class<? extends HttpApiProcessor<?>> apiProcessor) {
+        if (EmptyHttpApiProcessor.class.equals(apiProcessor)) {
             return emptyHttpProcessor;
         }
 
         // 优先先从spring context获取,
         HttpApiProcessor<Annotation> processor = (HttpApiProcessor<Annotation>) SpringBeanContext.getMultiBean(apiProcessor);
-        if (processor != null){
+        if (processor != null) {
             return processor;
         }
 
@@ -141,78 +161,68 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
-    protected Type getBodyResultType() {
-        Type bodyResultType = null;
-        Method method = methodInvocation.getMethod();
-        if (HttpResponse.class.isAssignableFrom(method.getReturnType())){
-            Type genericReturnType = method.getGenericReturnType();
-            if (genericReturnType instanceof ParameterizedType){
-                Type actualTypeArgument = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
-                bodyResultType = actualTypeArgument;
-            }
-        }else {
-            bodyResultType = method.getGenericReturnType();
-        }
-        return bodyResultType;
-    }
 
     public Object invoke() {
         Method method = methodInvocation.getMethod();
-        HttpMetadata httpMetadata = createHttpMetadata(methodInvocation);
+        HttpMetadata requestMetadata = createHttpMetadata(methodInvocation);
 
         // check
         ParameterizedType paramTypeHttpApiProcessor = ClassUtil.getSuperInterfacesParameterizedType(apiProcessorClass, HttpApiProcessor.class);
-        if (paramTypeHttpApiProcessor == null){
+        if (paramTypeHttpApiProcessor == null) {
             throw new IllegalArgumentException(apiProcessorClass.getName() + " must be implement interface HttpApiProcessor");
         }
         Type actualTypeArgument = paramTypeHttpApiProcessor.getActualTypeArguments()[0];
         Annotation proxyAnnotation = annotationMeta.getProxyAnnotation();
-        if (!actualTypeArgument.equals(Annotation.class) && !actualTypeArgument.equals(proxyAnnotation.annotationType())){
+        if (!actualTypeArgument.equals(Annotation.class) && !actualTypeArgument.equals(proxyAnnotation.annotationType())) {
             throw new IllegalArgumentException("The specified HttpApiProcessor cannot handle this annotation type " + proxyAnnotation.annotationType().getSimpleName());
         }
 
         // before processor
-        httpMetadata = requestProcessor.postBeforeHttpMetadata(httpMetadata,httpApiMethodInvocation);
-        if (httpMetadata == null){
+        requestMetadata = requestProcessor.postBeforeHttpMetadata(requestMetadata, httpApiMethodInvocation);
+        if (requestMetadata == null) {
             return null;
         }
 
         // todo pre handle
         //httpMetadata = requestPreInterceptor(httpMetadata);
 
-        // sendHttpRequest processor
-        HttpResponse<?> response = requestProcessor.postSendingHttpRequest(this,httpMetadata,httpApiMethodInvocation);
+        UniHttpResponse uniHttpResponse = null;
+        try {
+            // post sending
+            uniHttpResponse = requestProcessor.postSendingHttpRequest(this, requestMetadata,httpApiMethodInvocation);
 
-        // http response result processor
-        Object result = requestProcessor.postAfterHttpResponseBodyResult(response.getBodyResult(), response, httpMetadata,httpApiMethodInvocation);
-        ((AbstractHttpResponse<Object>)response).setBodyResult(result);
-        Object methodReturnValue = HttpResponse.class.isAssignableFrom(method.getReturnType()) ? response : response.getBodyResult();
+            DefaultHttpResponse httpResponse = new DefaultHttpResponse(uniHttpResponse);
 
-        // MethodReturnValue processor
-        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, response, httpMetadata,httpApiMethodInvocation);
-    }
+            // post after string
+            BodyParseResult convertResult = parseBodyResult(uniHttpResponse, httpResponse);
+            httpResponse.setOriginBodyPrintString(convertResult.getOriginBodyPrintString());
 
-    private HttpMetadata requestPreInterceptor(HttpMetadata httpMetadata) {
-        // todo
-        HttpRequestConfig httpRequestConfig = apiConfigContext.getHttpRequestConfig();
-        if (httpRequestConfig == null){
-            return httpMetadata;
+            // post after result
+            Object bodyResult = convertResult.getBodyResult();
+            bodyResult = requestProcessor.postAfterHttpResponseBodyResult(bodyResult, uniHttpResponse, httpApiMethodInvocation);
+            httpResponse.setBodyResult(bodyResult);
+
+            Object methodReturnValue = null;
+            if (HttpResponse.class.equals(method.getReturnType())){
+                methodReturnValue = httpResponse;
+            }else if (HttpFileResponse.class.equals(method.getReturnType())){
+                methodReturnValue = new DefaultHttpFileResponse(uniHttpResponse, httpResponse.getOriginBodyPrintString(), httpResponse.getBodyResult());
+            }else {
+                methodReturnValue = httpResponse.getBodyResult();
+            }
+
+            // post after method
+            return requestProcessor.postAfterMethodReturnValue(methodReturnValue, uniHttpResponse, httpApiMethodInvocation);
+        } finally {
+            Type bodyResultType = getBodyResultType(httpApiMethodInvocation);
+            if(!InputStream.class.equals(bodyResultType)){
+                BizUtil.closeQuietly(uniHttpResponse);
+            }
         }
-
-       if (!CollectionUtils.isEmpty(httpRequestConfig.getJsonPathPack()) && httpMetadata.getBody() != null){
-           String contentType = httpMetadata.getBody().getContentType();
-           if (contentType != null && MediaTypeEnum.isTextType(contentType)){
-               String stringBody = httpMetadata.getBody().toStringBody();
-               if (StringUtils.isNotBlank(stringBody) && JSON.isValid(stringBody)){
-                   // todo
-               }
-           }
-       }
-
-       return httpMetadata;
     }
 
-    public HttpResponse<?> sendHttpRequest(HttpMetadata httpMetadata)  {
+
+    public UniHttpResponse sendHttpRequest(HttpMetadata httpMetadata)  {
         RequestMethod requestMethod = httpMetadata.getRequestMethod();
         HttpUrl httpUrl = httpMetadata.getHttpUrl();
         Map<String, String> headers = httpMetadata.getHeaders();
@@ -221,7 +231,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         requestBuilder = requestBuilder.url(httpUrl.toUrl());
 
         // config header
-        if (headers != null && !headers.isEmpty()){
+        if (headers != null && !headers.isEmpty()) {
             Headers.Builder headerBuilder = new Headers.Builder();
             headers.forEach(headerBuilder::add);
             requestBuilder = requestBuilder.headers(headerBuilder.build());
@@ -244,41 +254,44 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             requestBody = RequestBody.create(MediaType.parse(httpMetadata.getContentType()), "");
         }
 
-        requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(),requestBody);
+        requestBuilder = requestBuilder.method(httpMetadata.getRequestMethod().name(), requestBody);
         Request request = requestBuilder.build();
 
-        OkHttpClient callClient = getCallHttpClient(client,apiConfigContext);
-        Call call = callClient.newCall(request);
-        try (Response response = call.execute()) {
-            if (!response.isSuccessful()){
-                throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code()+"】结果:【"+response.body().string() + "】");
+        try {
+            OkHttpClient callClient = getCallHttpClient(client, apiConfigContext);
+            Call call = callClient.newCall(request);
+            Response response = call.execute();
+            if (!response.isSuccessful()) {
+                throw new HttpResponseException("Http请求响应异常 响应状态码【" + response.code() + "】结果:【" + response.body().string() + "】");
             }
-            ResponseConvertContext responseConvertContext = new ResponseConvertContext();
-            responseConvertContext.setRequest(new OkHttpRequest(request));
-            responseConvertContext.setResponse(new OkHttpResponse(request,response));
-            responseConvertContext.setHttpMetadata(httpMetadata);
-            responseConvertContext.setMethodInvocation(httpApiMethodInvocation);
-            responseConvertContext.setProcessor(requestProcessor);
-            responseConvertContext.setHttpApi(api);
-            responseConvertContext.setHttpInterface(httpInterface);
-            responseConvertContext.setConfigContext(apiConfigContext);
-
-            HttpResponse<?> httpResponse = responseChain.convert(responseConvertContext);
-            if (httpResponse == null){
-                throw new UniHttpResponseException("Unable to find a suitable converter to deserialize for response content-type " +  getResponseContentType(response));
-            }
-            return httpResponse;
-        } catch (IOException e){
+            return new UniHttpResponse(httpMetadata, new OkHttpResponse(response));
+        } catch (IOException e) {
             throw new SendHttpRequestException("Http请求网络IO异常", e);
-        } catch (HttpResponseException e){
+        } catch (HttpResponseException e) {
             throw e;
         } catch (Exception e) {
             throw new SendHttpRequestException("Http请求异常", e);
         }
     }
 
-    protected String getResponseContentType(Response response){
-        return response.header(HEADER_CONTENT_TYPE);
+    private HttpMetadata requestPreInterceptor(HttpMetadata httpMetadata) {
+        // todo
+        HttpRequestConfig httpRequestConfig = apiConfigContext.getHttpRequestConfig();
+        if (httpRequestConfig == null) {
+            return httpMetadata;
+        }
+
+        if (!CollectionUtils.isEmpty(httpRequestConfig.getJsonPathPack()) && httpMetadata.getBody() != null) {
+            String contentType = httpMetadata.getBody().getContentType();
+            if (contentType != null && MediaTypeEnum.isTextType(contentType)) {
+                String stringBody = httpMetadata.getBody().toStringBody();
+                if (StringUtils.isNotBlank(stringBody) && JSON.isValid(stringBody)) {
+                    // todo
+                }
+            }
+        }
+
+        return httpMetadata;
     }
 
     private HttpMetadata createHttpMetadata(MethodInvocation methodInvocation) {
@@ -286,51 +299,51 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-
     protected RequestBody convertToRequestBody(HttpMetadata metadata) {
         HttpBody body = metadata.getBody();
-        if (body.emptyContent()){
+        if (body.emptyContent()) {
             return null;
         }
 
         MediaType mediaTypeJson = MediaType.parse(metadata.getContentType());
         RequestBody requestBody = null;
-        if (body instanceof HttpBodyJSON){
-            requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
+        if (body instanceof HttpBodyJSON) {
+            requestBody = RequestBody.create(mediaTypeJson, body.toStringBody());
         } else if (body instanceof HttpBodyText) {
-            requestBody = RequestBody.create(mediaTypeJson,body.toStringBody());
-        } else if (body instanceof HttpBodyBinary){
+            requestBody = RequestBody.create(mediaTypeJson, body.toStringBody());
+        } else if (body instanceof HttpBodyBinary) {
             InputStream inputStream = ((HttpBodyBinary) body).getFile();
-            requestBody = RequestBody.create(mediaTypeJson,streamToByteArray(inputStream));
-        }else if (body instanceof HttpBodyFormData){
+            requestBody = RequestBody.create(mediaTypeJson, streamToByteArray(inputStream));
+        } else if (body instanceof HttpBodyFormData) {
             FormBody.Builder builder = new FormBody.Builder();
-            HttpBodyFormData formDataBody = (HttpBodyFormData)body;
+            HttpBodyFormData formDataBody = (HttpBodyFormData) body;
             formDataBody.getFormData().forEach(builder::add);
             requestBody = builder.build();
-        }else if (body instanceof HttpBodyMultipart){
-            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);;
-            HttpBodyMultipart multipartFormData = (HttpBodyMultipart)body;
+        } else if (body instanceof HttpBodyMultipart) {
+            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+            ;
+            HttpBodyMultipart multipartFormData = (HttpBodyMultipart) body;
             for (MultipartDataItem dataItem : multipartFormData.getMultiPartData()) {
-                if (!dataItem.isFileFlag()){
-                    builder.addFormDataPart(dataItem.getKey(),dataItem.getValueString());
-                }else {
+                if (!dataItem.isFileFlag()) {
+                    builder.addFormDataPart(dataItem.getKey(), dataItem.getValueString());
+                } else {
                     Object fileValue = dataItem.getFieldValue();
                     String fileName = dataItem.getFileName();
-                    if (fileValue == null){
+                    if (fileValue == null) {
                         continue;
                     }
-                    if (fileValue instanceof File){
+                    if (fileValue instanceof File) {
                         File file = (File) fileValue;
                         RequestBody fileBody = RequestBody.create(MultipartBody.FORM, file);
                         builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
-                    }else if (fileValue instanceof InputStream){
+                    } else if (fileValue instanceof InputStream) {
                         InputStream inputStream = (InputStream) fileValue;
                         RequestBody fileBody = this.create(MultipartBody.FORM, inputStream);
-                        builder.addFormDataPart(dataItem.getKey(), fileName,fileBody);
-                    }else if (fileValue instanceof byte[]){
+                        builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
+                    } else if (fileValue instanceof byte[]) {
                         byte[] bytes = (byte[]) fileValue;
                         RequestBody fileBody = RequestBody.create(MultipartBody.FORM, bytes);
-                        builder.addFormDataPart(dataItem.getKey(), fileName,fileBody);
+                        builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
                     }
 
                 }
@@ -340,19 +353,24 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return requestBody;
     }
 
-    /** Returns a new request body that transmits the content of {@code file}. */
-    public  RequestBody create(final MediaType contentType, final InputStream inputStream) {
+    /**
+     * Returns a new request body that transmits the content of {@code file}.
+     */
+    public RequestBody create(final MediaType contentType, final InputStream inputStream) {
         if (inputStream == null) throw new NullPointerException("inputStream == null");
         return new RequestBody() {
-            @Override public MediaType contentType() {
+            @Override
+            public MediaType contentType() {
                 return contentType;
             }
 
-            @Override public long contentLength() {
+            @Override
+            public long contentLength() {
                 return -1;
             }
 
-            @Override public void writeTo(BufferedSink sink) throws IOException {
+            @Override
+            public void writeTo(BufferedSink sink) throws IOException {
                 try (Source source = Okio.source(inputStream)) {
                     sink.writeAll(source);
                 }
@@ -361,8 +379,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-
-    public static byte[] streamToByteArray(InputStream is)  {
+    public static byte[] streamToByteArray(InputStream is) {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] b = new byte[1024];
@@ -379,7 +396,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    private HttpApiConfigContext getHttpApiConfigContext() {
+    private HttpApiConfigContext initHttpApiConfigContext() {
         HttpApiConfigContext apiConfigContext = new HttpApiConfigContext();
         apiConfigContext.setHttpRequestConfig(getHttpRequestConfig());
         apiConfigContext.setHttpCallConfig(getHttpCallConfig());
@@ -390,7 +407,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private HttpRequestConfig getHttpRequestConfig() {
         HttpRequestCfg anno = getMergeAnnotationFormObjectOrMethodCache(HttpRequestCfg.class);
-        if (anno == null){
+        if (anno == null) {
             return null;
         }
         HttpRequestConfig config = new HttpRequestConfig();
@@ -401,7 +418,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private HttpCallConfig getHttpCallConfig() {
         HttpCallCfg anno = getMergeAnnotationFormObjectOrMethodCache(HttpCallCfg.class);
-        if (anno == null){
+        if (anno == null) {
             return null;
         }
         HttpCallConfig config = new HttpCallConfig();
@@ -414,7 +431,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private HttpResponseConfig getHttpResponseConfig() {
         HttpResponseCfg anno = getMergeAnnotationFormObjectOrMethodCache(HttpResponseCfg.class);
-        if (anno == null){
+        if (anno == null) {
             return null;
         }
         HttpResponseConfig config = new HttpResponseConfig();
@@ -429,7 +446,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
         Boolean enable = getEnvironmentValue(sslCfgAnno.enabled());
-        if(!Boolean.TRUE.equals(enable)){
+        if (!Boolean.TRUE.equals(enable)) {
             return null;
         }
         SslConfig sslConfig = new SslConfig();
@@ -458,6 +475,223 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
+    // ===============================================================================================
+    private BodyParseResult parseBodyResult(UniHttpResponse responseMetadata, HttpResponse<?> response) {
+        BodyParseResult result = new BodyParseResult();
+        boolean isFileResponse = responseMetadata.isFileResponse();
+        String responseFileName = responseMetadata.getContentDispositionFileName();
+        if (!isFileResponse) {
+            result.setOriginBodyPrintString(responseMetadata.getBodyToString());
+        } else {
+            result.setOriginBodyPrintString(responseFileName);
+        }
 
+        Type bodyResultType = getBodyResultType(httpApiMethodInvocation);
+        if (InputStream.class.equals(bodyResultType)) {
+            result.setBodyResult(new UniHttpInputStream(responseMetadata,responseMetadata.getBodyToInputStream()));
+            if (isFileResponse) {
+                result.setOriginBodyPrintString("【file InputStream】 fileName: " + responseFileName);
+            }
+            return result;
+        }
+
+        if (byte[].class.equals(bodyResultType)) {
+            byte[] bodyToBytes = responseMetadata.getBodyToBytes();
+            result.setBodyResult(bodyToBytes);
+            if (isFileResponse) {
+                result.setOriginBodyPrintString("【file byte】 fileName: " + responseFileName + " fileSize: " + bodyToBytes.length);
+            }
+            return result;
+        }
+
+        if (File.class.equals(bodyResultType)) {
+            String savePath = getSavePath(responseMetadata, methodInvocation);
+            if (StringUtils.isBlank(savePath)) {
+                throw new IllegalArgumentException("when the return type is File, can not get the  file save path");
+            }
+            InputStream inputStream = responseMetadata.getBodyToInputStream();
+            File file = FileBizUtil.saveFile(inputStream, savePath);
+            result.setBodyResult(file);
+            if (isFileResponse) {
+                result.setOriginBodyPrintString("【file】 fileName: " + responseFileName + " savePath: " + savePath);
+            }
+            return result;
+        }
+
+        //
+        String bodyString = responseMetadata.getBodyToString();
+        if (StringUtils.isNotBlank(bodyString) && JSON.isValid(bodyString)) {
+            List<String> jsonPathPackList = Optional.ofNullable(apiConfigContext.getHttpResponseConfig()).map(HttpResponseConfig::getJsonPathUnPack).orElse(Collections.emptyList());
+            if (!jsonPathPackList.isEmpty()) {
+                bodyString = unPackJsonPath(bodyString, jsonPathPackList);
+            }
+        }
+
+        // post after body string
+        bodyString = requestProcessor.postAfterHttpResponseBodyString(bodyString, responseMetadata, httpApiMethodInvocation);
+
+        if (StringUtils.isNotBlank(bodyString) && JSON.isValid(bodyString)) {
+            List<String> afterJsonStringFormatPath = Optional.ofNullable(apiConfigContext.getHttpResponseConfig()).map(HttpResponseConfig::getAfterJsonPathUnPack).orElse(Collections.emptyList());
+            if (!afterJsonStringFormatPath.isEmpty()) {
+                bodyString = unPackJsonPath(bodyString, afterJsonStringFormatPath);
+            }
+        }
+
+        if (String.class.equals(bodyResultType)) {
+            result.setBodyResult(bodyString);
+            return result;
+        }
+
+        if (StringUtils.isBlank(bodyString)) {
+            return result;
+        }
+
+        if (Void.class.equals(bodyResultType) || Object.class.equals(bodyResultType) || WildcardType.class.isAssignableFrom(bodyResultType.getClass())) {
+            result.setBodyResult(bodyString);
+            return result;
+        }
+
+        if (JSON.isValid(bodyString)) {
+            result.setBodyResult(JSON.parseObject(bodyString, bodyResultType));
+            return result;
+        }
+
+        throw new UniHttpResponseDeserializeException("can not convert response body to " + bodyResultType.getTypeName() + " from response body string: " + bodyString);
+    }
+
+
+    private String unPackJsonPath(String originBodyString, List<String> jsonStringFormatPath) {
+        Configuration conf = Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS);
+        DocumentContext documentContext = JsonPath.using(conf).parse(originBodyString);
+        for (String jsonPath : jsonStringFormatPath) {
+            try {
+                documentContext.map(jsonPath, new MapFunction() {
+                    @Override
+                    public Object map(Object currentValue, Configuration configuration) {
+                        if (isJsonString(currentValue)) {
+                            return JSON.parse(currentValue.toString());
+                        }
+                        return currentValue;
+                    }
+                });
+            } catch (PathNotFoundException e) {
+                // ignore
+            }
+        }
+
+        return documentContext.jsonString();
+    }
+
+    private boolean isJsonString(Object value) {
+        return value != null && value.getClass().equals(String.class) && JSON.isValid(value.toString());
+    }
+
+    protected Type getBodyResultType(MethodInvocation methodInvocation) {
+        Method method = methodInvocation.getMethod();
+        Type type = null;
+        if (HttpResponse.class.isAssignableFrom(method.getReturnType())) {
+            Type genericReturnType = method.getGenericReturnType();
+            if (genericReturnType instanceof ParameterizedType) {
+                type = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+            }
+        } else {
+            type = method.getGenericReturnType();
+        }
+        return type;
+    }
+
+    private String getSavePath(UniHttpResponse response, MethodInvocation methodInvocation) {
+        String savePath = null;
+        // 方法参数上获取
+        ResponseFile responseFileAnno = null;
+        for (Param methodArg : new MethodArgList(methodInvocation.getMethod(), methodInvocation.getArguments())) {
+            responseFileAnno = methodArg.getAnnotation(ResponseFile.class);
+            if (responseFileAnno == null) {
+                continue;
+            }
+
+            if (!String.class.equals(methodArg.getType())) {
+                throw new IllegalArgumentException("@ResponseFile use in method param must be marked on String type ");
+            }
+            savePath = (String) methodArg.getValue();
+            break;
+        }
+
+        String fileName = response.getContentDispositionFileName();
+        if (StringUtils.isBlank(fileName)) {
+            fileName = TimeUtil.formatPure(LocalDateTime.now());
+        }
+
+        if (savePath != null) {
+            if (isFileForPath(savePath)) {
+                return savePath;
+            }
+            savePath = joinPath(savePath, fileName);
+        }else {
+            //
+            String saveDir = UniHttpApiConstant.DEFAULT_FILE_SAVE_DIR;
+            saveDir = getEnvironmentValue(saveDir);
+            responseFileAnno = AnnotatedElementUtils.getMergedAnnotation(methodInvocation.getMethod(), ResponseFile.class);
+            if (responseFileAnno != null) {
+                saveDir = responseFileAnno.saveDir();
+            }
+            if (responseFileAnno == null || responseFileAnno.uuid()) {
+                saveDir = joinPath(saveDir, getUUID());
+            }
+            if (saveDir.contains("{YYYYMMDD}")) {
+                saveDir = saveDir.replace("{YYYYMMDD}", TimeUtil.formatPure(LocalDate.now()));
+            }
+
+            savePath = joinPath(saveDir, fileName);
+        }
+
+        if (responseFileAnno != null && !responseFileAnno.overwrite() && new File(savePath).exists()){
+            throw new IllegalStateException("The file already exists and cannot be overwritten " + savePath);
+        }
+
+        return savePath;
+    }
+
+    protected boolean isFileForPath(String path) {
+        return Paths.get(path).getFileName().toString().contains(".");
+    }
+
+
+    protected  String joinPath(Object... paths) {
+        if(paths == null || paths.length == 0) {
+            return "";
+        }
+        if (paths.length == 1) {
+            return paths[0].toString();
+        }
+
+        List<String> cleanPaths = new ArrayList<>();
+        String firstPath = paths[0].toString();
+        // 第一个拆后不拆前
+        if (firstPath.endsWith(File.separator)) {
+            firstPath = firstPath.substring(0, firstPath.length() - 1);
+        }
+        for (int i = 1; i < paths.length; i++) {
+            String path = paths[i].toString();
+            if (path.startsWith(File.separator)) {
+                path = path.substring(1);
+            }
+            if (path.endsWith(File.separator)) {
+                path = path.substring(0, path.length() - 1);
+            }
+            cleanPaths.add(path);
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(firstPath).append(File.separator);
+        for (String cleanPath : cleanPaths) {
+            stringBuilder.append(cleanPath).append(File.separator);
+        }
+        return stringBuilder.toString();
+    }
+
+    protected String getUUID() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
 
 }

@@ -4,8 +4,8 @@ import java.lang.annotation.Annotation;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
+import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -52,7 +52,7 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param httpSender                 Request Sender
      * @param httpMetadata               request data
      */
-    default HttpResponse<?> postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
+    default UniHttpResponse postSendingHttpRequest(HttpSender httpSender, HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
         return httpSender.sendHttpRequest(httpMetadata);
     }
 
@@ -64,7 +64,7 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param httpMetadata        request data
      * @return                    the new response body string
      */
-    default String postAfterHttpResponseBodyString(String bodyString, HttpResponse<?> rsp,HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
+    default String postAfterHttpResponseBodyString(String bodyString, UniHttpResponse rsp, HttpApiMethodInvocation<T> methodInvocation){
         return bodyString;
     }
 
@@ -76,10 +76,9 @@ public interface HttpApiProcessor<T extends Annotation> {
      *                                       with the specific type being the return value type of the proxy method
      * @param rsp                            Original  Http Response
      * @param methodInvocation               The method of agency
-     * @param httpMetadata                   request data
      * @return                               the new response body object。
      */
-    default Object postAfterHttpResponseBodyResult(Object bodyResult, HttpResponse<?> rsp,HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
+    default Object postAfterHttpResponseBodyResult(Object bodyResult, UniHttpResponse rsp, HttpApiMethodInvocation<T> methodInvocation){
         return bodyResult;
     }
 
@@ -91,7 +90,7 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param httpMetadata                  request data
      * @return                              the new Method return value
      */
-    default Object postAfterMethodReturnValue(Object methodReturnValue,HttpResponse<?> rsp,HttpMetadata httpMetadata, HttpApiMethodInvocation<T> methodInvocation){
+    default Object postAfterMethodReturnValue(Object methodReturnValue, UniHttpResponse rsp, HttpApiMethodInvocation<T> methodInvocation){
         return methodReturnValue;
     }
 

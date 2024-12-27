@@ -321,18 +321,21 @@ public class HttpMetadata implements Serializable {
      */
     public String toHttpProtocol() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n------------------------------------------------");
         sb.append("\n").append(requestMethod == null ? "" : requestMethod.name())
                 .append("\t\t").append(httpUrl.toUrl()).append("\n");
-        sb.append("Request Header:\n");
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            sb.append("\t\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\n");
+
+        if (headers != null && !headers.entrySet().isEmpty()){
+            sb.append("Request Header:\n");
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                sb.append("\t\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\n");
+            }
         }
+
         if(!CollectionUtils.isEmpty(cookies)){
             sb.append("\t\t").append("Cookie:\t").append(getCookiesToString()).append("\n");
         }
-        sb.append("Request Body:\n");
         if (body != null){
+            sb.append("Request Body:\n");
             if (body instanceof HttpBodyMultipart){
                 sb.append(body.toStringBody()).append("\n");
             }else {

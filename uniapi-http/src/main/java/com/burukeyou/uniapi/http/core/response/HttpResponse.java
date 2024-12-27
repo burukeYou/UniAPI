@@ -1,10 +1,11 @@
 package com.burukeyou.uniapi.http.core.response;
 
 
-import com.burukeyou.uniapi.http.support.Cookie;
-
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+
+import com.burukeyou.uniapi.http.support.Cookie;
 
 /**
  * Http Original Response Object
@@ -26,6 +27,20 @@ public interface HttpResponse<T> {
      */
     T getBodyResult();
 
+    /**
+     * Gets the raw response body string of the interface
+     */
+    String getBodyToString();
+
+    /**
+     * Gets the raw response body bytes of the interface
+     */
+    byte[] getBodyToBytes();
+
+    /**
+     * Gets the raw response body as an input stream
+     */
+    InputStream getBodyToInputStream();
 
     /**
      * Get all the request  header for the response
@@ -79,4 +94,9 @@ public interface HttpResponse<T> {
      * http protocol string
      */
     String toHttpProtocol();
+
+    /**
+     * Get Content-Disposition header fileName
+     */
+    String getContentDispositionFileName();
 }

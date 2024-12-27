@@ -1,16 +1,14 @@
 package com.burukeyou.uniapi.http.core.response;
 
-import com.burukeyou.uniapi.http.core.conveter.response.ResponseConvertContext;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import com.burukeyou.uniapi.http.core.http.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpMetadata;
 import com.burukeyou.uniapi.http.support.Cookie;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.net.HttpCookie;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author  caizhihao
@@ -20,56 +18,47 @@ import java.util.Map;
 @Getter
 public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
-    protected transient HttpMetadata httpMetadata;
+    protected UniHttpResponse responseMetadata;
 
+    private static final List<String> NOT_PRINT_HEADER = Arrays.asList("connection","keep-alive","date","transfer-encoding");
 
-    protected transient UniHttpResponse response;
-
-    public AbstractHttpResponse(ResponseConvertContext context, T bodyResult) {
-        this.httpMetadata = context.getHttpMetadata();
-        this.response = context.getResponse();
-        this.bodyResult = bodyResult;
-    }
-
-    protected T bodyResult;
-
-    public void setBodyResult(T bodyResult) {
-        this.bodyResult = bodyResult;
+    public AbstractHttpResponse(UniHttpResponse responseMetadata) {
+        this.responseMetadata = responseMetadata;
     }
 
     @Override
     public boolean isSuccessful() {
-        return response.isSuccessful();
+        return responseMetadata.isSuccessful();
     }
 
     @Override
     public Map<String, String> getHeaders() {
-        return response.getHeaders();
+        return responseMetadata.getHeaders();
     }
 
     @Override
     public Map<String, List<String>> getHeaderMap() {
-        return response.getHeaderMap();
+        return responseMetadata.getHeaderMap();
     }
 
     @Override
     public String getHeader(String name) {
-        return response.getHeader(name);
+        return responseMetadata.getHeader(name);
     }
 
     @Override
     public List<String> getHeaderList(String name) {
-        return  response.getHeaderList(name);
+        return  responseMetadata.getHeaderList(name);
     }
 
     @Override
     public int getHttpCode() {
-        return response.getHttpCode();
+        return responseMetadata.getHttpCode();
     }
 
     @Override
     public String getContentType() {
-        return response.getContentType();
+        return responseMetadata.getContentType();
     }
 
     public List<String> getSetCookiesString() {
@@ -78,46 +67,43 @@ public abstract class AbstractHttpResponse<T> implements HttpResponse<T> {
 
     @Override
     public List<Cookie> getSetCookies() {
-        return response.getSetCookies();
+        return responseMetadata.getSetCookies();
     }
 
     @Override
     public boolean isRedirect() {
-        return response.isRedirect();
+        return responseMetadata.isRedirect();
     }
 
     public abstract String bodyResultString();
 
     @Override
     public String toHttpProtocol() {
-        String requestProtocol = httpMetadata.toHttpProtocol();
+        HttpMetadata request = responseMetadata.getRequest();
+        String requestProtocol = request.toHttpProtocol();
         StringBuilder sb = new StringBuilder(requestProtocol);
-        sb.append("Response Header:\n");
-        Map<String, List<String>> stringListMap = response.getHeaderMap();
-        stringListMap.forEach((key, value) -> {
-            for (String s : value) {
-                sb.append("\t\t").append(key).append(":\t").append(s).append("\n");
-            }
-        });
-        sb.append("Response Body:\n");
+        Map<String, List<String>> stringListMap = getHeaderMap();
+        if (stringListMap != null && !stringListMap.isEmpty()){
+            sb.append("Response Header:\n");
+            stringListMap.forEach((key, value) -> {
+                if (!NOT_PRINT_HEADER.contains(key.toLowerCase())){
+                    for (String s : value) {
+                        sb.append("\t\t").append(key).append(":\t").append(s).append("\n");
+                    }
+                }
+            });
+        }
         T result = getBodyResult();
         if (result != null){
+            sb.append("Response Body:\n");
             sb.append("\t\t").append(bodyResultString()).append("\n");
         }
-        sb.append("------------------------------------------------\n");
         return sb.toString();
     }
 
-    public static void main(String[] args) {
-        String cookieHeader = "xxx_sso_sessionid=fsadf; Domain=\"\"; Path=/; HttpOnly; name=jay";
-        List<HttpCookie> cookies = HttpCookie.parse(cookieHeader);
-        // 创建一个Map来存储解析后的Cookie
-        Map<String, String> cookieMap = new HashMap<>();
-
-        // 遍历Cookie列表并将它们添加到Map中
-        for (HttpCookie cookie : cookies) {
-            cookieMap.put(cookie.getName(), cookie.getValue());
-        }
-        System.out.println();
+    @Override
+    public String getContentDispositionFileName() {
+        return responseMetadata.getContentDispositionFileName();
     }
+
 }

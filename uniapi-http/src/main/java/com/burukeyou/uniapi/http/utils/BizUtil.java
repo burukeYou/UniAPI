@@ -1,7 +1,12 @@
 package com.burukeyou.uniapi.http.utils;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,4 +60,34 @@ public class BizUtil {
             return content.getBytes();
         }
     }
+
+    public static void closeQuietly(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     *  方法返回值的泛型是否是指定类型
+     */
+    protected boolean isGenericTypeForMethod(Class<?> clz, Method method) {
+        Type genericReturnType = method.getGenericReturnType();
+        if(genericReturnType instanceof ParameterizedType){
+            Type[] arr = ((ParameterizedType)genericReturnType).getActualTypeArguments();
+            Type type = arr[0];
+            if (type instanceof  Class){
+                Class<?>  parameterTypes = (Class<?>)type;
+                if (clz.isAssignableFrom(parameterTypes)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
 }

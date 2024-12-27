@@ -1,9 +1,13 @@
 package com.burukeyou.uniapi.http.annotation;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import org.springframework.core.annotation.AliasFor;
-
-import java.lang.annotation.*;
 
 /**
  * 方法返回值为File对象时的配置，可以配置文件保存位置
@@ -34,4 +38,9 @@ public @interface ResponseFile {
      * 是否启用唯一id路径，防止文件被覆盖，保证文件路径唯一，默认会在 saveDir 下再拼接上此uid作为最终路径
      */
     boolean uuid() default true;
+
+    /**
+     * 如果文件保存路径已经存在文件是否覆盖
+     */
+    boolean overwrite() default true;
 }
