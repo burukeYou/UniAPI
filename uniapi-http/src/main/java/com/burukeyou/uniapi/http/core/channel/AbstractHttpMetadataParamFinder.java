@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.param.ComposePar;
 import com.burukeyou.uniapi.http.annotation.param.CookiePar;
@@ -254,8 +255,19 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             Class<? extends HttpBody> bodyClass = entry.getKey();
             List<HttpBody> list = entry.getValue();
 
-            if (bodyClass == HttpBodyBinary.class || bodyClass == HttpBodyJSON.class){
-                throw new BaseUniHttpException("Cannot specify multiple @BodyBinaryPar or @BodyJsonPar");
+            if (bodyClass == HttpBodyBinary.class){
+                throw new BaseUniHttpException("Cannot specify multiple @BodyBinaryPar");
+            }
+
+            if (bodyClass.equals(HttpBodyJSON.class)){
+                long count = list.stream().filter(e -> !e.toStringBody().startsWith("{")).count();
+                if (count > 1){
+                    throw new IllegalStateException("can not specify multiple intact json request body");
+                }
+
+                JSONObject jsonObject = new JSONObject();
+                list.forEach(e -> jsonObject.putAll(JSON.parseObject(e.toStringBody())));
+                return new HttpBodyJSON(jsonObject.toJSONString());
             }
 
             if (bodyClass.equals(HttpBodyFormData.class)){
