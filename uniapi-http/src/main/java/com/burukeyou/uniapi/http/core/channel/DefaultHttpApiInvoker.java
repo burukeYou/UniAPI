@@ -33,8 +33,6 @@ import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
 import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
-import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
@@ -43,10 +41,12 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
 import com.burukeyou.uniapi.http.core.request.HttpBodyText;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.DefaultHttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
@@ -56,15 +56,14 @@ import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestConfig;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
-import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.http.support.UniHttpInputStream;
 import com.burukeyou.uniapi.http.utils.BizUtil;
-import com.burukeyou.uniapi.util.FileBizUtil;
 import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.util.FileBizUtil;
 import com.burukeyou.uniapi.util.TimeUtil;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
@@ -88,7 +87,6 @@ import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author caizhihao
@@ -183,9 +181,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
 
-        // todo pre handle
-        //httpMetadata = requestPreInterceptor(httpMetadata);
-
         UniHttpResponse uniHttpResponse = null;
         try {
             // post sending
@@ -274,25 +269,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
-    private UniHttpRequest requestPreInterceptor(UniHttpRequest uniHttpRequest) {
-        // todo
-        HttpRequestConfig httpRequestConfig = apiConfigContext.getHttpRequestConfig();
-        if (httpRequestConfig == null) {
-            return uniHttpRequest;
-        }
-
-        if (!CollectionUtils.isEmpty(httpRequestConfig.getJsonPathPack()) && uniHttpRequest.getBody() != null) {
-            String contentType = uniHttpRequest.getBody().getContentType();
-            if (contentType != null && MediaTypeEnum.isTextType(contentType)) {
-                String stringBody = uniHttpRequest.getBody().toStringBody();
-                if (StringUtils.isNotBlank(stringBody) && JSON.isValid(stringBody)) {
-                    // todo
-                }
-            }
-        }
-
-        return uniHttpRequest;
-    }
 
     private UniHttpRequest createHttpMetadata(MethodInvocation methodInvocation) {
         return find(methodInvocation);
@@ -411,7 +387,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
         HttpRequestConfig config = new HttpRequestConfig();
-        config.setJsonPathPack(getEnvironmentValueList(anno.jsonPathPack()));
         return config;
     }
 
