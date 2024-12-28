@@ -1,11 +1,11 @@
 package com.burukeyou.uniapi.http.extension.processor;
 
-import java.lang.annotation.Annotation;
-
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+
+import java.lang.annotation.Annotation;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -61,7 +61,6 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param bodyString          http body string
      * @param rsp                 Original  Http Response
      * @param methodInvocation    The method of agency
-     * @param httpMetadata        request data
      * @return                    the new response body string
      */
     default String postAfterHttpResponseBodyString(String bodyString, UniHttpResponse rsp, HttpApiMethodInvocation<T> methodInvocation){
@@ -87,7 +86,6 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param methodReturnValue             Method return value
      * @param rsp                           Original  Http Response
      * @param methodInvocation              The method of agency
-     * @param httpMetadata                  request data
      * @return                              the new Method return value
      */
     default Object postAfterMethodReturnValue(Object methodReturnValue, UniHttpResponse rsp, HttpApiMethodInvocation<T> methodInvocation){

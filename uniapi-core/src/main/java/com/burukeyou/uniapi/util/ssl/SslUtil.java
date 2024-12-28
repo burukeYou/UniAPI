@@ -1,40 +1,20 @@
 package com.burukeyou.uniapi.util.ssl;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.burukeyou.uniapi.util.EncodeUtil;
 import com.burukeyou.uniapi.util.FileBizUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
+
+import javax.net.ssl.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 /**
  *  create Ssl connection context info
@@ -42,6 +22,8 @@ import org.springframework.util.ResourceUtils;
  * @author caizhihao
  */
 public class SslUtil {
+
+    private SslUtil(){}
 
     private static final String keyManagerAlgorithm = KeyManagerFactory.getDefaultAlgorithm(); // SunX509
 
@@ -51,16 +33,44 @@ public class SslUtil {
         return new SSLBuilder();
     }
 
+    /**
+     * SSL builder
+     */
     public static class SSLBuilder {
+
+        /**
+         *  JSSE key managers.
+         */
         private Set<KeyManager> keyManagers;
+
+        /**
+         *  JSSE trust managers
+         */
         private  Set<TrustManager> trustManagers;
+
+        /**
+         * cryptographically strong random number generator (RNG)
+         */
         private SecureRandom secureRandom;
+
+        /**
+         *  ssl context protocol
+         */
         private String protocol = "TLS";
 
+        /**
+         *   hostname verify
+         */
         private HostnameVerifier hostnameVerifier;
 
+        /**
+         *   SSL ciphers suite.
+         */
         private List<String> cipherSuites;
 
+        /**
+         * the enabled SSL/TLS protocols version
+         */
         private List<String> enabledProtocols;
 
         public SSLBuilder() {
@@ -199,7 +209,6 @@ public class SslUtil {
             try {
                 SSLContext sslcontext = SSLContext.getInstance(protocol);
                 initSSLContext(sslcontext, keyManagers, trustManagers, secureRandom);
-
                 context.setSslContext(sslcontext);
                 context.setKeyManagers(new ArrayList<>(keyManagers));
                 context.setTrustManagers(new ArrayList<>(trustManagers));
