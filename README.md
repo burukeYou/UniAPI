@@ -101,7 +101,15 @@ class UserAppService {
 [wiki文档](https://github.com/burukeYou/UniAPI/wiki)
 
 
+# 4、赞赏
+-------
 
+纯个人维护，为爱发电， 如果有任何问题或者需求请提issue，会很快修复和发版
+
+开源不易，目前待业中，如果觉得有用可以微信扫码鼓励支持下作者感谢!🙏
+
+
+ <img src="docs/img/weChatShare.png" width = 200 height = 200 />
 
 
 
