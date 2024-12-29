@@ -7,7 +7,7 @@ import java.lang.annotation.*;
  * but is only used to mark an object, and then all fields marked with
  * other @Par annotations within that object will be parsed and processed
  *
- * <pre>Support parameter types for tags only  Custom Object
+ * <pre>Support parameter types for tags only  Custom Object</pre>
 
  *
  * @author caizhihao

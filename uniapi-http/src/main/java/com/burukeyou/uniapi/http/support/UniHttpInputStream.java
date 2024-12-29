@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.sun.istack.internal.NotNull;
 
 /**
  * @author caizhihao
@@ -30,12 +29,12 @@ public class UniHttpInputStream  extends InputStream {
 
 
     @Override
-    public int read(@NotNull byte[] b) throws IOException {
+    public int read(byte[] b) throws IOException {
         return inputStream.read(b);
     }
 
     @Override
-    public int read(@NotNull byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException {
         return inputStream.read(b, off, len);
     }
 
