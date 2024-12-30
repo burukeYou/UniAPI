@@ -19,7 +19,6 @@ import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
 import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
-import com.burukeyou.uniapi.http.core.ssl.TrustAllX509ExtendedTrustManager;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestConfig;
@@ -140,7 +139,7 @@ public abstract class AbstractInvokeCache {
             if (trustManager != null){
                 newBuilder.sslSocketFactory(sslContext.getSocketFactory(),(X509TrustManager) trustManager);
             }else{
-                newBuilder.sslSocketFactory(sslContext.getSocketFactory(),new TrustAllX509ExtendedTrustManager());
+                newBuilder.sslSocketFactory(sslContext.getSocketFactory(),SslConnectionContextFactory.trustAllTrustManager);
             }
         }
 
