@@ -1,12 +1,14 @@
 package com.burukeyou.uniapi.http.core.channel;
 
-import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import lombok.Setter;
-import org.aopalliance.intercept.MethodInvocation;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
+
+import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
+import com.burukeyou.uniapi.support.map.IMap;
+import com.burukeyou.uniapi.support.map.StringHashIMap;
+import lombok.Setter;
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * @author  caihzihao
@@ -21,6 +23,12 @@ public class HttpApiMethodInvocationImpl implements HttpApiMethodInvocation<Anno
 
     private MethodInvocation methodInvocation;
 
+    /**
+     *  Ext Properties,Parameter passing
+     */
+    private transient final IMap<String,Object> attachments = new StringHashIMap();
+
+
     @Override
     public Annotation getProxyApiAnnotation() {
         return proxyApiAnnotation;
@@ -34,6 +42,11 @@ public class HttpApiMethodInvocationImpl implements HttpApiMethodInvocation<Anno
     @Override
     public Class<?> getProxyClass() {
         return proxyClass;
+    }
+
+    @Override
+    public IMap<String,Object> getAttachment() {
+        return attachments;
     }
 
 

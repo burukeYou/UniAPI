@@ -1,11 +1,11 @@
 package com.burukeyou.uniapi.http.extension.processor;
 
+import java.lang.annotation.Annotation;
+
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-
-import java.lang.annotation.Annotation;
 
 /**
  * HttpAPI lifecycle processor Extension point
