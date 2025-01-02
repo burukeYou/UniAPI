@@ -1,10 +1,12 @@
 package com.burukeyou.uniapi.http.extension.processor;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
+import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 
@@ -51,9 +53,8 @@ public interface HttpApiProcessor<T extends Annotation> {
     }
 
     /**
-     * When sending HTTP requests
-     *          Send an HTTP request using HttpMetadata
-     * @param httpSender                 Request Sender
+     * When sending HTTP requests， using UniHttpRequest to send an HTTP request
+     * @param httpSender                   Request Sender
      * @param uniHttpRequest               request data
      */
     default UniHttpResponse postSendingHttpRequest(HttpSender httpSender, UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
@@ -61,14 +62,20 @@ public interface HttpApiProcessor<T extends Annotation> {
     }
 
     /**
-     * Post-processing of HTTP response
+     * This method will be called back when {@link #postSendingHttpRequest} is executed,
+     * regardless of whether  {@link #postSendingHttpRequest} is executed successfully or abnormally
+     * @param exception                 exception info, when request is executed successfully, this parameter is null
      * @param response                  Http response
-     * @param request                   Http Request
      * @param methodInvocation          the method of proxy execution
      */
-    default void postAfterHttpResponse(UniHttpResponse response, UniHttpRequest request,HttpApiMethodInvocation<T> methodInvocation){
+    default void postAfterHttpResponse(Throwable exception, UniHttpResponse response, HttpApiMethodInvocation<T> methodInvocation){
+        if (exception instanceof IOException){
+            throw new SendHttpRequestException("Http请求网络IO异常",exception);
+        }else if (exception != null){
+            throw new SendHttpRequestException("Http请求异常", exception);
+        }
         if (!response.isSuccessful()) {
-            throw new HttpResponseException("Http请求响应异常 接口【"+request.getUrlPath()+"】 响应状态码【" + response.getHttpCode() + "】结果:【" + response.getBodyToString() + "】");
+            throw new HttpResponseException("Http请求响应异常 接口【"+ response.getRequest().getUrlPath()+"】 响应状态码【" + response.getHttpCode() + "】结果:【" + response.getBodyToString() + "】");
         }
     }
 
