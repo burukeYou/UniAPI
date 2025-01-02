@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,8 @@ import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.support.map.IMap;
+import com.burukeyou.uniapi.support.map.ValueObjectHashMap;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -62,7 +63,7 @@ public class UniHttpRequest implements Serializable {
     /**
      *  Request Ext Properties，do not process, only do transparent transmission
      */
-    private transient final Map<String,Object> attachments = new HashMap<>();
+    private transient  IMap<String,Object> attachments = new ValueObjectHashMap<>();
 
     /**
      * set http url root address
