@@ -20,7 +20,7 @@ public interface IMap<K, V> extends java.util.Map<K, V> {
      * @param key       param key
      * @return          string value
      */
-    K getString(K key);
+    String getString(K key);
 
     /**
      * get cast to Integer

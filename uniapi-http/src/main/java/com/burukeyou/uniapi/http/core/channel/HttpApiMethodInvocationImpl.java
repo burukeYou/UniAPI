@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.support.map.IMap;
-import com.burukeyou.uniapi.support.map.StringHashIMap;
+import com.burukeyou.uniapi.support.map.ValueObjectHashMap;
 import lombok.Setter;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -26,7 +26,7 @@ public class HttpApiMethodInvocationImpl implements HttpApiMethodInvocation<Anno
     /**
      *  Ext Properties,Parameter passing
      */
-    private transient final IMap<String,Object> attachments = new StringHashIMap();
+    private transient final IMap<String,Object> attachments = new ValueObjectHashMap<>();
 
 
     @Override
