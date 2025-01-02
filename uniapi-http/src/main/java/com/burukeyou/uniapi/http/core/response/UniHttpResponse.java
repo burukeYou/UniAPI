@@ -39,12 +39,12 @@ public class UniHttpResponse implements Closeable {
     /**
      *  Request Data
      */
-    private UniHttpRequest request;
+    private final UniHttpRequest request;
 
     /**
      *  Response info
      */
-    private HttpResponseInfo originHttpResponse;
+    private final HttpResponseInfo originHttpResponse;
 
     /**
      * Response Code
@@ -72,7 +72,7 @@ public class UniHttpResponse implements Closeable {
         this.code = originHttpResponse.getHttpCode();
         Map<String, List<String>> headerMap = originHttpResponse.getHeaderMap();
         this.headersMap = headerMap == null ? new HashMap<>() : headerMap;
-        this.contentType = getContentType();
+        this.contentType = getHeader("Content-Type");;
 
         if (StringUtils.isNotBlank(contentType)){
             this.bodyMediaType = MediaType.parse(contentType);
@@ -221,7 +221,7 @@ public class UniHttpResponse implements Closeable {
      * get response body content-type
      */
     public String getContentType(){
-        return getHeader("Content-Type");
+        return contentType;
     }
 
     /**
@@ -285,13 +285,6 @@ public class UniHttpResponse implements Closeable {
      */
     public UniHttpRequest getRequest() {
         return request;
-    }
-
-    /**
-     * get origin response info
-     */
-    public HttpResponseInfo getOriginHttpResponse() {
-        return originHttpResponse;
     }
 
 
