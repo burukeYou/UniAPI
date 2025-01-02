@@ -278,6 +278,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         Call call = callClient.newCall(request);
         Response response = null;
         try {
+            uniHttpRequest.setRequestTime(System.currentTimeMillis());
             response = call.execute();
         } catch (IOException e) {
             throw new IOExceptionRuntimeExceptionWrapper(e);
@@ -291,6 +292,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         OkHttpClient callClient = getCallHttpClient(client, apiConfigContext);
         Call call = callClient.newCall(request);
         CompletableFuture<UniHttpResponse> completableFuture = new CompletableFuture<>();
+        uniHttpRequest.setRequestTime(System.currentTimeMillis());
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

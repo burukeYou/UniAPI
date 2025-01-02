@@ -61,9 +61,14 @@ public class UniHttpRequest implements Serializable {
     private List<Cookie> cookies = new ArrayList<>();
 
     /**
+     *  Request Send Time (Milliseconds)
+     */
+    private long requestTime;
+
+    /**
      *  Request Ext Properties，do not process, only do transparent transmission
      */
-    private transient  IMap<String,Object> attachments = new ValueObjectHashMap<>();
+    private  IMap<String,Object> attachments = new ValueObjectHashMap<>();
 
     /**
      * set http url root address
