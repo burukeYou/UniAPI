@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
+import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 
@@ -18,6 +19,9 @@ import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
  *                        |
  *                        V
  *                 postSendingHttpRequest
+ *                        |
+ *                        V
+ *                 postAfterHttpResponse
  *                        |
  *                        V
  *              postAfterHttpResponseBodyString
@@ -54,6 +58,18 @@ public interface HttpApiProcessor<T extends Annotation> {
      */
     default UniHttpResponse postSendingHttpRequest(HttpSender httpSender, UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
         return httpSender.sendHttpRequest(uniHttpRequest);
+    }
+
+    /**
+     * Post-processing of HTTP response
+     * @param response                  Http response
+     * @param request                   Http Request
+     * @param methodInvocation          the method of proxy execution
+     */
+    default void postAfterHttpResponse(UniHttpResponse response, UniHttpRequest request,HttpApiMethodInvocation<T> methodInvocation){
+        if (!response.isSuccessful()) {
+            throw new HttpResponseException("Http请求响应异常 接口【"+request.getUrlPath()+"】 响应状态码【" + response.getHttpCode() + "】结果:【" + response.getBodyToString() + "】");
+        }
     }
 
     /**
