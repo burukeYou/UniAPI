@@ -1,5 +1,7 @@
 package com.burukeyou;
 
+import java.util.concurrent.ExecutionException;
+
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.UserService2Api;
 import com.burukeyou.demo.api.UserServiceApi;
@@ -27,8 +29,15 @@ public class HttpApi2Test {
     }
 
     @Test
-    public void testdel01() throws InterruptedException {
-        userApi2.del07().whenComplete((rsp, throwable) -> {
+    public void testdel04() throws InterruptedException, ExecutionException {
+        //String s = userApi2.del041();
+        String stringHttpResponse = userApi2.del04().get();
+        System.out.println();
+    }
+
+    @Test
+    public void testdel07() throws InterruptedException {
+        userApi2.del07("s999").whenComplete((rsp, throwable) -> {
             if (throwable != null){
                 throwable.printStackTrace();
             }

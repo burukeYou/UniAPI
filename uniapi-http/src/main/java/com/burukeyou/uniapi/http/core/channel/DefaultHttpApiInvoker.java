@@ -193,9 +193,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         if (CompletableFuture.class.equals(methodReturnType)){
             CompletableFuture<Object> methodFuture = new CompletableFuture<>();
             CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
+            final UniHttpRequest finalRequestMetadata = requestMetadata;
             asyncFuture.whenComplete((info, ex) -> {
                 try {
-                    methodFuture.complete(convertUniHttpResponse(new HttpRequestExecuteInfo(ex,info)));
+                    methodFuture.complete(convertUniHttpResponse(new HttpRequestExecuteInfo(ex,info), finalRequestMetadata));
                 }catch (Throwable e){
                     methodFuture.completeExceptionally(e);
                 }finally {
@@ -221,7 +222,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 }
                 executeInfo.setException(throwable);
             }
-            return convertUniHttpResponse(executeInfo);
+            return convertUniHttpResponse(executeInfo,requestMetadata);
         }finally {
             if(!InputStream.class.equals(bodyResultType)){
                 BizUtil.closeQuietly(executeInfo.getUniHttpResponse());
@@ -230,11 +231,11 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    private Object convertUniHttpResponse(HttpRequestExecuteInfo executeInfo) {
+    private Object convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request) {
         UniHttpResponse uniHttpResponse = executeInfo.getUniHttpResponse();
 
         // post after http response
-        requestProcessor.postAfterHttpResponse(executeInfo.getException(),uniHttpResponse,httpApiMethodInvocation);
+        requestProcessor.postAfterHttpResponse(executeInfo.getException(),request,uniHttpResponse,httpApiMethodInvocation);
 
         if (executeInfo.getException() != null) {
             // request error not response info

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
@@ -320,6 +321,20 @@ public class UniHttpRequest implements Serializable {
             this.body = new HttpBodyMultipart();
         }
         ((HttpBodyMultipart)body).addFileItem(name,file,fileName);
+    }
+
+    /**
+     * return the current cost time from request send time to now (milliseconds)
+     */
+    public long getCurrentCostTime() {
+        return System.currentTimeMillis() - requestTime;
+    }
+
+    /**
+     * return the current cost time from request send time to now (unit)
+     */
+    public long getCurrentCostTime(TimeUnit timeUnit) {
+        return timeUnit.convert(getCurrentCostTime(), TimeUnit.MILLISECONDS);
     }
 
     /**

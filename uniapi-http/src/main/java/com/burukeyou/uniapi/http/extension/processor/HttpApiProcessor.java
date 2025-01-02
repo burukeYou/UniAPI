@@ -64,11 +64,12 @@ public interface HttpApiProcessor<T extends Annotation> {
     /**
      * This method will be called back when {@link #postSendingHttpRequest} is executed,
      * regardless of whether  {@link #postSendingHttpRequest} is executed successfully or abnormally
+     * @param request                   request data
      * @param exception                 exception info, when request is executed successfully, this parameter is null
-     * @param response                  Http response
+     * @param response                  Http response, when request is executed abnormally, this parameter is  null
      * @param methodInvocation          the method of proxy execution
      */
-    default void postAfterHttpResponse(Throwable exception, UniHttpResponse response, HttpApiMethodInvocation<T> methodInvocation){
+    default void postAfterHttpResponse(Throwable exception, UniHttpRequest request,UniHttpResponse response, HttpApiMethodInvocation<T> methodInvocation){
         if (exception instanceof IOException){
             throw new SendHttpRequestException("Http请求网络IO异常",exception);
         }else if (exception != null){
