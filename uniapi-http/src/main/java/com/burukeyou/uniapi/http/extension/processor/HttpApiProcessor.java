@@ -53,7 +53,7 @@ public interface HttpApiProcessor<T extends Annotation> {
     }
 
     /**
-     * When sending HTTP requests， using UniHttpRequest to send an HTTP request
+     * When sending SYNC HTTP requests will call back， using UniHttpRequest to send an HTTP request
      * @param httpSender                   Request Sender
      * @param uniHttpRequest               request data
      */
@@ -62,8 +62,7 @@ public interface HttpApiProcessor<T extends Annotation> {
     }
 
     /**
-     * This method will be called back when {@link #postSendingHttpRequest} is executed,
-     * regardless of whether  {@link #postSendingHttpRequest} is executed successfully or abnormally
+     * This method will be called back when http request has been sent ,regardless of whether it executed successfully or abnormally
      * @param request                   request data
      * @param exception                 exception info, when request is executed successfully, this parameter is null
      * @param response                  Http response, when request is executed abnormally, this parameter is  null
