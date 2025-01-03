@@ -25,6 +25,7 @@ import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.HttpRequestCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.annotation.IgnoredProcessor;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -110,7 +111,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private final HttpApiConfigContext apiConfigContext;
 
-    private Type bodyResultType;
+    private final Type bodyResultType;
+
+    private IgnoredProcessor ignoredProcessorAnno;
 
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
@@ -135,6 +138,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         apiConfigContext = initHttpApiConfigContext();
 
         bodyResultType = getBodyResultType(httpApiMethodInvocation);
+        ignoredProcessorAnno = methodInvocation.getMethod().getAnnotation(IgnoredProcessor.class);
     }
 
 
@@ -166,6 +170,21 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
+    private boolean isNotIgnoreProcessorMethod(String methodName) {
+        if (ignoredProcessorAnno == null) {
+            return true;
+        }
+        if (ignoredProcessorAnno.ignoreAll() || ignoredProcessorAnno.value()) {
+            return false;
+        }
+        for (String ignoreMethod : ignoredProcessorAnno.ignoreMethods()) {
+            if (ignoreMethod.equals(methodName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public Object invoke() {
         Method method = methodInvocation.getMethod();
@@ -183,7 +202,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // before processor
-        requestMetadata = requestProcessor.postBeforeHttpRequest(requestMetadata, httpApiMethodInvocation);
+        if (isNotIgnoreProcessorMethod("postBeforeHttpRequest")){
+            requestMetadata = requestProcessor.postBeforeHttpRequest(requestMetadata, httpApiMethodInvocation);
+        }
         if (requestMetadata == null) {
             return null;
         }
