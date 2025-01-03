@@ -69,13 +69,14 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param methodInvocation          the method of proxy execution
      */
     default void postAfterHttpResponse(Throwable exception, UniHttpRequest request,UniHttpResponse response, HttpApiMethodInvocation<T> methodInvocation){
+        String baseLog = String.format(" 接口:%s 耗时:%s(ms) ", request.getUrlPath(), request.getCurrentCostTime());
         if (exception instanceof IOException){
-            throw new SendHttpRequestException("Http请求网络IO异常",exception);
+            throw new SendHttpRequestException("Http请求网络IO异常" + baseLog,exception);
         }else if (exception != null){
-            throw new SendHttpRequestException("Http请求异常", exception);
+            throw new SendHttpRequestException("Http请求异常" + baseLog, exception);
         }
         if (!response.isSuccessful()) {
-            throw new HttpResponseException("Http请求响应异常 接口【"+ response.getRequest().getUrlPath()+"】 响应状态码【" + response.getHttpCode() + "】结果:【" + response.getBodyToString() + "】");
+            throw new HttpResponseException("Http请求响应异常"+ baseLog+" 响应状态码【" + response.getHttpCode() + "】结果:【" + response.getBodyToString() + "】");
         }
     }
 

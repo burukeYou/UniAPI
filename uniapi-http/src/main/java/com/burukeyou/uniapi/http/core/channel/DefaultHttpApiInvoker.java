@@ -53,12 +53,14 @@ import com.burukeyou.uniapi.http.support.BodyParseResult;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpFuture;
 import com.burukeyou.uniapi.http.support.HttpRequestConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestExecuteInfo;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
 import com.burukeyou.uniapi.http.support.UniHttpInputStream;
+import com.burukeyou.uniapi.http.support.UniHttpResponseParseInfo;
 import com.burukeyou.uniapi.http.utils.BizUtil;
 import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
@@ -186,30 +188,18 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
 
-        // request async
         Class<?> methodReturnType = method.getReturnType();
-        if (Boolean.TRUE.equals(apiConfigContext.isAsyncRequest())){
-            if (!Future.class.isAssignableFrom(methodReturnType) && void.class != methodReturnType && Void.class != methodReturnType){
-                throw new IllegalStateException("when config async request, the method return type must be Future or void");
-            }
+        boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest());
+        if (isAsync && !Future.class.isAssignableFrom(methodReturnType) && void.class != methodReturnType && Void.class != methodReturnType){
+            throw new IllegalStateException("when config async request, the method return type must be Future or void");
         }
 
-        if (Future.class.isAssignableFrom(methodReturnType) || Boolean.TRUE.equals(apiConfigContext.isAsyncRequest())){
-            CompletableFuture<Object> methodFuture = new CompletableFuture<>();
+        // request async
+        if (isAsync){
+            //CompletableFuture<Object> methodFuture = new CompletableFuture<>();
             CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
             final UniHttpRequest finalRequestMetadata = requestMetadata;
-            asyncFuture.whenComplete((info, ex) -> {
-                try {
-                    methodFuture.complete(convertUniHttpResponse(new HttpRequestExecuteInfo(ex,info), finalRequestMetadata));
-                }catch (Throwable e){
-                    methodFuture.completeExceptionally(e);
-                }finally {
-                    if(!InputStream.class.equals(bodyResultType)){
-                        BizUtil.closeQuietly(info);
-                    }
-                }
-            });
-            return methodFuture;
+            return new HttpFuture<>(asyncFuture,bodyResultType, (info,ex) -> convertUniHttpResponse(new HttpRequestExecuteInfo(ex,info), finalRequestMetadata));
         }
 
         // request sync
@@ -226,7 +216,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 }
                 executeInfo.setException(throwable);
             }
-            return convertUniHttpResponse(executeInfo,requestMetadata);
+            UniHttpResponseParseInfo value = convertUniHttpResponse(executeInfo, requestMetadata);
+            if (Future.class.isAssignableFrom(methodReturnType)){
+                return new HttpFuture<>(value.getMethodReturnValue(),value.getHttpResponse());
+            }else {
+                return value.getMethodReturnValue();
+            }
         }finally {
             if(!InputStream.class.equals(bodyResultType)){
                 BizUtil.closeQuietly(executeInfo.getUniHttpResponse());
@@ -235,7 +230,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    private Object convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request) {
+    /**
+     *  response 转成 future之内类型
+     */
+    public UniHttpResponseParseInfo convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request) {
         UniHttpResponse uniHttpResponse = executeInfo.getUniHttpResponse();
 
         // post after http response
@@ -272,7 +270,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         // post after method
-        return requestProcessor.postAfterMethodReturnValue(methodReturnValue, uniHttpResponse, httpApiMethodInvocation);
+        methodReturnValue = requestProcessor.postAfterMethodReturnValue(methodReturnValue, uniHttpResponse, httpApiMethodInvocation);
+
+        UniHttpResponseParseInfo result = new UniHttpResponseParseInfo();
+        result.setMethodReturnValue(methodReturnValue);
+        result.setHttpResponse(httpResponse);
+        return result;
     }
 
 
