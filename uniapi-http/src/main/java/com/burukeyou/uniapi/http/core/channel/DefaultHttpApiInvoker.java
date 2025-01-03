@@ -188,6 +188,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
 
+        // before send
+        requestProcessor.postBeforeSendHttpRequest(requestMetadata,this,httpApiMethodInvocation);
+
         Class<?> methodReturnType = method.getReturnType();
         boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest());
         if (isAsync && !Future.class.isAssignableFrom(methodReturnType) && void.class != methodReturnType && Void.class != methodReturnType){

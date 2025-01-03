@@ -20,6 +20,9 @@ import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
  *                postBeforeHttpRequest
  *                        |
  *                        V
+ *               postBeforeSendHttpRequest
+ *                        |
+ *                        V
  *                 postSendingHttpRequest
  *                        |
  *                        V
@@ -41,15 +44,26 @@ import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 public interface HttpApiProcessor<T extends Annotation> {
 
     /**
-     * Before sending the request
-     *          you can revise the requested data for UniHttpRequest
-     *          if return null will stop to send the request
+     * Before sending the request, get new request data
+     * <pre>
+     *     you can revise the request data for UniHttpRequest
+     *     if return null will stop to send the request
+     * </pre>
      * @param uniHttpRequest              request data
      * @param methodInvocation          the method of proxy execution
      * @return                          the new request data,if return null will stop to send the request
      */
     default UniHttpRequest postBeforeHttpRequest(UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<T> methodInvocation){
         return uniHttpRequest;
+    }
+
+    /**
+     * This method is called back before the Http request is actually sent
+     * @param uniHttpRequest                 request data
+     * @param httpSender                     Request Sender
+     * @param methodInvocation               the method of proxy execution
+     */
+    default void postBeforeSendHttpRequest(UniHttpRequest uniHttpRequest, HttpSender httpSender,HttpApiMethodInvocation<T> methodInvocation){
     }
 
     /**
