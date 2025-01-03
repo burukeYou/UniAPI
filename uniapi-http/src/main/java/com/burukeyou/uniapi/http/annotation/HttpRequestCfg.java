@@ -20,6 +20,11 @@ import java.lang.annotation.Target;
 public @interface HttpRequestCfg {
 
     /**
+     * Whether to enable async requests
+     */
+    boolean async() default false;
+
+    /**
      * Whether to enable follow redirects
      */
     boolean followRedirect() default true;

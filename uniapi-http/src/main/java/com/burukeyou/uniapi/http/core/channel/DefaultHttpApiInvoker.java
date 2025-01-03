@@ -13,10 +13,8 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -31,7 +29,7 @@ import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
-import com.burukeyou.uniapi.http.core.exception.IOExceptionRuntimeExceptionWrapper;
+import com.burukeyou.uniapi.http.core.exception.UniHttpIOException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
 import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
@@ -190,7 +188,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         // request async
         Class<?> methodReturnType = method.getReturnType();
-        if (CompletableFuture.class.equals(methodReturnType)){
+        if (Boolean.TRUE.equals(apiConfigContext.isAsyncRequest())){
+            if (!Future.class.isAssignableFrom(methodReturnType) && void.class != methodReturnType && Void.class != methodReturnType){
+                throw new IllegalStateException("when config async request, the method return type must be Future or void");
+            }
+        }
+
+        if (Future.class.isAssignableFrom(methodReturnType) || Boolean.TRUE.equals(apiConfigContext.isAsyncRequest())){
             CompletableFuture<Object> methodFuture = new CompletableFuture<>();
             CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
             final UniHttpRequest finalRequestMetadata = requestMetadata;
@@ -217,7 +221,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 executeInfo.setUniHttpResponse(uniHttpResponse);
             } catch (Throwable e) {
                 Throwable throwable = e;
-                if (throwable instanceof IOExceptionRuntimeExceptionWrapper){
+                if (throwable instanceof UniHttpIOException){
                     throwable = throwable.getCause();
                 }
                 executeInfo.setException(throwable);
@@ -282,7 +286,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             uniHttpRequest.setRequestTime(System.currentTimeMillis());
             response = call.execute();
         } catch (IOException e) {
-            throw new IOExceptionRuntimeExceptionWrapper(e);
+            throw new UniHttpIOException(e);
         }
         return new UniHttpResponse(uniHttpRequest, new OkHttpResponse(response));
     }
@@ -460,8 +464,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
         HttpRequestConfig config = new HttpRequestConfig();
-        config.setFollowRedirect(anno.followRedirect());
-        config.setFollowSslRedirect(anno.followSslRedirect());
+        config.setAsync(getEnvironmentValue(anno.async()));
+        config.setFollowRedirect(getEnvironmentValue(anno.followRedirect()));
+        config.setFollowSslRedirect(getEnvironmentValue(anno.followSslRedirect()));
         return config;
     }
 
@@ -575,7 +580,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         //
         String bodyString = responseMetadata.getBodyToString();
         if (StringUtils.isNotBlank(bodyString) && JSON.isValid(bodyString)) {
-            List<String> jsonPathPackList = Optional.ofNullable(apiConfigContext.getHttpResponseConfig()).map(HttpResponseConfig::getJsonPathUnPack).orElse(Collections.emptyList());
+            List<String> jsonPathPackList = apiConfigContext.getJsonPathUnPackList();
             if (!jsonPathPackList.isEmpty()) {
                 bodyString = unPackJsonPath(bodyString, jsonPathPackList);
             }
@@ -585,7 +590,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         bodyString = requestProcessor.postAfterHttpResponseBodyString(bodyString, responseMetadata, httpApiMethodInvocation);
 
         if (StringUtils.isNotBlank(bodyString) && JSON.isValid(bodyString)) {
-            List<String> afterJsonStringFormatPath = Optional.ofNullable(apiConfigContext.getHttpResponseConfig()).map(HttpResponseConfig::getAfterJsonPathUnPack).orElse(Collections.emptyList());
+            List<String> afterJsonStringFormatPath = apiConfigContext.getAfterJsonPathUnPackList();
             if (!afterJsonStringFormatPath.isEmpty()) {
                 bodyString = unPackJsonPath(bodyString, afterJsonStringFormatPath);
             }

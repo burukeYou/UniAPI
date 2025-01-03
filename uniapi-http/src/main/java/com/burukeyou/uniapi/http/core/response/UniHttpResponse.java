@@ -342,7 +342,12 @@ public class UniHttpResponse implements Closeable {
         HttpUrl httpUrl = request.getHttpUrl();
         sb.append("\n").append(requestMethod == null ? "" : requestMethod.name())
                 .append("\t\t").append(httpUrl.toUrl()).append("\n");
+        sb.append(buildBodyProtocol());
+        return sb.toString();
+    }
 
+    private StringBuilder buildBodyProtocol() {
+        StringBuilder sb = new StringBuilder();
         Map<String, List<String>> stringListMap = getHeaderMap();
         if (stringListMap != null && !stringListMap.isEmpty()){
             sb.append("Response Header:\n");
@@ -370,7 +375,7 @@ public class UniHttpResponse implements Closeable {
                 sb.append("\t\t").append(bodyToString).append("\n");
             }
         }
-        return sb.toString();
+        return sb;
     }
 
     /**
@@ -378,6 +383,6 @@ public class UniHttpResponse implements Closeable {
      */
     public String toHttpProtocolIntact(){
         String requestProtocol = request.toHttpProtocol();
-        return requestProtocol + toHttpProtocol();
+        return requestProtocol + buildBodyProtocol();
     }
 }

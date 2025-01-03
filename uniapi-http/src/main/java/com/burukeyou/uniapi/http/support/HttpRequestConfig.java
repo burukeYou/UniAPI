@@ -12,6 +12,11 @@ public class HttpRequestConfig implements Serializable {
     private static final long serialVersionUID = -1L;
 
     /**
+     * Whether to enable async requests
+     */
+    private Boolean async;
+
+    /**
      * Whether to enable follow redirects
      */
     private Boolean followRedirect;
