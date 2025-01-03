@@ -203,14 +203,14 @@ public class UserController {
 
     @PostMapping(path = "/del04")
     @ResponseBody
-    public String del04(){
+    public BaseRsp<String> del04(){
         log.info("收到请求del04");
         try {
             Thread.sleep(6000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return "ok";
+        return BaseRsp.ok("sb");
     }
 
     @PostMapping(path = "/del05")

@@ -27,10 +27,16 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
 
     @Override
     public UniHttpResponse postSendingHttpRequest(HttpSender httpSender, UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
-        log.info("请求体: {}", uniHttpRequest.toHttpProtocol());
+        //log.info("请求体: {}", uniHttpRequest.toHttpProtocol());
         UniHttpResponse rsp = httpSender.sendHttpRequest(uniHttpRequest);
-        log.info("请求结果: {}", rsp.toHttpProtocol());
+        //log.info("请求结果: {}", rsp.toHttpProtocol());
         return rsp;
+    }
+
+    @Override
+    public void postAfterHttpResponse(Throwable exception, UniHttpRequest request, UniHttpResponse response, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
+        HttpApiProcessor.super.postAfterHttpResponse(exception, request, response, methodInvocation);
+        log.info("请求日志: {}",response.toHttpProtocolIntact());
     }
 
     @Override
