@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 /**
  * Http Request Config
  *
- *  // todo implement
- *
  * @author caizhihao
  */
 
