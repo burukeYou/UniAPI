@@ -67,4 +67,10 @@ public @interface GetHttpInterface {
      */
     @AliasFor(annotation = HttpInterface.class)
     Class<? extends HttpApiProcessor<? extends Annotation>>[] processor() default {};
+
+    /**
+     * Whether to enable async requests
+     */
+    @AliasFor(annotation = HttpInterface.class)
+    boolean async() default false;
 }

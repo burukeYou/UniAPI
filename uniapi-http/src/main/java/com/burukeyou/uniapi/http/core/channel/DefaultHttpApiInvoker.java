@@ -475,14 +475,22 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private HttpRequestConfig getHttpRequestConfig() {
         HttpRequestCfg anno = getMergeAnnotationFormObjectOrMethodCache(HttpRequestCfg.class);
-        if (anno == null) {
-            return null;
+        if (anno != null) {
+            HttpRequestConfig config = new HttpRequestConfig();
+            config.setAsync(getEnvironmentValue(anno.async()));
+            config.setFollowRedirect(getEnvironmentValue(anno.followRedirect()));
+            config.setFollowSslRedirect(getEnvironmentValue(anno.followSslRedirect()));
+            return config;
         }
-        HttpRequestConfig config = new HttpRequestConfig();
-        config.setAsync(getEnvironmentValue(anno.async()));
-        config.setFollowRedirect(getEnvironmentValue(anno.followRedirect()));
-        config.setFollowSslRedirect(getEnvironmentValue(anno.followSslRedirect()));
-        return config;
+
+        boolean async = httpInterface.async();
+        if (Boolean.TRUE.equals(async)){
+            HttpRequestConfig config = new HttpRequestConfig();
+            config.setAsync(Boolean.TRUE);
+            return config;
+        }
+
+        return null;
     }
 
 

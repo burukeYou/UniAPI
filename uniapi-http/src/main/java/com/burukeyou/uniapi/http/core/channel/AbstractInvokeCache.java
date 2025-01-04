@@ -1,6 +1,18 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 
+import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
+import com.burukeyou.uniapi.http.core.ssl.SslConfig;
+import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
+import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpRequestConfig;
+import okhttp3.ConnectionSpec;
+import okhttp3.OkHttpClient;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.util.CollectionUtils;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -14,18 +26,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
-
-import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
-import com.burukeyou.uniapi.http.core.ssl.SslConfig;
-import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
-import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
-import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
-import com.burukeyou.uniapi.http.support.HttpCallConfig;
-import com.burukeyou.uniapi.http.support.HttpRequestConfig;
-import okhttp3.ConnectionSpec;
-import okhttp3.OkHttpClient;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author caizhihao
@@ -121,8 +121,12 @@ public abstract class AbstractInvokeCache {
 
         HttpRequestConfig requestConfig = apiConfigContext.getHttpRequestConfig();
         if (requestConfig != null){
-            newBuilder.followRedirects(requestConfig.getFollowRedirect());
-            newBuilder.followSslRedirects(requestConfig.getFollowSslRedirect());
+            if (requestConfig.getFollowRedirect() != null){
+                newBuilder.followRedirects(requestConfig.getFollowRedirect());
+            }
+            if (requestConfig.getFollowSslRedirect() != null){
+                newBuilder.followSslRedirects(requestConfig.getFollowSslRedirect());
+            }
         }
 
         return newBuilder.build();
