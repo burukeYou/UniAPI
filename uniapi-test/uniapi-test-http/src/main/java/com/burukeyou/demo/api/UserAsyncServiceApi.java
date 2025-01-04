@@ -1,8 +1,5 @@
 package com.burukeyou.demo.api;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-
 import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
@@ -12,6 +9,9 @@ import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.support.HttpFuture;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @UserHttpApi
 public interface UserAsyncServiceApi {
@@ -46,8 +46,8 @@ public interface UserAsyncServiceApi {
     @HttpRequestCfg(async = true)
     CompletableFuture<HttpResponse<BaseRsp<String>>> del046();
 
-    @PostHttpInterface(path = "/user-web/del04")
-    @HttpRequestCfg(async = true)
+    @PostHttpInterface(path = "/user-web/del04",async = true)
+    //@HttpRequestCfg(async = true)
     HttpFuture<HttpResponse<BaseRsp<String>>> del047();
 
     @GetHttpInterface(path = "/user-web/del07")
