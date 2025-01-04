@@ -1,23 +1,13 @@
 package com.burukeyou.demo.config;
 
-import java.lang.reflect.Method;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.burukeyou.demo.annotation.MTuanHttpApi;
 import com.burukeyou.demo.api.WeatherServiceApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
-import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.request.HttpBody;
-import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
-import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
-import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
+import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.Cookie;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -106,15 +98,11 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
         }
 
         // 使用公钥publicKey 加密拼接起来
-        String sign = publicKey + queryParamString + bodyString;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(sign.getBytes());
-            return new String(digest);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        String sign = publicKey + queryParamString + bodyString + "-9999";
+        return sign;
     }
+
+    private static ThreadLocal<Boolean> flagLocal = new ThreadLocal<>();
 
     /**
      *  实现-postBeforeHttpMetadata： 发送Http请求时，可定义发送请求的行为 或者打印请求和响应日志。
@@ -122,10 +110,10 @@ public class MTuanHttpApiProcessor implements HttpApiProcessor<MTuanHttpApi> {
     @Override
     public UniHttpResponse postSendingHttpRequest(HttpSender httpSender, UniHttpRequest uniHttpRequest, HttpApiMethodInvocation<MTuanHttpApi> methodInvocation) {
         //  忽略 weatherApi.getToken的方法回调，否则该方法也会回调此方法会递归死循环。 或者该接口指定自定义的HttpApiProcessor重写postSendingHttpRequest
-        Method getTokenMethod = ReflectionUtils.findMethod(WeatherServiceApi.class, "getToken",String.class,String.class);
-        if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
-            return httpSender.sendHttpRequest(uniHttpRequest);
-        }
+//        Method getTokenMethod = ReflectionUtils.findMethod(WeatherServiceApi.class, "getToken",String.class,String.class);
+//        if (getTokenMethod == null || getTokenMethod.equals(methodInvocation.getMethod())){
+//            return httpSender.sendHttpRequest(uniHttpRequest);
+//        }
 
         // 1、动态获取token和sessionId.
         // 这个接口不应该回调这个方法,否则会递归死循环

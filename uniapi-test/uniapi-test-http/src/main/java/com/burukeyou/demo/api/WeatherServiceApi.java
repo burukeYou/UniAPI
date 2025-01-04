@@ -2,7 +2,7 @@ package com.burukeyou.demo.api;
 
 import com.burukeyou.demo.annotation.MTuanHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
-import com.burukeyou.uniapi.http.annotation.IgnoredProcessor;
+import com.burukeyou.uniapi.http.annotation.FilterProcessor;
 import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
 import com.burukeyou.uniapi.http.annotation.param.QueryPar;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
@@ -16,7 +16,7 @@ public interface WeatherServiceApi {
      *  根据appId和公钥获取令牌
      */
     @PostHttpInterface(path = "/mtuan/weather/getToken")
-    @IgnoredProcessor(ignoreAll = true)
+    @FilterProcessor(ignoreSending = true)
     HttpResponse<String> getToken(@HeaderPar("appId") String appId, @HeaderPar("publicKey")String publicKey);
 
     /**
