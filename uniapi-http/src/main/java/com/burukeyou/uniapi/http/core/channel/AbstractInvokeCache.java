@@ -1,18 +1,6 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 
-import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
-import com.burukeyou.uniapi.http.core.ssl.SslConfig;
-import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
-import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
-import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
-import com.burukeyou.uniapi.http.support.HttpCallConfig;
-import com.burukeyou.uniapi.http.support.HttpRequestConfig;
-import okhttp3.ConnectionSpec;
-import okhttp3.OkHttpClient;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.util.CollectionUtils;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -20,12 +8,26 @@ import javax.net.ssl.X509TrustManager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+
+import com.burukeyou.uniapi.http.core.ssl.DefaultSslConnectionContextFactory;
+import com.burukeyou.uniapi.http.core.ssl.SslConfig;
+import com.burukeyou.uniapi.http.core.ssl.SslConnectionContext;
+import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpRequestConfig;
+import okhttp3.ConnectionSpec;
+import okhttp3.OkHttpClient;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author caizhihao
@@ -41,6 +43,16 @@ public abstract class AbstractInvokeCache {
     protected static final SslConnectionContextFactory sslConnectionContextFactory = new DefaultSslConnectionContextFactory();
 
     protected HttpApiMethodInvocationImpl httpApiMethodInvocation;
+
+    protected static final Map<String, Method> httpApiProcessorMethodNameMap = new HashMap<>();
+
+    protected static final Map<String,Boolean> processorMethodOverrideFlagMap = new ConcurrentHashMap<>();
+
+    static {
+        for (Method method : HttpApiProcessor.class.getMethods()) {
+            httpApiProcessorMethodNameMap.put(method.getName(),method);
+        }
+    }
 
 
     private  <T  extends Annotation> T getMergeAnnotationFormObjectOrMethod(Class<T> clz) {
@@ -171,6 +183,23 @@ public abstract class AbstractInvokeCache {
         HostnameVerifier hostnameVerifier = sslConnectionContext.getHostnameVerifier();
         if (hostnameVerifier != null){
             newBuilder.hostnameVerifier(hostnameVerifier);
+        }
+    }
+
+    public boolean getProcessorMethodOverrideFlag(HttpApiProcessor<Annotation> requestProcessor, String methodName){
+        String cacheKey = requestProcessor.getClass().getName() + "-" + methodName;
+        Boolean value = processorMethodOverrideFlagMap.get(cacheKey);
+        if (value != null){
+            return value;
+        }
+        Method method = httpApiProcessorMethodNameMap.get(methodName);
+        try {
+            Method overrideMethod = requestProcessor.getClass().getMethod(method.getName(), method.getParameterTypes());
+            boolean flag = overrideMethod.getDeclaringClass() != HttpApiProcessor.class;
+            processorMethodOverrideFlagMap.put(cacheKey,flag);
+            return flag;
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
     }
 }

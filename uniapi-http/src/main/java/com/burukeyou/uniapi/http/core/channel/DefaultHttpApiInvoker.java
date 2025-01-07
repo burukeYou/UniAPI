@@ -171,6 +171,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
+    private boolean isOverrideProcessorMethod(ProcessorMethod processorMethod) {
+        if (requestProcessor.getClass() == EmptyHttpApiProcessor.class){
+            return false;
+        }
+        return getProcessorMethodOverrideFlag(requestProcessor,processorMethod.getMethodNames()[0]);
+    }
+
     private boolean isProcessorMethod(ProcessorMethod methodName) {
         if (ignoredProcessorAnno == null) {
             return true;
@@ -664,6 +671,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             }
         }
 
+        Object bodyResult = null;
+        if (isProcessorMethod(ProcessorMethod.AFTER_HTTP_RESPONSE_BODY_STRING_DESERIALIZE) && isOverrideProcessorMethod(ProcessorMethod.AFTER_HTTP_RESPONSE_BODY_STRING_DESERIALIZE)){
+            bodyResult = requestProcessor.postAfterHttpResponseBodyStringDeserialize(bodyString, bodyResultType, responseMetadata, httpApiMethodInvocation);
+            result.setBodyResult(bodyResult);
+            return result;
+        }
         if (String.class.equals(bodyResultType)) {
             result.setBodyResult(bodyString);
             return result;

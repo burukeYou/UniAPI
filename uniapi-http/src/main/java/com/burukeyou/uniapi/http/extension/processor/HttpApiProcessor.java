@@ -1,14 +1,15 @@
 package com.burukeyou.uniapi.http.extension.processor;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-
-import java.io.IOException;
-import java.lang.annotation.Annotation;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -30,6 +31,9 @@ import java.lang.annotation.Annotation;
  *                        |
  *                        V
  *              postAfterHttpResponseBodyString
+ *                        |
+ *                        V
+ *             postAfterHttpResponseBodyStringDeserialize
  *                        |
  *                        V
  *             postAfterHttpResponseBodyResult
@@ -105,6 +109,17 @@ public interface HttpApiProcessor<T extends Annotation> {
         return bodyString;
     }
 
+    /**
+     * deserialize http response body string to object，If you don't implement this method, the framework will automatically deserialize internally
+     * @param bodyString             http response body string , Consistent with {@link #postAfterHttpResponseBodyString}
+     * @param bodyResultType         http response body string deserialized type, usually a method return value type, or a generic for HttpResponse
+     * @param rsp                    Original  Http Response
+     * @param methodInvocation       The method of agency
+     * @return                       bodyResult object, Consistent with {@link #postAfterHttpResponseBodyResult}
+     */
+    default Object postAfterHttpResponseBodyStringDeserialize(String bodyString,Type bodyResultType,UniHttpResponse rsp, HttpApiMethodInvocation<T> methodInvocation){
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Post-processing of HTTP response body objects
