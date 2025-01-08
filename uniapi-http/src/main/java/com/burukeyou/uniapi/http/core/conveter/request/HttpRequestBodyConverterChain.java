@@ -16,7 +16,8 @@ public class HttpRequestBodyConverterChain {
                 new BodyTextParHttpBodyConverter(paramFinder),
                 new BodyFormParHttpBodyConverter(paramFinder),
                 new BodyBinaryHttpBodyConverter(paramFinder),
-                new BodyMultiPartParHttpBodyConverter(paramFinder)
+                new BodyMultiPartParHttpBodyConverter(paramFinder),
+                new BodyXmlParHttpBodyConverter(paramFinder)
         };
     }
 

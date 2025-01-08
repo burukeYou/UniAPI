@@ -75,9 +75,9 @@ public class JaxbXmlSerializeConverter implements XmlSerializeConverter {
     private Marshaller createMarshaller(JAXBContext jaxbContext) {
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            //marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, false);
+            //marshaller.setProperty(Marshaller.JAXB_FRAGMENT, false);
             return marshaller;
         } catch (JAXBException e) {
             throw new RuntimeException(e);

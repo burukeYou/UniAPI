@@ -39,6 +39,7 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
 import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
 import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
 import com.burukeyou.uniapi.http.core.request.HttpBodyText;
+import com.burukeyou.uniapi.http.core.request.HttpBodyXML;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
@@ -47,8 +48,6 @@ import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.serialize.xml.JaxbXmlSerializeConverter;
-import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
@@ -60,6 +59,7 @@ import com.burukeyou.uniapi.http.support.HttpFuture;
 import com.burukeyou.uniapi.http.support.HttpRequestConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestExecuteInfo;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
+import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.ProcessorMethod;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
@@ -119,7 +119,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private FilterProcessor ignoredProcessorAnno;
 
-    private static final XmlSerializeConverter xmlSerializeConverter = new JaxbXmlSerializeConverter();
 
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
@@ -435,7 +434,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             requestBody = RequestBody.create(mediaTypeJson, body.toStringBody());
         } else if (body instanceof HttpBodyText) {
             requestBody = RequestBody.create(mediaTypeJson, body.toStringBody());
-        } else if (body instanceof HttpBodyBinary) {
+        }else if (body instanceof HttpBodyXML) {
+            requestBody = RequestBody.create(mediaTypeJson, body.toStringBody());
+        }else if (body instanceof HttpBodyBinary) {
             InputStream inputStream = ((HttpBodyBinary) body).getFile();
             requestBody = RequestBody.create(mediaTypeJson, streamToByteArray(inputStream));
         } else if (body instanceof HttpBodyFormData) {
@@ -708,7 +709,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         String contentType = responseMetadata.getContentType();
         if (isXml(contentType, bodyString)) {
-            bodyResult = xmlSerializeConverter.deserialize(bodyString, bodyResultType);
+            bodyResult = getXmlSerializeConverter().deserialize(bodyString, bodyResultType);
             result.setBodyResult(bodyResult);
             return result;
         }
@@ -867,15 +868,17 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
     public boolean isXml(String contentType, String bodyString) {
+        if (contentType == null){
+            contentType = "";
+        }
         if (StrUtil.isBlank(bodyString)) {
             return false;
         }
         if (!bodyString.startsWith("<")){
             return false;
         }
-
-        if (StrUtil.isBlank(contentType)){
-            return false;
+        if (contentType.contains(MediaTypeEnum.APPLICATION_XML.getType())){
+            return true;
         }
         if (bodyString.startsWith("<?xml")){
             return true;
