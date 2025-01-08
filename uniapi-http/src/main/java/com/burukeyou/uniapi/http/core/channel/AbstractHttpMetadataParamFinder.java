@@ -32,7 +32,7 @@ import com.burukeyou.uniapi.http.core.request.HttpBodyXML;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.core.serialize.xml.JaxbXmlSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
 import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
@@ -67,7 +67,9 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
     protected static final String HEADER_CONTENT_TYPE = "Content-Type";
 
-    protected static final XmlSerializeConverter xmlSerializeConverter = new JaxbXmlSerializeConverter();
+    protected  XmlSerializeConverter xmlSerializeConverter;
+
+    protected JsonSerializeConverter jsonSerializeConverter;
 
     public AbstractHttpMetadataParamFinder(HttpApi api,
                                            HttpInterface httpInterface,
@@ -555,12 +557,20 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             return null;
         }
         if (isObjOrArr(argValue.getClass()) || Map.class.isAssignableFrom(argValue.getClass())){
-           return JSON.toJSONString(value);
+           return serialize2JsonString(value);
         }
         return value;
     }
 
     public XmlSerializeConverter getXmlSerializeConverter(){
         return xmlSerializeConverter;
+    }
+
+    public JsonSerializeConverter getJsonSerializeConverter(){
+        return jsonSerializeConverter;
+    }
+
+    public String serialize2JsonString(Object value){
+        return getJsonSerializeConverter().serialize(value);
     }
 }

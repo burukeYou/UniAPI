@@ -24,6 +24,6 @@ public interface XmlSerializeConverter extends SerializeConverter {
      * @param type      the type of the object
      * @return          the object
      */
-    <T> T deserialize(String xml, Type type);
+    Object deserialize(String xml, Type type);
 
 }

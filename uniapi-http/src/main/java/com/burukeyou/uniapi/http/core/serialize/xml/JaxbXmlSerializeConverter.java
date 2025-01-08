@@ -10,14 +10,18 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.stereotype.Component;
+
 /**
  * JAXB XML SerializeConverter implement
  *
  * @author caizhihao
  */
+
+@Component
 public class JaxbXmlSerializeConverter implements XmlSerializeConverter {
 
-    private final static Map<Class<?>, JAXBContext> jaxbContextMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, JAXBContext> jaxbContextMap = new ConcurrentHashMap<>();
 
     @Override
     public String serialize(Object object) {
@@ -38,10 +42,10 @@ public class JaxbXmlSerializeConverter implements XmlSerializeConverter {
     }
 
     @Override
-    public <T> T deserialize(String xml, Type type) {
+    public Object deserialize(String xml, Type type) {
         try {
             Object unmarshal = getUnMarshaller(resolveClass(type)).unmarshal(new StringReader(xml));
-            return (T) unmarshal;
+            return unmarshal;
         } catch (JAXBException e) {
             throw new RuntimeException(e);
         }

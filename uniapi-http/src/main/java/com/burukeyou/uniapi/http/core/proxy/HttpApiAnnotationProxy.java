@@ -1,19 +1,22 @@
 package com.burukeyou.uniapi.http.core.proxy;
 
+import java.lang.reflect.Method;
+
 import com.burukeyou.uniapi.config.SpringBeanContext;
+import com.burukeyou.uniapi.core.proxy.AbstractAnnotationInvokeProxy;
 import com.burukeyou.uniapi.exception.BaseUniApiException;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.channel.DefaultHttpApiInvoker;
-import com.burukeyou.uniapi.core.proxy.AbstractAnnotationInvokeProxy;
+import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.extension.client.GlobalOkHttpClientFactory;
 import com.burukeyou.uniapi.http.extension.client.OkHttpClientFactory;
 import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import okhttp3.OkHttpClient;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-
-import java.lang.reflect.Method;
 
 /**
  * @author caizhihao
@@ -22,10 +25,17 @@ public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpA
 
     private final OkHttpClient httpClient;
 
+    private final XmlSerializeConverter xmlSerializeConverter;
+
+    private final JsonSerializeConverter jsonSerializeConverter;
+
     public HttpApiAnnotationProxy(HttpApiAnnotationMeta annotationMeta) {
         super(annotationMeta);
         httpClient = initHttpClient(annotationMeta);
+        xmlSerializeConverter = initXmlSerializeConverter(annotationMeta);
+        jsonSerializeConverter = initJsonSerializeConverter(annotationMeta);
     }
+
 
     @Override
     public Object invoke(Class<?> targetClass,MethodInvocation methodInvocation) {
@@ -33,7 +43,7 @@ public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpA
         if (annotationMeta.getHttpApi() != null){
             HttpInterface httpInterface = AnnotatedElementUtils.getMergedAnnotation(method, HttpInterface.class);
             if (httpInterface != null){
-                return new DefaultHttpApiInvoker(annotationMeta,targetClass,httpInterface,methodInvocation,httpClient).invoke();
+                return new DefaultHttpApiInvoker(annotationMeta,targetClass,httpInterface,methodInvocation,httpClient,xmlSerializeConverter,jsonSerializeConverter).invoke();
             }
         }
         return null;
@@ -66,5 +76,15 @@ public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpA
             return api.httpClient()[0];
         }
         return null;
+    }
+
+    private XmlSerializeConverter initXmlSerializeConverter(HttpApiAnnotationMeta annotationMeta) {
+        Class<? extends XmlSerializeConverter> xmlConverterClass = annotationMeta.getHttpApi().xmlConverter();
+        return BizUtil.getBeanOrNew(xmlConverterClass);
+    }
+
+    private JsonSerializeConverter initJsonSerializeConverter(HttpApiAnnotationMeta annotationMeta) {
+        Class<? extends JsonSerializeConverter> jsonConverterClass = annotationMeta.getHttpApi().jsonConverter();
+        return BizUtil.getBeanOrNew(jsonConverterClass);
     }
 }

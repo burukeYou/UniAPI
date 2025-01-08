@@ -3,7 +3,6 @@ package com.burukeyou.uniapi.http.core.conveter.request;
 import java.util.Collections;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
 import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
@@ -36,9 +35,9 @@ public class BodyJsonParHttpBodyConverter extends AbstractHttpRequestBodyConvert
 
         if (!jsonPath.startsWith("$")){
             Map<String, String> map = Collections.singletonMap(jsonPath, value);
-            value = JSON.toJSONString(map);
+            value = paramFinder.serialize2JsonString(map);
         }else {
-            value = JSON.toJSONString(JSONPath.set(new JSONObject(),jsonPath,value));
+            value = paramFinder.serialize2JsonString(JSONPath.set(new JSONObject(),jsonPath,value));
         }
         return new HttpBodyJSON(value);
     }

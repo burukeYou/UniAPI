@@ -1,10 +1,19 @@
 package com.burukeyou.uniapi.http.annotation;
 
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import com.burukeyou.uniapi.http.core.serialize.json.FastJson2SerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.xml.JaxbXmlSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.extension.client.OkHttpClientFactory;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
-
-import java.lang.annotation.*;
 
 /**
  * HTTP API configuration
@@ -36,4 +45,13 @@ public @interface HttpApi {
      */
     Class<? extends OkHttpClientFactory> httpClient()[] default {};
 
+    /**
+     *  Config custom json converter, to serialize and deserialize http body in json
+     */
+    Class<? extends JsonSerializeConverter> jsonConverter() default FastJson2SerializeConverter.class;
+
+    /**
+     *  Config custom xml converter, to serialize and deserialize http body in xml
+     */
+    Class<? extends XmlSerializeConverter> xmlConverter() default JaxbXmlSerializeConverter.class;;
 }

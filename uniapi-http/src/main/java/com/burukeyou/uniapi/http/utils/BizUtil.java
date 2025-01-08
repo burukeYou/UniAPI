@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.burukeyou.uniapi.config.SpringBeanContext;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -86,6 +87,15 @@ public class BizUtil {
         return JSON.parseObject(JSON.toJSONString(argValue), new TypeReference<Map<String, String>>() {});
     }
 
-
-
+    public static <T> T getBeanOrNew(Class<T> beanClass){
+        T bean = SpringBeanContext.getBean(beanClass);
+        if (bean != null){
+            return bean;
+        }
+        try {
+            return beanClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

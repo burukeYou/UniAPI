@@ -48,6 +48,8 @@ import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
@@ -124,7 +126,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
                                  HttpInterface httpInterface,
-                                 MethodInvocation methodInvocation, OkHttpClient httpClient) {
+                                 MethodInvocation methodInvocation,
+                                 OkHttpClient httpClient,
+                                 XmlSerializeConverter xmlSerializeConverter,
+                                 JsonSerializeConverter jsonSerializeConverter) {
         super(annotationMeta.getHttpApi(), httpInterface, annotationMeta.getProxySupport().getEnvironment());
         this.targetClass = targetClass;
         this.annotationMeta = annotationMeta;
@@ -133,6 +138,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         this.apiProcessorClass = getHttpApiProcessorClass(api, httpInterface);
         this.requestProcessor = buildRequestHttpApiProcessor(apiProcessorClass);
+        this.xmlSerializeConverter = xmlSerializeConverter;
+        this.jsonSerializeConverter = jsonSerializeConverter;
 
         httpApiMethodInvocation = new HttpApiMethodInvocationImpl();
         httpApiMethodInvocation.setProxyApiAnnotation(annotationMeta.getProxyAnnotation());
@@ -145,7 +152,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         bodyResultType = httpApiMethodInvocation.getBodyResultType();
         ignoredProcessorAnno = methodInvocation.getMethod().getAnnotation(FilterProcessor.class);
     }
-
 
     public Class<? extends HttpApiProcessor<?>> getHttpApiProcessorClass(HttpApi api, HttpInterface httpInterface) {
         if (httpInterface.processor().length > 0) {
@@ -703,7 +709,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         if (JSON.isValid(bodyString)) {
-            result.setBodyResult(JSON.parseObject(bodyString, bodyResultType));
+            result.setBodyResult(getJsonSerializeConverter().deserialize(bodyString, bodyResultType));
             return result;
         }
 
