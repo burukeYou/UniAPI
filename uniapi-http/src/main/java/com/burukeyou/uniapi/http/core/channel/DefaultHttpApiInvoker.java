@@ -47,6 +47,8 @@ import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.serialize.xml.JaxbXmlSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
@@ -68,6 +70,7 @@ import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.FileBizUtil;
+import com.burukeyou.uniapi.util.StrUtil;
 import com.burukeyou.uniapi.util.TimeUtil;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
@@ -115,6 +118,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private final Type bodyResultType;
 
     private FilterProcessor ignoredProcessorAnno;
+
+    private static final XmlSerializeConverter xmlSerializeConverter = new JaxbXmlSerializeConverter();
 
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
@@ -701,6 +706,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return result;
         }
 
+        String contentType = responseMetadata.getContentType();
+        if (isXml(contentType, bodyString)) {
+            bodyResult = xmlSerializeConverter.deserialize(bodyString, bodyResultType);
+            result.setBodyResult(bodyResult);
+            return result;
+        }
+
         throw new UniHttpResponseDeserializeException("can not convert response body to " + bodyResultType.getTypeName() + " from response body string: " + bodyString);
     }
 
@@ -854,4 +866,20 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    public boolean isXml(String contentType, String bodyString) {
+        if (StrUtil.isBlank(bodyString)) {
+            return false;
+        }
+        if (!bodyString.startsWith("<")){
+            return false;
+        }
+
+        if (StrUtil.isBlank(contentType)){
+            return false;
+        }
+        if (bodyString.startsWith("<?xml")){
+            return true;
+        }
+        return contentType.contains("xml");
+    }
 }
