@@ -1,5 +1,8 @@
 package com.burukeyou.demo.config;
 
+import java.lang.reflect.Type;
+import java.util.List;
+
 import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
@@ -7,6 +10,7 @@ import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
+import com.burukeyou.uniapi.support.arg.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,7 +25,8 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
     @Override
     public UniHttpRequest postBeforeHttpRequest(UniHttpRequest uniHttpRequest,
                                                 HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
-
+        Type bodyResultType = methodInvocation.getBodyResultType();
+        List<Param> methodParamList = methodInvocation.getMethodParamList();
         return uniHttpRequest;
     }
 

@@ -146,5 +146,4 @@ public interface UserServiceApi {
     @PostHttpInterface(path = "/user-web/del05")
     @HttpResponseCfg(afterJsonPathUnPack =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
     String del05();
-
 }
