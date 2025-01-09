@@ -9,7 +9,7 @@ import java.util.Map;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
-import com.burukeyou.uniapi.http.annotation.FillModel;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
 import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
@@ -30,16 +30,11 @@ public class BodyJsonParHttpBodyConverter extends AbstractHttpRequestBodyConvert
         super(paramFinder);
     }
 
-    public BodyJsonParHttpBodyConverter(HttpRequestBodyConverter nextParser, AbstractHttpMetadataParamFinder paramFinder) {
-        super(nextParser, paramFinder);
-    }
-
     @Override
     protected HttpBody doConvert(Param param, BodyJsonPar annotation) {
-        boolean need = param.isObject() && (param.isAnnotationPresent(FillModel.class) || param.getType().isAnnotationPresent(FillModel.class));
+        boolean need = param.isObject() && (param.isAnnotationPresent(ModelBinding.class) || param.getType().isAnnotationPresent(ModelBinding.class));
         if (!need) {
-            String jsonValue = serialize2JsonString(param);
-            return convertToBody(jsonValue, annotation);
+            return convertToBody(serialize2JsonString(param), annotation);
         }
 
         Class<?> modelClass = param.getType();
@@ -61,13 +56,11 @@ public class BodyJsonParHttpBodyConverter extends AbstractHttpRequestBodyConvert
 
         String originJsonString = serialize2JsonString(param);
         JSONObject jsonObject = JSON.parseObject(originJsonString);
-        for (Map.Entry<Field, JsonPathMapping> entry : map.entrySet()) {
-            Field field = entry.getKey();
-            JsonPathMapping jsonPath = entry.getValue();
+        map.forEach((field,jsonPathAnno) -> {
             Object value = jsonObject.get(field.getName());
             jsonObject.remove(field.getName());
-            JSONPath.set(jsonObject, jsonPath.value(),value);
-        }
+            JSONPath.set(jsonObject, jsonPathAnno.value(),value);
+        });
 
         return new HttpBodyJSON(wrapperJson(jsonObject.toJSONString(), annotation));
     }

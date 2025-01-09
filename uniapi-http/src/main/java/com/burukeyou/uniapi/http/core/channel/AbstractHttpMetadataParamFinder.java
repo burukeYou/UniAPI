@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
-import com.burukeyou.uniapi.http.annotation.FillModel;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
 import com.burukeyou.uniapi.http.annotation.param.ComposePar;
@@ -606,7 +606,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
     // ============================================ Model ============================================
 
-    public boolean populateModel(Class<?> modelClass, Object model, DocumentContext documentContext){
+    public boolean populateResponseModel(Class<?> modelClass, Object model, DocumentContext documentContext){
         ObjReference<Boolean> populateFlag = ObjReference.of(false);
         ReflectionUtils.doWithFields(modelClass, field -> {
             if(Modifier.isStatic(field.getModifiers())){
@@ -621,12 +621,12 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 return;
             }
 
-            if (field.isAnnotationPresent(FillModel.class) || field.getType().isAnnotationPresent(FillModel.class)){
+            if (field.isAnnotationPresent(ModelBinding.class) || field.getType().isAnnotationPresent(ModelBinding.class)){
                 Object subModelValue = field.get(model);
                 if (subModelValue == null){
                     subModelValue = newInstance(field.getType());
                 }
-                boolean subFlag = populateModel(field.getType(), subModelValue, documentContext);
+                boolean subFlag = populateResponseModel(field.getType(), subModelValue, documentContext);
                 if (subFlag){
                     field.set(model, subModelValue);
                 }

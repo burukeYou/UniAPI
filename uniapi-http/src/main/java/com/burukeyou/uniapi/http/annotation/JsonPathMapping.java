@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 
 /**
+ * Map the JSON path values of the request body and the response body to the tagged object
+ *
  * @author caizhihao
  */
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER,ElementType.TYPE,ElementType.METHOD})

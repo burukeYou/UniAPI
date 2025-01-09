@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson2.JSONPath;
 import com.burukeyou.uniapi.config.SpringBeanContext;
-import com.burukeyou.uniapi.http.annotation.FillModel;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.FilterProcessor;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
@@ -925,11 +925,12 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         Class<?> bodyResultClass = bodyResult.getClass();
-        if(!methodInvocation.getMethod().isAnnotationPresent(FillModel.class) || !isObject(bodyResultClass)){
+        boolean bindingFlag = bodyResultClass.isAnnotationPresent(ModelBinding.class) || methodInvocation.getMethod().isAnnotationPresent(ModelBinding.class);
+        if(!bindingFlag || !isObject(bodyResultClass)){
             return bodyResult;
         }
         DocumentContext documentContext = JsonPath.parse(bodyString);
-        populateModel(bodyResultClass, bodyResult, documentContext);
+        populateResponseModel(bodyResultClass, bodyResult, documentContext);
         return bodyResult;
     }
 
