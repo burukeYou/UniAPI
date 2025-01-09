@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @XmlRootElement(name = "user")
-public class UserXmlDTO {
+public class UserXmlReq {
 
     //@XmlElement(name="name")
     private String name;
@@ -17,10 +17,10 @@ public class UserXmlDTO {
     //@XmlElement(name="age")
     private Integer age;
 
-    public UserXmlDTO() {
+    public UserXmlReq() {
     }
 
-    public UserXmlDTO(String name, Integer age) {
+    public UserXmlReq(String name, Integer age) {
         this.name = name;
         this.age = age;
     }

@@ -3,7 +3,9 @@ package com.burukeyou.demo.controller;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.burukeyou.demo.entity.xml.UserXmlDTO;
+import com.burukeyou.demo.entity.xml.UserXmlReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -49,5 +53,15 @@ public class UserFormatController {
        return new UserXmlDTO("san",999);
     }
 
+    @PostMapping(value = "/get03",
+            consumes =MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE)
+    @ResponseBody
+    public Object get03(@RequestBody UserXmlReq dto){
+        log.info("收到请求: {}", JSON.toJSONString(dto));
+        dto.setAge(10000);
+        dto.setName(dto.getName() + " SB");
+        return dto;
+    }
 
 }

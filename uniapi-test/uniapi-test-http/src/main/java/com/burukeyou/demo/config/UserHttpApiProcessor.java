@@ -40,8 +40,8 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
 
     @Override
     public void postAfterHttpResponse(Throwable exception, UniHttpRequest request, UniHttpResponse response, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
-        HttpApiProcessor.super.postAfterHttpResponse(exception, request, response, methodInvocation);
         log.info("请求日志: {}",response.toHttpProtocolIntact());
+        HttpApiProcessor.super.postAfterHttpResponse(exception, request, response, methodInvocation);
     }
 
     @Override

@@ -223,7 +223,7 @@ public class UserController {
                 "nums": "[1,2,3,4]",
                 "users": "[{\"name\":\"zs01\"},{\"name\":\"zs02\"}]",
                 "info": "{\"orderNo\":\"12345\"}",
-                 "configs": [
+                "configs": [
                     {
                         "detail": "{\"id\":3}"
                     },
