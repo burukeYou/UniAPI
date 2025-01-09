@@ -36,4 +36,10 @@ public @interface HttpResponseCfg {
      * @see com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor#postAfterHttpResponseBodyString
      */
     String[] afterJsonPathUnPack() default {};
+
+    /**
+     * Use the json path value of http response body string as the actual json result
+     * @return      json path
+     */
+    String extractJsonPath() default "";
 }

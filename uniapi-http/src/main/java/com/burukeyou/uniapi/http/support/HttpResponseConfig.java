@@ -22,4 +22,9 @@ public class HttpResponseConfig implements Serializable {
      *  Unpacking of the response body string after the {@link HttpApiProcessor#postAfterHttpResponseBodyString}
      */
     private List<String> afterJsonPathUnPack;
+
+    /**
+     *  Extract the response body string by the jsonPath
+     */
+    private String extractJsonPath;
 }

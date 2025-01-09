@@ -1,6 +1,7 @@
 package com.burukeyou.uniapi.http.core.channel;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -513,6 +514,20 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         return argValue;
     }
 
+    public boolean isObject(Class<?> type) {
+        if (type.isPrimitive() || type.isEnum()){
+            return false;
+        }
+        if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)){
+            return false;
+        }
+        ClassLoader classLoader = type.getClassLoader();
+        if (classLoader == this.getClass().getClassLoader()){
+            return true;
+        }
+        return false;
+    }
+
 
     public  boolean isObjOrMap(Class<?> valueClass){
         ClassLoader classLoader = valueClass.getClassLoader();
@@ -572,5 +587,9 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
     public String serialize2JsonString(Object value){
         return getJsonSerializeConverter().serialize(value);
+    }
+
+    public Object deserializeJsonToObject(String json, Type type) {
+        return getJsonSerializeConverter().deserialize(json, type);
     }
 }
