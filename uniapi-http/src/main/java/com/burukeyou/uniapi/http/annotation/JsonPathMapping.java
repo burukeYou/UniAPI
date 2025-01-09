@@ -11,7 +11,7 @@ import org.springframework.core.annotation.AliasFor;
 /**
  * @author caizhihao
  */
-@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER,ElementType.TYPE})
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER,ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface JsonPathMapping {

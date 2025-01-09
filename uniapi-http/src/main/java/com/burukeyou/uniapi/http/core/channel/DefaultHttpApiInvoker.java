@@ -28,6 +28,7 @@ import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.HttpRequestCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.SslCfg;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
@@ -908,10 +909,21 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
     private Object parseBodyJsonStringToResultObject(String bodyString) {
+        JsonPathMapping methodJsonPathAnno = AnnotatedElementUtils.getMergedAnnotation(methodInvocation.getMethod(), JsonPathMapping.class);
+        if (methodJsonPathAnno != null && !StrUtil.isBlank(methodJsonPathAnno.value())){
+            Object extract = JSONPath.extract(bodyString, methodJsonPathAnno.value());
+            if (extract == null){
+                return null;
+            }
+            return deserializeJsonToObject(JSON.toJSONString(extract), bodyResultType);
+        }
+
+
         Object bodyResult = deserializeJsonToObject(bodyString, bodyResultType);
         if (bodyResult == null){
             return null;
         }
+
         Class<?> bodyResultClass = bodyResult.getClass();
         if(!methodInvocation.getMethod().isAnnotationPresent(FillModel.class) || !isObject(bodyResultClass)){
             return bodyResult;
