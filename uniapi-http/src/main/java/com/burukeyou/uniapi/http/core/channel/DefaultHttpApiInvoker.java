@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -22,10 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONPath;
 import com.burukeyou.uniapi.config.SpringBeanContext;
-import com.burukeyou.uniapi.http.annotation.FillJsonPath;
 import com.burukeyou.uniapi.http.annotation.FillModel;
 import com.burukeyou.uniapi.http.annotation.FilterProcessor;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
@@ -68,7 +64,6 @@ import com.burukeyou.uniapi.http.support.HttpRequestConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestExecuteInfo;
 import com.burukeyou.uniapi.http.support.HttpResponseConfig;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
-import com.burukeyou.uniapi.http.support.ObjReference;
 import com.burukeyou.uniapi.http.support.ProcessorMethod;
 import com.burukeyou.uniapi.http.support.RequestMethod;
 import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
@@ -104,7 +99,6 @@ import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * @author caizhihao
@@ -927,69 +921,5 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return bodyResult;
     }
 
-    protected boolean populateModel(Class<?> modelClass, Object model,DocumentContext documentContext){
-        ObjReference<Boolean> populateFlag = ObjReference.of(false);
-        ReflectionUtils.doWithFields(modelClass, field -> {
-            if(Modifier.isStatic(field.getModifiers())){
-                return;
-            }
 
-            // fill json path
-            field.setAccessible(true);
-            boolean fillFlag = populateModelJsonPath(field, documentContext, model);
-            if (fillFlag){
-                populateFlag.set(true);
-                return;
-            }
-
-            if (field.isAnnotationPresent(FillModel.class) || field.getType().isAnnotationPresent(FillModel.class)){
-                Object subModelValue = field.get(model);
-                if (subModelValue == null){
-                    subModelValue = newInstance(field.getType());
-                }
-                boolean subFlag = populateModel(field.getType(), subModelValue, documentContext);
-                if (subFlag){
-                    field.set(model, subModelValue);
-                }
-            }
-        });
-
-        return populateFlag.get();
-    }
-
-    private boolean populateModelJsonPath(Field field, DocumentContext documentContext, Object model) {
-        FillJsonPath jsonPath = AnnotatedElementUtils.getMergedAnnotation(field, FillJsonPath.class);
-        if (jsonPath == null || StrUtil.isBlank(jsonPath.value())){
-            return false;
-        }
-        Object fieldValue = documentContext.read(jsonPath.value());
-        try {
-            field.set(model, convertFieldValue(field,fieldValue));
-            return true;
-        } catch (Exception e) {
-            throw new JSONException("Unable to deserialize "+ fieldValue + " value to " + model.getClass().getName() + "." + field.getName() + " by json path " +  jsonPath.value(),e);
-        }
-    }
-
-    private static <T> T newInstance(Class<T> clz){
-        try {
-            return clz.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Object convertFieldValue(Field field, Object fieldValue) {
-        if(fieldValue == null){
-            return null;
-        }
-        Class<?> type = field.getType();
-        if (type.equals(fieldValue.getClass()) || type.isAssignableFrom(fieldValue.getClass())){
-            return fieldValue;
-        }
-        if (type.equals(String.class)){
-            return fieldValue.toString();
-        }
-        return deserializeJsonToObject(JSON.toJSONString(fieldValue), type);
-    }
 }

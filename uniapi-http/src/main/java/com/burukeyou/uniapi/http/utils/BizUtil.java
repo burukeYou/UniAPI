@@ -98,4 +98,24 @@ public class BizUtil {
             throw new RuntimeException(e);
         }
     }
+
+/*    public static String getJsonFieldName(Param param){
+        String name = null;
+        JSONField jsonField2 = param.getAnnotation(JSONField.class);
+        if (jsonField2 != null && StrUtil.isNotBlank(jsonField2.name())){
+            name = jsonField2.name();
+        }
+        com.alibaba.fastjson.annotation.JSONField jsonField1 = param.getAnnotation(com.alibaba.fastjson.annotation.JSONField.class);
+        if (jsonField1 != null && StrUtil.isNotBlank(jsonField1.name())){
+            name = jsonField1.name();
+        }
+        JsonProperty annotation = param.getAnnotation(JsonProperty.class);
+        if (annotation != null && StrUtil.isNotBlank(annotation.value())){
+            name = annotation.value();
+        }
+        if (StrUtil.isBlank(name)){
+            name = param.getName();
+        }
+        return name;
+    }*/
 }

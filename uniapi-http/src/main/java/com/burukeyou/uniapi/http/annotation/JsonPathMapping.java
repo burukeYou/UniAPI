@@ -8,10 +8,13 @@ import java.lang.annotation.Target;
 
 import org.springframework.core.annotation.AliasFor;
 
+/**
+ * @author caizhihao
+ */
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE,ElementType.PARAMETER,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface FillJsonPath {
+public @interface JsonPathMapping {
 
     @AliasFor("path")
     String value() default "";

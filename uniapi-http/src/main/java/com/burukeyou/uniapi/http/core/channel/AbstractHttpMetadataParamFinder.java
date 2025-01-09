@@ -1,6 +1,8 @@
 package com.burukeyou.uniapi.http.core.channel;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +15,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
+import com.burukeyou.uniapi.http.annotation.FillModel;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
+import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
 import com.burukeyou.uniapi.http.annotation.param.ComposePar;
 import com.burukeyou.uniapi.http.annotation.param.CookiePar;
 import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
@@ -37,18 +42,23 @@ import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
 import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
+import com.burukeyou.uniapi.http.support.ObjReference;
 import com.burukeyou.uniapi.support.arg.ArgList;
 import com.burukeyou.uniapi.support.arg.ClassFieldArgList;
 import com.burukeyou.uniapi.support.arg.MapArgList;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.ListsUtil;
+import com.burukeyou.uniapi.util.StrUtil;
+import com.jayway.jsonpath.DocumentContext;
 import lombok.Getter;
 import lombok.Setter;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author caizhihao
@@ -592,4 +602,75 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     public Object deserializeJsonToObject(String json, Type type) {
         return getJsonSerializeConverter().deserialize(json, type);
     }
+
+
+    // ============================================ Model ============================================
+
+    public boolean populateModel(Class<?> modelClass, Object model, DocumentContext documentContext){
+        ObjReference<Boolean> populateFlag = ObjReference.of(false);
+        ReflectionUtils.doWithFields(modelClass, field -> {
+            if(Modifier.isStatic(field.getModifiers())){
+                return;
+            }
+
+            // fill json path
+            field.setAccessible(true);
+            boolean fillFlag = populateModelJsonPath(field, documentContext, model);
+            if (fillFlag){
+                populateFlag.set(true);
+                return;
+            }
+
+            if (field.isAnnotationPresent(FillModel.class) || field.getType().isAnnotationPresent(FillModel.class)){
+                Object subModelValue = field.get(model);
+                if (subModelValue == null){
+                    subModelValue = newInstance(field.getType());
+                }
+                boolean subFlag = populateModel(field.getType(), subModelValue, documentContext);
+                if (subFlag){
+                    field.set(model, subModelValue);
+                }
+            }
+        });
+
+        return populateFlag.get();
+    }
+
+    private boolean populateModelJsonPath(Field field, DocumentContext documentContext, Object model) {
+        JsonPathMapping jsonPath = AnnotatedElementUtils.getMergedAnnotation(field, JsonPathMapping.class);
+        if (jsonPath == null || StrUtil.isBlank(jsonPath.value())){
+            return false;
+        }
+        Object fieldValue = documentContext.read(jsonPath.value());
+        try {
+            field.set(model, convertFieldValue(field,fieldValue));
+            return true;
+        } catch (Exception e) {
+            throw new JSONException("Unable to deserialize "+ fieldValue + " value to " + model.getClass().getName() + "." + field.getName() + " by json path " +  jsonPath.value(),e);
+        }
+    }
+
+    protected static <T> T newInstance(Class<T> clz){
+        try {
+            return clz.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object convertFieldValue(Field field, Object fieldValue) {
+        if(fieldValue == null){
+            return null;
+        }
+        Class<?> type = field.getType();
+        if (type.equals(fieldValue.getClass()) || type.isAssignableFrom(fieldValue.getClass())){
+            return fieldValue;
+        }
+        if (type.equals(String.class)){
+            return fieldValue.toString();
+        }
+        return deserializeJsonToObject(JSON.toJSONString(fieldValue), type);
+    }
+
+
 }
