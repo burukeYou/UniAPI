@@ -1,13 +1,19 @@
 package com.burukeyou.demo.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class U2DTO {
 
     private Integer id;
 
     private String name;
+
+    public U2DTO() {
+    }
+
+    public U2DTO(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

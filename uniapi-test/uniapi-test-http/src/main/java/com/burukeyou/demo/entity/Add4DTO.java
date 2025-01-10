@@ -1,8 +1,9 @@
 package com.burukeyou.demo.entity;
 
-import lombok.Data;
-
 import java.io.Serializable;
+
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 
 @Data
 public class Add4DTO implements Serializable {
@@ -11,6 +12,10 @@ public class Add4DTO implements Serializable {
 
     private Long id;
     private String name;
+
+
+    @Value("${bbq.user}")
+    private Add4DTO dto;
 
     public Add4DTO() {
     }

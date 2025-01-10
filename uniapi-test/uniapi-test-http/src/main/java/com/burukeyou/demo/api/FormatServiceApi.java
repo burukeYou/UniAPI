@@ -2,9 +2,12 @@ package com.burukeyou.demo.api;
 
 import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.json.StuDTO;
+import com.burukeyou.demo.entity.json.StuReq;
 import com.burukeyou.demo.entity.xml.UserXmlDTO;
-import com.burukeyou.uniapi.http.annotation.FillModel;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
+import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
 import com.burukeyou.uniapi.http.annotation.param.BodyXmlPar;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
@@ -20,6 +23,14 @@ public interface FormatServiceApi {
 
     @PostHttpInterface(path = "/user-web/del05")
     @HttpResponseCfg(afterJsonPathUnPack =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
-    @FillModel
+    @JsonPathMapping("$.son.detail")
     StuDTO get04();
+
+    @PostHttpInterface(path = "/user-web/del05")
+    @HttpResponseCfg(afterJsonPathUnPack =  {"$.bbq","$.nums","$.configs[*].detail","$.id","$.info","$.users","$.son","$.son.detail"})
+    @ModelBinding
+    StuDTO get05();
+
+    @PostHttpInterface(path = "/xxxx")
+    void get06(@BodyJsonPar StuReq req);
 }

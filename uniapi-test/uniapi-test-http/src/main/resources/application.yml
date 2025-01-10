@@ -5,6 +5,9 @@ spring:
   profiles:
     active:  dev
 
+bbq:
+  user: '{"name":"张三","id":999}'
+
 channel:
   mtuan:
     url: http://127.0.0.1:8999

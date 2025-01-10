@@ -13,6 +13,7 @@ import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
 import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
 import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
@@ -37,14 +38,14 @@ public interface UserServiceApi {
     BaseRsp<String> add(@QueryPar("name") String name);
 
     @DeleteHttpInterface("/user-web/add2")
-    BaseRsp<String> add2(@QueryPar U2DTO req);
+    BaseRsp<String> add2(@ModelBinding @QueryPar U2DTO req);
 
     @GetHttpInterface("/user-web/add3")
     BaseRsp<String> add3(@QueryPar("name") String name,
                          @HeaderPar("token") String token);
 
     @PostHttpInterface("/user-web/add4")
-    BaseRsp<Add4DTO> add4(@BodyJsonPar Add4DTO req);
+    BaseRsp<Add4DTO> add4(@ModelBinding @BodyJsonPar Add4DTO req);
 
     @PostHttpInterface("/user-web/add4")
     BaseRsp<Add4DTO> add42(@BodyJsonPar Add4DTO req,
@@ -115,8 +116,8 @@ public interface UserServiceApi {
     File add12(@ResponseFile(overwrite = false) String savePath);
 
     @PostHttpInterface(path = "/user-web/update",
-            headers = {"clientType=sys-app","userId=99"},
-            params = {"name=周杰伦","age:1"},
+            headers = {"clientType=sys-app","userId=99","aaa=${server.port}"},
+            params = {"name=周杰伦","age=1","appId=${server.port}"},
             paramStr = "a=1&b=2&c=3&d=哈哈&e=%E7%89%9B%E9%80%BC"
     )
     BaseRsp<String> update0();

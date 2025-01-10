@@ -6,9 +6,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.beans.factory.annotation.Value;
+
 /**
  * Mark an object as model, and then the related data binding behavior is automatically executed
- * such as {@link JsonPathMapping}。
+ * such as {@link JsonPathMapping}, {@link Value}
  * If it is tagged on a non-custom object, it will not take effect and will not perform the related data binding behavior
  *
  * @author  caizhihao
