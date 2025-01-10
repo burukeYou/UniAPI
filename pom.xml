@@ -54,6 +54,13 @@
     <unicore.version>${revision}</unicore.version>
     <unihttp.version>${revision}</unihttp.version>
     <dp.name>${name}-${revision}</dp.name>
+
+    <!--  依赖版本  -->
+    <spring.version>5.3.12</spring.version>
+    <fastjson2.version>2.0.38</fastjson2.version>
+    <commons-lang3.version>3.1</commons-lang3.version>
+
+
   </properties>
 
 
@@ -72,6 +79,31 @@
         <groupId>io.github.burukeyou</groupId>
         <artifactId>uniapi-http</artifactId>
         <version>${unihttp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.alibaba.fastjson2</groupId>
+        <artifactId>fastjson2</artifactId>
+        <version>${fastjson2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.18.26</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.25</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
