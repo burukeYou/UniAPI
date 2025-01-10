@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -17,6 +18,7 @@ import com.burukeyou.uniapi.config.SpringBeanContext;
 import org.apache.commons.lang3.StringUtils;
 
 
+@SuppressWarnings("ALL")
 public class BizUtil {
 
     public static boolean isFileForClass(Class<?> clz){
@@ -118,4 +120,42 @@ public class BizUtil {
         }
         return name;
     }*/
+
+    public static <T> T convertValueType(Object value, Class<T> type) {
+        if (value == null){
+            return null;
+        }
+
+        Class<?> valueClass = value.getClass();
+        if (valueClass == type || type.isAssignableFrom(valueClass)){
+            return (T) value;
+        }
+
+        if (Object.class == type){
+            return (T) value;
+        }
+        if (String.class == type){
+            return (T)value.toString();
+        }
+        if (Long.class == type || long.class == type){
+            return (T)Long.valueOf(value.toString());
+        }
+        if (Integer.class == type || int.class == type){
+            return (T)Integer.valueOf(value.toString());
+        }
+        if (Double.class == type || double.class == type){
+            return (T)Double.valueOf(value.toString());
+        }
+        if (Float.class == type || float.class == type){
+            return (T)Float.valueOf(value.toString());
+        }
+        if (Boolean.class == type || boolean.class == type){
+            return (T)Boolean.valueOf(value.toString());
+        }
+        return JSON.parseObject(value.toString(), type);
+    }
+
+    public static String getFieldAbsoluteName(Field field) {
+        return field.getDeclaringClass().getName() +"." + field.getName();
+    }
 }

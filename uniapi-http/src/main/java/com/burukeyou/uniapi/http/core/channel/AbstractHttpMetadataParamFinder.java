@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
-import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.param.ComposePar;
 import com.burukeyou.uniapi.http.annotation.param.CookiePar;
 import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
@@ -29,6 +29,7 @@ import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverter;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverterChain;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
+import com.burukeyou.uniapi.http.core.exception.UniHttpRequestParamException;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
 import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
@@ -43,6 +44,7 @@ import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.ObjReference;
+import com.burukeyou.uniapi.http.utils.BizUtil;
 import com.burukeyou.uniapi.support.arg.ArgList;
 import com.burukeyou.uniapi.support.arg.ClassFieldArgList;
 import com.burukeyou.uniapi.support.arg.MapArgList;
@@ -55,6 +57,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
@@ -133,7 +136,14 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         if(value.getClass() != String.class){
             return value;
         }
-        return (T)environment.resolvePlaceholders(value.toString());
+        String string = value.toString();
+        if (!string.startsWith("${") || !string.endsWith("}")){
+            return value;
+        }
+
+        String resolved = environment.resolveRequiredPlaceholders(value.toString());
+
+        return (T)resolved;
     }
 
     public <T> List<T> getEnvironmentValueList(T[] value){
@@ -247,6 +257,10 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             if (methodArg.isValueNotExist()){
                 continue;
             }
+
+            // populate model
+            populateRequestModel(methodArg);
+
             HttpBody httpBody = converterChain.convert(methodArg);
             if (httpBody != null){
                 bodyList.add(httpBody);
@@ -304,6 +318,33 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         }
 
         throw new BaseUniHttpException("http body build exception can not combine body");
+    }
+
+    protected void populateRequestModel(Param param) {
+        boolean flag = param.isObject() && (param.isAnnotationPresent(ModelBinding.class) || param.getType().isAnnotationPresent(ModelBinding.class));
+        if (!flag){
+            return;
+        }
+
+        Object model = param.getValue();
+        ReflectionUtils.doWithFields(model.getClass(),(field) -> {
+            Value valueAnno = field.getAnnotation(Value.class);
+            if (valueAnno != null && StrUtil.isNotBlank(valueAnno.value())){
+                String valueStr = null;
+                try {
+                    valueStr = getEnvironmentValue(valueAnno.value());
+                } catch (Exception e) {
+                   throw new UniHttpRequestParamException(BizUtil.getFieldAbsoluteName(field) + " can not find properties " + valueAnno.value() + " from environment variable",e);
+                }
+                Object fieldValue = valueStr;
+                if (!field.getType().equals(String.class)){
+                    fieldValue = BizUtil.convertValueType(valueStr,field.getType());
+                }
+                field.setAccessible(true);
+                field.set(model,fieldValue);
+            }
+        });
+
     }
 
 
