@@ -310,8 +310,8 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     public Map<String, String> findHeaders(ArgList argList) {
         String[] headers = httpInterface.headers();
         Map<String, String> fixHeaders = Arrays.stream(headers)
-                .filter(e -> e.contains("=") || e.contains(":"))
-                .collect(Collectors.toMap(e -> e.split("[=:]")[0].trim(), e -> e.split("[=:]")[1].trim()));
+                .filter(e -> e.contains("="))
+                .collect(Collectors.toMap(e -> e.split("=")[0].trim(), e -> getEnvironmentValue(e.split("=")[1].trim())));
 
         for (Param methodArg : argList) {
             HeaderPar annotation = methodArg.getAnnotation(HeaderPar.class);
@@ -370,8 +370,8 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     public Map<String,Object> findQueryParam(ArgList argList) {
         String[] params = httpInterface.params();
         Map<String, String> queryParam = Arrays.stream(params)
-                .filter(e-> e.contains("=") || e.contains(":"))
-                .collect(Collectors.toMap(e -> e.split("[=:]")[0], e -> e.split("[=:]")[1]));
+                .filter(e-> e.contains("="))
+                .collect(Collectors.toMap(e -> e.split("=")[0], e -> getEnvironmentValue(e.split("=")[1])));
 
         String paramStr = httpInterface.paramStr();
         if (StringUtils.isNotBlank(paramStr) && paramStr.contains("=")){
