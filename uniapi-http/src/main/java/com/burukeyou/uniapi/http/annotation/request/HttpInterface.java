@@ -21,12 +21,12 @@ import org.springframework.core.annotation.AliasFor;
 public @interface HttpInterface {
 
     /**
-     *  Request the root address of the interface
+     *  Request the root address of the interface, support get from environment variable
      */
     String url() default "";
 
     /**
-     * Interface path
+     * Interface path, support get from environment variable
      */
     @AliasFor("value")
     String path() default "";
