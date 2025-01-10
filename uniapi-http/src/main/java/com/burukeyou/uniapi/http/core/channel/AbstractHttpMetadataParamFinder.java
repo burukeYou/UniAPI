@@ -94,7 +94,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     @Override
     public UniHttpRequest find(Method method, Object[] args) {
         HttpUrl httpUrl = HttpUrl.builder()
-                .path(httpInterface.path())
+                .path(getEnvironmentValue(httpInterface.path()))
                 .build();
 
         if (StringUtils.isNotBlank(httpInterface.url())){
