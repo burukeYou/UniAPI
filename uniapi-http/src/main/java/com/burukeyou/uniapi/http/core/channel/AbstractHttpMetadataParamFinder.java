@@ -165,6 +165,9 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 continue;
             }
 
+            // populate cookie model
+            populateRequestModel(param);
+
             CookiePar annotation = param.getAnnotation(CookiePar.class);
             if (annotation == null){
                 continue;
@@ -360,6 +363,9 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 continue;
             }
 
+            // populate header model
+            populateRequestModel(methodArg);
+
             Object argValue = methodArg.getValue();
             String tmpFiledName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : methodArg.getName();
             boolean isObjFlag = isObjOrMap(methodArg.getType());
@@ -428,6 +434,9 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             if (annotation == null){
                 continue;
             }
+
+            // populate model
+            populateRequestModel(param);
 
             String tmpFiledName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : param.getName();
             boolean needFlag = isObjOrMap(param.getType());
