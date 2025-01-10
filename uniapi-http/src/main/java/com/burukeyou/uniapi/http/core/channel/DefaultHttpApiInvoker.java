@@ -542,9 +542,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpRequestCfg anno = getMergeAnnotationFormObjectOrMethodCache(HttpRequestCfg.class);
         if (anno != null) {
             HttpRequestConfig config = new HttpRequestConfig();
-            config.setAsync(getEnvironmentValue(anno.async()));
-            config.setFollowRedirect(getEnvironmentValue(anno.followRedirect()));
-            config.setFollowSslRedirect(getEnvironmentValue(anno.followSslRedirect()));
+            config.setAsync(anno.async());
+            config.setFollowRedirect(anno.followRedirect());
+            config.setFollowSslRedirect(anno.followSslRedirect());
             return config;
         }
 
@@ -565,10 +565,10 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return null;
         }
         HttpCallConfig config = new HttpCallConfig();
-        config.setCallTimeout(getEnvironmentValue(anno.callTimeout()));
-        config.setConnectTimeout(getEnvironmentValue(anno.connectTimeout()));
-        config.setWriteTimeout(getEnvironmentValue(anno.writeTimeout()));
-        config.setReadTimeout(getEnvironmentValue(anno.readTimeout()));
+        config.setCallTimeout(anno.callTimeout());
+        config.setConnectTimeout(anno.connectTimeout());
+        config.setWriteTimeout(anno.writeTimeout());
+        config.setReadTimeout(anno.readTimeout());
         return config;
     }
 
@@ -589,7 +589,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         if (sslCfgAnno == null) {
             return null;
         }
-        Boolean enable = getEnvironmentValue(sslCfgAnno.enabled());
+        Boolean enable = sslCfgAnno.enabled();
         if (!Boolean.TRUE.equals(enable)) {
             return null;
         }
@@ -613,8 +613,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         sslConfig.setTrustCertificate(getEnvironmentValue(sslCfgAnno.trustCertificate()));
         sslConfig.setTrustCertificatePrivateKey(getEnvironmentValue(sslCfgAnno.trustCertificatePrivateKey()));
         sslConfig.setProtocol(getEnvironmentValue(sslCfgAnno.protocol()));
-        sslConfig.setCloseHostnameVerify(getEnvironmentValue(sslCfgAnno.closeHostnameVerify()));
-        sslConfig.setCloseCertificateTrustVerify(getEnvironmentValue(sslCfgAnno.closeCertificateTrustVerify()));
+        sslConfig.setCloseHostnameVerify(sslCfgAnno.closeHostnameVerify());
+        sslConfig.setCloseCertificateTrustVerify(sslCfgAnno.closeCertificateTrustVerify());
         return sslConfig;
     }
 

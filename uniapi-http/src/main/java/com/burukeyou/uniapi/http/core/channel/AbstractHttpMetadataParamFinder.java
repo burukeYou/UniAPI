@@ -129,24 +129,19 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         }
     }
 
-    public <T> T getEnvironmentValue(T value){
-        if (value == null){
-            return null;
-        }
-        if(value.getClass() != String.class){
-            return value;
-        }
-        String string = value.toString();
-        if (!string.startsWith("${") || !string.endsWith("}")){
-            return value;
-        }
-
-        String resolved = environment.resolveRequiredPlaceholders(value.toString());
-
-        return (T)resolved;
+    public <T> T getEnvironmentValue(String value,Class<T> clz){
+        String environmentValue = getEnvironmentValue(value);
+        return BizUtil.convertValueType(environmentValue, clz);
     }
 
-    public <T> List<T> getEnvironmentValueList(T[] value){
+    public  String getEnvironmentValue(String value){
+        if (StrUtil.isBlank(value) || !value.startsWith("${") || !value.endsWith("}")){
+            return value;
+        }
+        return environment.resolveRequiredPlaceholders(value);
+    }
+
+    public List<String> getEnvironmentValueList(String[] value){
         if (value == null || value.length == 0){
             return  Collections.emptyList();
         }
@@ -333,15 +328,11 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         ReflectionUtils.doWithFields(model.getClass(),(field) -> {
             Value valueAnno = field.getAnnotation(Value.class);
             if (valueAnno != null && StrUtil.isNotBlank(valueAnno.value())){
-                String valueStr = null;
+                Object fieldValue;
                 try {
-                    valueStr = getEnvironmentValue(valueAnno.value());
+                    fieldValue = getEnvironmentValue(valueAnno.value(),field.getType());
                 } catch (Exception e) {
                    throw new UniHttpRequestParamException(BizUtil.getFieldAbsoluteName(field) + " can not find properties " + valueAnno.value() + " from environment variable",e);
-                }
-                Object fieldValue = valueStr;
-                if (!field.getType().equals(String.class)){
-                    fieldValue = BizUtil.convertValueType(valueStr,field.getType());
                 }
                 field.setAccessible(true);
                 field.set(model,fieldValue);
