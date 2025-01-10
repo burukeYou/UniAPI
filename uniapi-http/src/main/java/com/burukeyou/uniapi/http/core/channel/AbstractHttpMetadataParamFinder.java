@@ -326,6 +326,10 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
         Object model = param.getValue();
         ReflectionUtils.doWithFields(model.getClass(),(field) -> {
+            if(Modifier.isStatic(field.getModifiers())){
+                return;
+            }
+
             Value valueAnno = field.getAnnotation(Value.class);
             if (valueAnno != null && StrUtil.isNotBlank(valueAnno.value())){
                 Object fieldValue;
