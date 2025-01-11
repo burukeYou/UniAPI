@@ -1,55 +1,25 @@
 package com.burukeyou.uniapi.http.core.channel;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
 import com.burukeyou.uniapi.http.annotation.ModelBinding;
-import com.burukeyou.uniapi.http.annotation.param.ComposePar;
-import com.burukeyou.uniapi.http.annotation.param.CookiePar;
-import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
-import com.burukeyou.uniapi.http.annotation.param.PathPar;
-import com.burukeyou.uniapi.http.annotation.param.QueryPar;
+import com.burukeyou.uniapi.http.annotation.param.*;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverter;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverterChain;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpRequestParamException;
-import com.burukeyou.uniapi.http.core.request.HttpBody;
-import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
-import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
-import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
-import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
-import com.burukeyou.uniapi.http.core.request.HttpBodyXML;
-import com.burukeyou.uniapi.http.core.request.HttpUrl;
-import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
-import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
 import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.ObjReference;
 import com.burukeyou.uniapi.http.utils.BizUtil;
-import com.burukeyou.uniapi.support.arg.ArgList;
-import com.burukeyou.uniapi.support.arg.ClassFieldArgList;
-import com.burukeyou.uniapi.support.arg.MapArgList;
-import com.burukeyou.uniapi.support.arg.MethodArgList;
-import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.support.arg.*;
 import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
 import com.jayway.jsonpath.DocumentContext;
@@ -62,6 +32,13 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author caizhihao

@@ -1,10 +1,6 @@
 package com.burukeyou;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Base64;
-
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.SSLServiceApi;
 import com.burukeyou.demo.entity.BaseRsp;
@@ -15,6 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Base64;
 
 @SpringBootTest(classes = DemoApplication.class)
 @RunWith(SpringJUnit4ClassRunner.class)

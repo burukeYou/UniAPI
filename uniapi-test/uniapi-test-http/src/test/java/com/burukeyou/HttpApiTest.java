@@ -1,22 +1,10 @@
 package com.burukeyou;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
-
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
-import com.burukeyou.demo.entity.Add4DTO;
-import com.burukeyou.demo.entity.Add6DTO;
-import com.burukeyou.demo.entity.Add9DTO;
-import com.burukeyou.demo.entity.BaseRsp;
-import com.burukeyou.demo.entity.U2DTO;
+import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import okhttp3.Cookie;
 import org.junit.Test;
@@ -26,6 +14,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.FileCopyUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 
 
 @SpringBootTest(classes = DemoApplication.class)

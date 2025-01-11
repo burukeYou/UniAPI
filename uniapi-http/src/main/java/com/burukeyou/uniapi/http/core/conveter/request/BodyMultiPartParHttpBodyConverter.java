@@ -1,11 +1,5 @@
 package com.burukeyou.uniapi.http.core.conveter.request;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
@@ -17,6 +11,12 @@ import com.burukeyou.uniapi.support.arg.ArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author  caizhihao
@@ -72,12 +72,8 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
 
             Class<?> fieldType = param.getType();
             Object fieldValue = param.getValue();
-            com.alibaba.fastjson.annotation.JSONField jsonField = param.getAnnotation(com.alibaba.fastjson.annotation.JSONField.class);
             com.alibaba.fastjson2.annotation.JSONField jsonField2 = param.getAnnotation(com.alibaba.fastjson2.annotation.JSONField.class);
             String fieldName = param.getName();
-            if (jsonField != null){
-                fieldName = jsonField.name();
-            }
             if (jsonField2 != null){
                 fieldName = jsonField2.name();
             }
