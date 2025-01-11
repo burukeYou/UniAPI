@@ -26,9 +26,20 @@ UniHttp
     <dependency>
       <groupId>io.github.burukeyou</groupId>
       <artifactId>uniapi-http</artifactId>
-      <version>0.2.1</version>
+      <version>0.2.2</version>
     </dependency>
 ```
+
+如果是非spring环境、还需手动引入spring-context依赖
+
+```xml
+ <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>5.3.23</version>
+</dependency>
+```
+
 
 ## 2.2、对接接口
 在类上标记@HttpAPI注解，用户表示定义一个Http接口的信息, 然后就可以去编写每个方法去对接每个接口。 
