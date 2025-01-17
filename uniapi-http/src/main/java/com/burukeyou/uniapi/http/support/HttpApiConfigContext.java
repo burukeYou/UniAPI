@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
+import com.burukeyou.uniapi.http.support.config.HttpRetryConfig;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,13 +26,15 @@ public class HttpApiConfigContext implements Serializable {
 
     private HttpResponseConfig httpResponseConfig;
 
+    private HttpRetryConfig retryConfig;
+
     public boolean isNotClientConfig(){
         Object[] arr = {httpCallConfig,sslConfig,httpRequestConfig};
         return  Arrays.stream(arr).allMatch(Objects::isNull);
     }
 
     public Boolean isAsyncRequest(){
-        return Optional.ofNullable(httpRequestConfig).map(HttpRequestConfig::getAsync).orElse(null);
+        return Boolean.TRUE.equals(Optional.ofNullable(httpRequestConfig).map(HttpRequestConfig::getAsync).orElse(null));
     }
 
     public List<String> getJsonPathUnPackList(){
