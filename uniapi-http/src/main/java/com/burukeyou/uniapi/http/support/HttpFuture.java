@@ -1,5 +1,10 @@
 package com.burukeyou.uniapi.http.support;
 
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.support.function.B3Function;
+import com.burukeyou.uniapi.http.utils.BizUtil;
+
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
@@ -7,11 +12,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.utils.BizUtil;
 
 /**
  * Http Future
@@ -25,22 +25,18 @@ public class HttpFuture<T> extends CompletableFuture<T>  {
 
     private HttpResponse<T> response;
 
-    private Boolean isAsync;
-
-    public HttpFuture(T value,HttpResponse<T> response){
-        this.isAsync = Boolean.TRUE;
+    public HttpFuture(T value, HttpResponse<T> response){
         this.response = response;
         this.complete(value);
     }
 
     public HttpFuture(CompletableFuture<UniHttpResponse> asyncFuture,
                       Type bodyResultType,
-                      BiFunction<? super UniHttpResponse, ? super Throwable, UniHttpResponseParseInfo> biFunction) {
-        this.isAsync = Boolean.FALSE;
+                      B3Function<? super UniHttpResponse, ? super Throwable, ? super HttpFuture<T>,UniHttpResponseParseInfo> biFunction) {
         this.asyncFuture = asyncFuture;
         asyncFuture.whenComplete((info, ex) -> {
             try {
-                UniHttpResponseParseInfo apply = biFunction.apply(info, ex);
+                UniHttpResponseParseInfo apply = biFunction.apply(info, ex,this);
                 this.response = (HttpResponse<T>)apply.getHttpResponse();
                 this.complete((T)apply.getMethodReturnValue());
             }catch (Throwable e){
