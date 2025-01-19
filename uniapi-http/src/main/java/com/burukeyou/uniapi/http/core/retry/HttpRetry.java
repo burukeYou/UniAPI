@@ -21,12 +21,12 @@ import java.lang.annotation.Target;
 public @interface HttpRetry {
 
     /**
-     * @return the maximum number of attempts , if -1, it means unlimited until the processing is successful
+     *  the maximum number of attempts , if less than 0, it means unlimited until the processing is successful
      */
     int maxAttempts() default 3;
 
-    /*
-     * @return the delay in milliseconds between retries
+    /**
+     * the delay in milliseconds between retries
      */
     long delay() default 0;
 

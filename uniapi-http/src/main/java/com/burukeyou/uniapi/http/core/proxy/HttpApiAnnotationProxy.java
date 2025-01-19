@@ -1,7 +1,5 @@
 package com.burukeyou.uniapi.http.core.proxy;
 
-import java.lang.reflect.Method;
-
 import com.burukeyou.uniapi.config.SpringBeanContext;
 import com.burukeyou.uniapi.core.proxy.AbstractAnnotationInvokeProxy;
 import com.burukeyou.uniapi.exception.BaseUniApiException;
@@ -17,6 +15,8 @@ import com.burukeyou.uniapi.http.utils.BizUtil;
 import okhttp3.OkHttpClient;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+
+import java.lang.reflect.Method;
 
 /**
  * @author caizhihao
@@ -38,7 +38,7 @@ public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpA
 
 
     @Override
-    public Object invoke(Class<?> targetClass,MethodInvocation methodInvocation) {
+    public Object invoke(Class<?> targetClass,MethodInvocation methodInvocation) throws Throwable  {
         Method method = methodInvocation.getMethod();
         if (annotationMeta.getHttpApi() != null){
             HttpInterface httpInterface = AnnotatedElementUtils.getMergedAnnotation(method, HttpInterface.class);

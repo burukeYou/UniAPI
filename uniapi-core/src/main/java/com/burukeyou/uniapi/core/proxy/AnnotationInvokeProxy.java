@@ -8,6 +8,6 @@ import org.aopalliance.intercept.MethodInvocation;
  */
 public interface AnnotationInvokeProxy {
 
-    Object invoke(Class<?> targetClass, MethodInvocation methodInvocation);
+    Object invoke(Class<?> targetClass, MethodInvocation methodInvocation) throws Throwable ;
 
 }

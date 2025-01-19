@@ -8,11 +8,13 @@ import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpIOException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
+import com.burukeyou.uniapi.http.core.exception.UniHttpRetryTimeOutException;
 import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpUrl;
 import com.burukeyou.uniapi.http.core.request.*;
 import com.burukeyou.uniapi.http.core.response.*;
 import com.burukeyou.uniapi.http.core.retry.HttpRetry;
+import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
 import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
 import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
@@ -25,6 +27,7 @@ import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.FileBizUtil;
+import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
 import com.burukeyou.uniapi.util.TimeUtil;
 import com.jayway.jsonpath.*;
@@ -176,7 +179,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    public Object invoke() {
+    public Object invoke() throws Throwable  {
         Method method = methodInvocation.getMethod();
         UniHttpRequest requestMetadata = createHttpMetadata(methodInvocation);
 
@@ -191,37 +194,142 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             throw new IllegalArgumentException("The specified HttpApiProcessor cannot handle this annotation type " + proxyAnnotation.annotationType().getSimpleName());
         }
 
-        // before processor
-        if (isProcessorMethod(ProcessorMethod.BEFORE_HTTP_REQUEST)){
-            requestMetadata = requestProcessor.postBeforeHttpRequest(requestMetadata, httpApiMethodInvocation);
-        }
-        if (requestMetadata == null) {
-            return null;
-        }
-
-        // before send
-        if (isProcessorMethod(ProcessorMethod.BEFORE_SEND_HTTP_REQUEST)){
-            requestProcessor.postBeforeSendHttpRequest(requestMetadata,this,httpApiMethodInvocation);
-        }
-
+        // check async
         Class<?> methodReturnType = method.getReturnType();
         boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest());
         if (isAsync && !Future.class.isAssignableFrom(methodReturnType) && void.class != methodReturnType && Void.class != methodReturnType){
             throw new IllegalStateException("when config async request, the method return type must be Future or void");
         }
 
-        // request async
-        if (isAsync){
-            CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
-            final UniHttpRequest finalRequestMetadata = requestMetadata;
-            return new HttpFuture<>(asyncFuture,bodyResultType, (info,ex,future) -> convertUniHttpResponse(new HttpRequestExecuteInfo(ex,info), finalRequestMetadata,future));
+        return doInvoke(requestMetadata);
+    }
+
+    private Object doInvoke(UniHttpRequest requestMetadata) throws Throwable {
+        HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
+        boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest());
+        boolean isRetry = retryConfig != null && retryConfig.getMaxAttempts() != 0;
+
+        if (!isRetry){
+            if (!isAsync){
+                return doSyncInvoke(requestMetadata).getMethodReturnValue();
+            }else {
+                if (!postBeforeAllProcessor(requestMetadata)){
+                    return null;
+                }
+
+                // request async
+                CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
+                final UniHttpRequest finalRequestMetadata = requestMetadata;
+                return new HttpFuture<>(asyncFuture, bodyResultType, (info, ex, future) -> convertUniHttpResponse(new HttpRequestExecuteInfo(ex, info), finalRequestMetadata, future));
+            }
+        }
+
+        // request sync for retry
+        if (!isAsync){
+            return doInvokeForSyncRetry(requestMetadata);
+        }
+
+        // request async for retry
+        HttpFuture<Object> retryFuture = new HttpFuture<>();
+
+        //
+//        CompletableFuture.runAsync(() -> {
+//            try {
+//                Object o = doInvokeForSyncRetry(requestMetadata);
+//                retryFuture.complete()
+//            } catch (Throwable e) {
+//                retryFuture.completeExceptionally(e);
+//            }
+//        });
+
+        return retryFuture;
+    }
+
+    private Object doInvokeForSyncRetry(UniHttpRequest requestMetadata) throws Throwable {
+        HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
+        HttpRetryStrategy<Object> retryStrategy = (HttpRetryStrategy<Object>)BizUtil.getBeanOrNew(retryConfig.getRetryStrategy());
+        Long delay = retryConfig.getDelay();
+
+        Integer maxAttempts = retryConfig.getMaxAttempts();
+        Exception curException;
+        Exception lastException = null;
+        UniHttpResponseParseInfo curParseInfo;
+        long executeCount = 0;
+        while (true){
+            curException = null;
+            curParseInfo = null;
+            executeCount++;
+            long curRetryCount = executeCount -1;
+            // 小于0一直重试，直到拿到结果
+            if (maxAttempts > 0 && curRetryCount > maxAttempts){
+                throw new UniHttpRetryTimeOutException("Exceeded the maximum retry count " + maxAttempts + ", stop retry",lastException);
+            }
+            boolean retryFlag = false;
+            boolean isException =false;
+            try {
+                curParseInfo = doSyncInvoke(requestMetadata);
+            } catch (Exception e) {
+                lastException = e;
+                curException = e;
+                isException = true;
+                if (ListsUtil.isEmpty(retryConfig.getInclude()) && ListsUtil.isEmpty(retryConfig.getExclude())){
+                    retryFlag = true;
+                }else {
+                    if (ListsUtil.isNotEmpty(retryConfig.getInclude())){
+                        retryFlag = retryConfig.isIncludeException(e.getClass());
+                    }
+                    if (ListsUtil.isNotEmpty(retryConfig.getExclude())){
+                        retryFlag = !retryConfig.isExcludeException(e.getClass());
+                    }
+                }
+            }
+
+            if (!isException){
+                retryFlag = retryStrategy.canRetry(executeCount,requestMetadata,curParseInfo.getUniHttpResponse(),curParseInfo.getBodyResult(),httpApiMethodInvocation);
+            }
+
+            if (!retryFlag){
+                break;
+            }
+
+            if (delay > 0){
+                Thread.sleep(delay);
+            }
+        }
+
+        if (curException != null){
+            throw curException;
+        }
+
+        return curParseInfo.getMethodReturnValue();
+
+    }
+
+    protected boolean postBeforeAllProcessor(UniHttpRequest requestMetadata){
+        if (isProcessorMethod(ProcessorMethod.BEFORE_HTTP_REQUEST)){
+            requestMetadata = requestProcessor.postBeforeHttpRequest(requestMetadata, httpApiMethodInvocation);
+        }
+        if (requestMetadata == null) {
+            return false;
+        }
+
+        // before send
+        if (isProcessorMethod(ProcessorMethod.BEFORE_SEND_HTTP_REQUEST)){
+            requestProcessor.postBeforeSendHttpRequest(requestMetadata,this,httpApiMethodInvocation);
+        }
+        return true;
+    }
+
+    private UniHttpResponseParseInfo doSyncInvoke(UniHttpRequest requestMetadata) throws Throwable{
+        if (!postBeforeAllProcessor(requestMetadata)){
+            return new UniHttpResponseParseInfo();
         }
 
         // request sync
         return doAfterSyncInvoke(requestMetadata);
     }
 
-    private Object doAfterSyncInvoke(UniHttpRequest requestMetadata) {
+    private UniHttpResponseParseInfo doAfterSyncInvoke(UniHttpRequest requestMetadata) throws Throwable {
         HttpRequestExecuteInfo executeInfo = new HttpRequestExecuteInfo();
         try {
             // post sending
@@ -240,8 +348,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 }
                 executeInfo.setException(throwable);
             }
-            UniHttpResponseParseInfo value = convertUniHttpResponse(executeInfo, requestMetadata,null);
-            return value.getMethodReturnValue();
+            return convertUniHttpResponse(executeInfo, requestMetadata,null);
         }finally {
             if(!InputStream.class.equals(bodyResultType)){
                 BizUtil.closeQuietly(executeInfo.getUniHttpResponse());
@@ -253,7 +360,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     /**
      *  response 转成 future之内类型
      */
-    public UniHttpResponseParseInfo convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request,HttpFuture<Object> asyncFuture) {
+    public UniHttpResponseParseInfo convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request,HttpFuture<Object> asyncFuture) throws Throwable {
         UniHttpResponse uniHttpResponse = executeInfo.getUniHttpResponse();
 
         // post after http response
@@ -289,7 +396,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         boolean isSyncFlag = !apiConfigContext.isAsyncRequest();
 
-        if (!Future.class.isAssignableFrom(currentClass) && !HttpResponse.class.isAssignableFrom(currentClass)){
+        if (!Future.class.isAssignableFrom(methodReturnType) && !HttpResponse.class.isAssignableFrom(methodReturnType)){
             methodReturnValue = httpResponse.getBodyResult();
         }else {
             boolean isFuture = false;

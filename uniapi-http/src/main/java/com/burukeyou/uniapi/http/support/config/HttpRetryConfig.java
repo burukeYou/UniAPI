@@ -1,11 +1,11 @@
 package com.burukeyou.uniapi.http.support.config;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.util.List;
 
 @Getter
 @Setter
@@ -37,5 +37,29 @@ public class HttpRetryConfig implements Serializable {
      * Use custom result retry strategy, this policy can determine whether a retry is needed based on the results.
      */
     private Class<? extends HttpRetryStrategy<?>> retryStrategy;
+
+    public boolean isIncludeException(Class<? extends Exception> exceptionClass){
+        if (include == null || include.isEmpty()){
+            return false;
+        }
+        for (Class<? extends Exception> aClass : include) {
+            if (aClass.isAssignableFrom(exceptionClass)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isExcludeException(Class<? extends Exception> exceptionClass){
+        if (exclude == null || exclude.isEmpty()){
+            return false;
+        }
+        for (Class<? extends Exception> aClass : exclude) {
+            if (aClass.isAssignableFrom(exceptionClass)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

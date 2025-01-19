@@ -18,6 +18,8 @@ public class UniHttpResponseParseInfo {
 
     private Object bodyResult;
 
+    private Object futureInnerValue;
+
     public UniHttpResponseParseInfo() {
     }
 

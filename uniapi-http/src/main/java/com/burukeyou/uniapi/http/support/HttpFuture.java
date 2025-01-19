@@ -25,6 +25,9 @@ public class HttpFuture<T> extends CompletableFuture<T>  {
 
     private HttpResponse<T> response;
 
+    public HttpFuture() {
+    }
+
     public HttpFuture(T value, HttpResponse<T> response){
         this.response = response;
         this.complete(value);
