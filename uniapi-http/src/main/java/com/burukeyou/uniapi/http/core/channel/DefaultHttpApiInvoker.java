@@ -1,45 +1,5 @@
 package com.burukeyou.uniapi.http.core.channel;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONPath;
-import com.burukeyou.uniapi.config.SpringBeanContext;
-import com.burukeyou.uniapi.http.annotation.*;
-import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
-import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
-import com.burukeyou.uniapi.http.core.exception.UniHttpIOException;
-import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
-import com.burukeyou.uniapi.http.core.exception.UniHttpRetryTimeOutException;
-import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
-import com.burukeyou.uniapi.http.core.request.HttpUrl;
-import com.burukeyou.uniapi.http.core.request.*;
-import com.burukeyou.uniapi.http.core.response.*;
-import com.burukeyou.uniapi.http.core.retry.HttpRetry;
-import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
-import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
-import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
-import com.burukeyou.uniapi.http.core.ssl.SslConfig;
-import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
-import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
-import com.burukeyou.uniapi.http.support.*;
-import com.burukeyou.uniapi.http.support.config.HttpRetryConfig;
-import com.burukeyou.uniapi.http.utils.BizUtil;
-import com.burukeyou.uniapi.support.ClassUtil;
-import com.burukeyou.uniapi.support.arg.MethodArgList;
-import com.burukeyou.uniapi.support.arg.Param;
-import com.burukeyou.uniapi.util.FileBizUtil;
-import com.burukeyou.uniapi.util.ListsUtil;
-import com.burukeyou.uniapi.util.StrUtil;
-import com.burukeyou.uniapi.util.TimeUtil;
-import com.jayway.jsonpath.*;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
-import okio.BufferedSink;
-import okio.Okio;
-import okio.Source;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -52,9 +12,100 @@ import java.lang.reflect.WildcardType;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONPath;
+import com.burukeyou.uniapi.config.SpringBeanContext;
+import com.burukeyou.uniapi.http.annotation.FilterProcessor;
+import com.burukeyou.uniapi.http.annotation.HttpApi;
+import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
+import com.burukeyou.uniapi.http.annotation.HttpRequestCfg;
+import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
+import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
+import com.burukeyou.uniapi.http.annotation.ResponseFile;
+import com.burukeyou.uniapi.http.annotation.SslCfg;
+import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
+import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
+import com.burukeyou.uniapi.http.core.exception.UniHttpIOException;
+import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
+import com.burukeyou.uniapi.http.core.exception.UniHttpRetryTimeOutException;
+import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
+import com.burukeyou.uniapi.http.core.request.HttpBody;
+import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
+import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
+import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
+import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
+import com.burukeyou.uniapi.http.core.request.HttpBodyText;
+import com.burukeyou.uniapi.http.core.request.HttpBodyXML;
+import com.burukeyou.uniapi.http.core.request.HttpUrl;
+import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.response.DefaultHttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
+import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.retry.HttpRetry;
+import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
+import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
+import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
+import com.burukeyou.uniapi.http.core.ssl.SslConfig;
+import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
+import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
+import com.burukeyou.uniapi.http.support.BodyParseResult;
+import com.burukeyou.uniapi.http.support.HttpApiAnnotationMeta;
+import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
+import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpFuture;
+import com.burukeyou.uniapi.http.support.HttpRequestConfig;
+import com.burukeyou.uniapi.http.support.HttpRequestExecuteInfo;
+import com.burukeyou.uniapi.http.support.HttpResponseConfig;
+import com.burukeyou.uniapi.http.support.MediaTypeEnum;
+import com.burukeyou.uniapi.http.support.ProcessorMethod;
+import com.burukeyou.uniapi.http.support.RequestMethod;
+import com.burukeyou.uniapi.http.support.UniHttpApiConstant;
+import com.burukeyou.uniapi.http.support.UniHttpInputStream;
+import com.burukeyou.uniapi.http.support.UniHttpResponseParseInfo;
+import com.burukeyou.uniapi.http.support.config.HttpRetryConfig;
+import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.support.ClassUtil;
+import com.burukeyou.uniapi.support.arg.MethodArgList;
+import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.util.FileBizUtil;
+import com.burukeyou.uniapi.util.ListsUtil;
+import com.burukeyou.uniapi.util.StrUtil;
+import com.burukeyou.uniapi.util.TimeUtil;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.MapFunction;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 
 /**
  * @author caizhihao
@@ -211,7 +262,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         if (!isRetry){
             if (!isAsync){
-                return doSyncInvoke(requestMetadata).getMethodReturnValue();
+                UniHttpResponseParseInfo parseInfo = doSyncInvoke(requestMetadata);
+                return parseInfo == null ? null : parseInfo.getMethodReturnValue();
             }else {
                 if (!postBeforeAllProcessor(requestMetadata)){
                     return null;
@@ -226,26 +278,26 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         // request sync for retry
         if (!isAsync){
-            return doInvokeForSyncRetry(requestMetadata);
+            return doInvokeForSyncRetry(requestMetadata).getMethodReturnValue();
         }
 
         // request async for retry
         HttpFuture<Object> retryFuture = new HttpFuture<>();
 
         //
-//        CompletableFuture.runAsync(() -> {
-//            try {
-//                Object o = doInvokeForSyncRetry(requestMetadata);
-//                retryFuture.complete()
-//            } catch (Throwable e) {
-//                retryFuture.completeExceptionally(e);
-//            }
-//        });
+        CompletableFuture.runAsync(() -> {
+            try {
+                UniHttpResponseParseInfo parseInfo = doInvokeForSyncRetry(requestMetadata);
+                retryFuture.complete(parseInfo.getFutureInnerValue());
+            } catch (Throwable e) {
+                retryFuture.completeExceptionally(e);
+            }
+        });
 
         return retryFuture;
     }
 
-    private Object doInvokeForSyncRetry(UniHttpRequest requestMetadata) throws Throwable {
+    private UniHttpResponseParseInfo doInvokeForSyncRetry(UniHttpRequest requestMetadata) throws Throwable {
         HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
         HttpRetryStrategy<Object> retryStrategy = (HttpRetryStrategy<Object>)BizUtil.getBeanOrNew(retryConfig.getRetryStrategy());
         Long delay = retryConfig.getDelay();
@@ -284,6 +336,11 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 }
             }
 
+            if (!isException && curParseInfo == null){
+                // processor stop retry
+                break;
+            }
+
             if (!isException){
                 retryFlag = retryStrategy.canRetry(executeCount,requestMetadata,curParseInfo.getUniHttpResponse(),curParseInfo.getBodyResult(),httpApiMethodInvocation);
             }
@@ -300,8 +357,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         if (curException != null){
             throw curException;
         }
-
-        return curParseInfo.getMethodReturnValue();
+        return curParseInfo;
 
     }
 
@@ -322,7 +378,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private UniHttpResponseParseInfo doSyncInvoke(UniHttpRequest requestMetadata) throws Throwable{
         if (!postBeforeAllProcessor(requestMetadata)){
-            return new UniHttpResponseParseInfo();
+            return null;
         }
 
         // request sync
@@ -357,9 +413,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    /**
-     *  response 转成 future之内类型
-     */
     public UniHttpResponseParseInfo convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request,HttpFuture<Object> asyncFuture) throws Throwable {
         UniHttpResponse uniHttpResponse = executeInfo.getUniHttpResponse();
 
@@ -392,34 +445,31 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         // DTO、 HttpResponse<DTO>、Future<DTO>, Future<HttpResponse<DTO>>
         Object methodReturnValue = null;
         Class<?> methodReturnType = method.getReturnType();
-        Class<?> currentClass = method.getReturnType();
 
-        boolean isSyncFlag = !apiConfigContext.isAsyncRequest();
-
-        if (!Future.class.isAssignableFrom(methodReturnType) && !HttpResponse.class.isAssignableFrom(methodReturnType)){
-            methodReturnValue = httpResponse.getBodyResult();
-        }else {
-            boolean isFuture = false;
-            Object innerResult = null;
-            if (Future.class.isAssignableFrom(currentClass)){
-                currentClass = getTypeClass(getParameterizedTypeFirst(method.getGenericReturnType()));
-                isFuture = true;
+        Object futureInnerValue = null;
+         if (HttpResponse.class.isAssignableFrom(methodReturnType)){
+            if (HttpResponse.class.equals(methodReturnType)){
+                methodReturnValue = httpResponse;
+            }else if (HttpFileResponse.class.equals(methodReturnType)){
+                methodReturnValue = new DefaultHttpFileResponse(uniHttpResponse, httpResponse.getOriginBodyPrintString(), httpResponse.getBodyResult());
             }
-            if (HttpResponse.class.equals(currentClass)){
-                innerResult = httpResponse;
-            }else if (HttpFileResponse.class.equals(currentClass)){
-                innerResult = new DefaultHttpFileResponse(uniHttpResponse, httpResponse.getOriginBodyPrintString(), httpResponse.getBodyResult());
-            }
+        }else if (Future.class.isAssignableFrom(methodReturnType)){
+            Class<?> futureInnerClass = getTypeClass(getParameterizedTypeFirst(method.getGenericReturnType()));
+             if (HttpResponse.class.equals(futureInnerClass)){
+                 futureInnerValue = httpResponse;
+             }else if (HttpFileResponse.class.equals(futureInnerClass)){
+                 futureInnerValue = new DefaultHttpFileResponse(uniHttpResponse, httpResponse.getOriginBodyPrintString(), httpResponse.getBodyResult());
+             }else {
+                 futureInnerValue = httpResponse.getBodyResult();
+             }
 
-            if (isFuture){
-                if (isSyncFlag){
-                    methodReturnValue =  new HttpFuture<>(innerResult, httpResponse);
-                }else {
-                    methodReturnValue = asyncFuture;
-                }
+            if (asyncFuture == null){
+                methodReturnValue =  new HttpFuture<>(futureInnerValue, httpResponse);
             }else {
-                methodReturnValue = innerResult;
+                methodReturnValue = asyncFuture;
             }
+        }else {
+            methodReturnValue = httpResponse.getBodyResult();
         }
 
         // post after method
@@ -429,7 +479,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         if (methodReturnValue != null && !methodReturnType.equals(Object.class) && Void.class != methodReturnType && void.class != methodReturnType){
              if (!methodReturnType.isInstance(methodReturnValue))    {
-                 throw new ClassCastException("method return value class type err , can not from " +  methodReturnValue.getClass().getName() + " cast to " + methodReturnType.getName());
+                 throw new ClassCastException(BizUtil.getMethodAbsoluteName(method) + " return value class type define error , can not from " +  methodReturnValue.getClass().getName() + " cast to " + methodReturnType.getName());
              }
         }
 
@@ -438,6 +488,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         result.setHttpResponse(httpResponse);
         result.setUniHttpResponse(uniHttpResponse);
         result.setBodyResult(bodyResult);
+        result.setFutureInnerValue(futureInnerValue);
         return result;
     }
 
