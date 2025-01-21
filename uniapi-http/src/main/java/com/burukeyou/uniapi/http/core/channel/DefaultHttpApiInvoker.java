@@ -256,16 +256,13 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
     private Object doInvoke(UniHttpRequest requestMetadata) throws Throwable {
-        HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
-        boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest());
-        boolean isRetry = retryConfig != null && retryConfig.getMaxAttempts() != 0;
         Class<?> methodReturnType = methodInvocation.getMethod().getReturnType();
+        HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
+        boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest()) || Future.class.isAssignableFrom(methodReturnType);
+        boolean isRetry = retryConfig != null && retryConfig.getMaxAttempts() != 0;
 
         if (!isRetry){
-            if (!isAsync){
-                UniHttpResponseParseInfo parseInfo = doSyncInvoke(requestMetadata);
-                return parseInfo == null ? null : parseInfo.getMethodReturnValue();
-            }else if (Future.class.isAssignableFrom(methodReturnType)){
+            if (isAsync){
                 HttpFuture<Object> future = new HttpFuture<>();
                 CompletableFuture.runAsync(() -> {
                     try {
@@ -275,6 +272,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                     }
                 });
                 return future;
+            }else {
+                UniHttpResponseParseInfo parseInfo = doSyncInvoke(requestMetadata);
+                return parseInfo == null ? null : parseInfo.getMethodReturnValue();
             }
         }
 
@@ -343,6 +343,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             boolean retryFlag = false;
             boolean isException =false;
             try {
+                // do call
                 curParseInfo = doSyncInvoke(requestMetadata);
             } catch (Exception e) {
                 lastException = e;
