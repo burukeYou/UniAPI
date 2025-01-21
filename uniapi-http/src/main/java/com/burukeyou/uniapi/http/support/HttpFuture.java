@@ -1,10 +1,5 @@
 package com.burukeyou.uniapi.http.support;
 
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.support.function.B3Function;
-import com.burukeyou.uniapi.http.utils.BizUtil;
-
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +7,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.support.function.B3Function;
+import com.burukeyou.uniapi.http.utils.BizUtil;
 
 /**
  * Http Future
@@ -165,5 +165,9 @@ public class HttpFuture<T> extends CompletableFuture<T>  {
         System.arraycopy(a, 0, stackTraceElements, 0, a.length);
         System.arraycopy(b, 0, stackTraceElements, a.length, b.length);
         return stackTraceElements;
+    }
+
+    public void setResponse(HttpResponse<T> response) {
+        this.response = response;
     }
 }

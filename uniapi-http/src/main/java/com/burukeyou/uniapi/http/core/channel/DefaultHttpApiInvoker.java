@@ -259,20 +259,22 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
         boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest());
         boolean isRetry = retryConfig != null && retryConfig.getMaxAttempts() != 0;
+        Class<?> methodReturnType = methodInvocation.getMethod().getReturnType();
 
         if (!isRetry){
             if (!isAsync){
                 UniHttpResponseParseInfo parseInfo = doSyncInvoke(requestMetadata);
                 return parseInfo == null ? null : parseInfo.getMethodReturnValue();
-            }else {
-                if (!postBeforeAllProcessor(requestMetadata)){
-                    return null;
-                }
-
-                // request async
-                CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
-                final UniHttpRequest finalRequestMetadata = requestMetadata;
-                return new HttpFuture<>(asyncFuture, bodyResultType, (info, ex, future) -> convertUniHttpResponse(new HttpRequestExecuteInfo(ex, info), finalRequestMetadata, future));
+            }else if (Future.class.isAssignableFrom(methodReturnType)){
+                HttpFuture<Object> future = new HttpFuture<>();
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        doAsyncInvoke(requestMetadata, future);
+                    } catch (Throwable e) {
+                        future.completeExceptionally(e);
+                    }
+                });
+                return future;
             }
         }
 
@@ -295,6 +297,28 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         });
 
         return retryFuture;
+    }
+
+    private void doAsyncInvoke(UniHttpRequest requestMetadata, HttpFuture<Object> future) {
+        boolean stopFlag = !postBeforeAllProcessor(requestMetadata);
+        if (stopFlag){
+            future.complete(null);
+        }else {
+            CompletableFuture<UniHttpResponse> asyncFuture = sendAsyncHttpRequest(requestMetadata);
+            asyncFuture.whenComplete((info, ex) -> {
+                try {
+                    UniHttpResponseParseInfo apply =  convertUniHttpResponse(new HttpRequestExecuteInfo(ex, info), requestMetadata, future);
+                    future.setResponse(apply.getHttpResponse());
+                    future.complete(apply.getFutureInnerValue());
+                }catch (Throwable e){
+                    future.completeExceptionally(e);
+                }finally {
+                    if(!InputStream.class.equals(bodyResultType)){
+                        BizUtil.closeQuietly(info);
+                    }
+                }
+            });
+        }
     }
 
     private UniHttpResponseParseInfo doInvokeForSyncRetry(UniHttpRequest requestMetadata) throws Throwable {
