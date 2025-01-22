@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>uniapi-core</artifactId>
-  <version>${revision}</version>
+  <version>${unicore.version}</version>
   <name>uniapi-core</name>
 
   <properties>
