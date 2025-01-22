@@ -1,15 +1,15 @@
 package com.burukeyou.uniapi.http.extension.processor;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.channel.HttpSender;
 import com.burukeyou.uniapi.http.core.exception.HttpResponseException;
 import com.burukeyou.uniapi.http.core.exception.SendHttpRequestException;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 /**
  * HttpAPI lifecycle processor Extension point
@@ -86,7 +86,7 @@ public interface HttpApiProcessor<T extends Annotation> {
      * @param response                  Http response, when request is executed abnormally, this parameter is  null
      * @param methodInvocation          the method of proxy execution
      */
-    default void postAfterHttpResponse(Throwable exception, UniHttpRequest request,UniHttpResponse response, HttpApiMethodInvocation<T> methodInvocation) throws Throwable{
+    default void postAfterHttpResponse(Throwable exception, UniHttpRequest request,UniHttpResponse response, HttpApiMethodInvocation<T> methodInvocation) {
         String baseLog = String.format(" 接口:%s 耗时:%s(ms) ", request.getUrlPath(), request.getCurrentCostTime());
         if (exception instanceof IOException){
             throw new SendHttpRequestException("Http请求网络IO异常" + baseLog,exception);

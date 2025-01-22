@@ -1,4 +1,4 @@
-package com.burukeyou.uniapi.http.core.retry;
+package com.burukeyou.uniapi.http.annotation;
 
 
 import java.lang.annotation.Documented;
@@ -7,6 +7,9 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.burukeyou.uniapi.http.core.retry.DefaultHttpRetryStrategy;
+import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
 
 /**
  * Retry config annotation, when an exception occurs or {@link #retryStrategy} is return true, will be retried.
@@ -52,5 +55,8 @@ public @interface HttpRetry {
      */
     Class<? extends HttpRetryStrategy<?>> retryStrategy() default DefaultHttpRetryStrategy.class;
 
-
+    /**
+     * Whether to use FastRetry to perform a retry <a href="https://github.com/burukeYou/fast-retry">FastRetry</a>
+     */
+    boolean fastRetry() default false;
 }

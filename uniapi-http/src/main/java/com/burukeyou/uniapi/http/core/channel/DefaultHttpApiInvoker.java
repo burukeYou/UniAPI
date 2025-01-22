@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.alibaba.fastjson2.JSON;
@@ -36,7 +38,6 @@ import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpIOException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpResponseDeserializeException;
-import com.burukeyou.uniapi.http.core.exception.UniHttpRetryTimeOutException;
 import com.burukeyou.uniapi.http.core.httpclient.response.OkHttpResponse;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
@@ -53,8 +54,10 @@ import com.burukeyou.uniapi.http.core.response.DefaultHttpResponse;
 import com.burukeyou.uniapi.http.core.response.HttpFileResponse;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.retry.HttpRetry;
-import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
+import com.burukeyou.uniapi.http.annotation.HttpRetry;
+import com.burukeyou.uniapi.http.core.retry.RetryExecutor;
+import com.burukeyou.uniapi.http.core.retry.executor.FastRetryRetryExecutor;
+import com.burukeyou.uniapi.http.core.retry.executor.SimpleRetryExecutor;
 import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
 import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
@@ -80,7 +83,6 @@ import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.FileBizUtil;
-import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
 import com.burukeyou.uniapi.util.TimeUtil;
 import com.jayway.jsonpath.Configuration;
@@ -131,6 +133,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private FilterProcessor ignoredProcessorAnno;
 
 
+    private static final ExecutorService POOL = Executors.newCachedThreadPool(r -> new Thread(r,"uniHttp-async-thread"));
 
     public DefaultHttpApiInvoker(HttpApiAnnotationMeta annotationMeta,
                                  Class<?> targetClass,
@@ -258,45 +261,36 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private Object doInvoke(UniHttpRequest requestMetadata) throws Throwable {
         Class<?> methodReturnType = methodInvocation.getMethod().getReturnType();
         HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
-        boolean isAsync = Boolean.TRUE.equals(apiConfigContext.isAsyncRequest()) || Future.class.isAssignableFrom(methodReturnType);
+        boolean isAsync = Future.class.isAssignableFrom(methodReturnType);
         boolean isRetry = retryConfig != null && retryConfig.getMaxAttempts() != 0;
 
-        if (!isRetry){
-            if (isAsync){
-                HttpFuture<Object> future = new HttpFuture<>();
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        doAsyncInvoke(requestMetadata, future);
-                    } catch (Throwable e) {
-                        future.completeExceptionally(e);
-                    }
-                });
-                return future;
-            }else {
-                UniHttpResponseParseInfo parseInfo = doSyncInvoke(requestMetadata);
-                return parseInfo == null ? null : parseInfo.getMethodReturnValue();
-            }
+        if (isRetry){
+            // do by retry
+            RetryExecutor retryExecutor = retryConfig.isFastRetry() ? new FastRetryRetryExecutor(retryConfig, httpApiMethodInvocation, methodReturnType) : new SimpleRetryExecutor(retryConfig, httpApiMethodInvocation, methodReturnType);
+            return retryExecutor.execute(requestMetadata,() -> doSyncInvoke(requestMetadata));
+
         }
 
-        // request sync for retry
         if (!isAsync){
-            return doInvokeForSyncRetry(requestMetadata).getMethodReturnValue();
+            UniHttpResponseParseInfo parseInfo = doSyncInvoke(requestMetadata);
+            return parseInfo.getMethodReturnValue();
         }
 
-        // request async for retry
-        HttpFuture<Object> retryFuture = new HttpFuture<>();
-
-        //
-        CompletableFuture.runAsync(() -> {
+        HttpFuture<Object> future = new HttpFuture<>();
+        runAsync(() -> {
             try {
-                UniHttpResponseParseInfo parseInfo = doInvokeForSyncRetry(requestMetadata);
-                retryFuture.complete(parseInfo.getFutureInnerValue());
+                doAsyncInvoke(requestMetadata, future);
             } catch (Throwable e) {
-                retryFuture.completeExceptionally(e);
+                future.completeExceptionally(e);
             }
         });
+        return future;
+    }
 
-        return retryFuture;
+
+
+    private  void runAsync(Runnable runnable){
+        CompletableFuture.runAsync(runnable, POOL);
     }
 
     private void doAsyncInvoke(UniHttpRequest requestMetadata, HttpFuture<Object> future) {
@@ -321,70 +315,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
     }
 
-    private UniHttpResponseParseInfo doInvokeForSyncRetry(UniHttpRequest requestMetadata) throws Throwable {
-        HttpRetryConfig retryConfig = apiConfigContext.getRetryConfig();
-        HttpRetryStrategy<Object> retryStrategy = (HttpRetryStrategy<Object>)BizUtil.getBeanOrNew(retryConfig.getRetryStrategy());
-        Long delay = retryConfig.getDelay();
-
-        Integer maxAttempts = retryConfig.getMaxAttempts();
-        Exception curException;
-        Exception lastException = null;
-        UniHttpResponseParseInfo curParseInfo;
-        long executeCount = 0;
-        while (true){
-            curException = null;
-            curParseInfo = null;
-            executeCount++;
-            long curRetryCount = executeCount -1;
-            // 小于0一直重试，直到拿到结果
-            if (maxAttempts > 0 && curRetryCount > maxAttempts){
-                throw new UniHttpRetryTimeOutException("Exceeded the maximum retry count " + maxAttempts + ", stop retry",lastException);
-            }
-            boolean retryFlag = false;
-            boolean isException =false;
-            try {
-                // do call
-                curParseInfo = doSyncInvoke(requestMetadata);
-            } catch (Exception e) {
-                lastException = e;
-                curException = e;
-                isException = true;
-                if (ListsUtil.isEmpty(retryConfig.getInclude()) && ListsUtil.isEmpty(retryConfig.getExclude())){
-                    retryFlag = true;
-                }else {
-                    if (ListsUtil.isNotEmpty(retryConfig.getInclude())){
-                        retryFlag = retryConfig.isIncludeException(e.getClass());
-                    }
-                    if (ListsUtil.isNotEmpty(retryConfig.getExclude())){
-                        retryFlag = !retryConfig.isExcludeException(e.getClass());
-                    }
-                }
-            }
-
-            if (!isException && curParseInfo == null){
-                // processor stop retry
-                break;
-            }
-
-            if (!isException){
-                retryFlag = retryStrategy.canRetry(executeCount,requestMetadata,curParseInfo.getUniHttpResponse(),curParseInfo.getBodyResult(),httpApiMethodInvocation);
-            }
-
-            if (!retryFlag){
-                break;
-            }
-
-            if (delay > 0){
-                Thread.sleep(delay);
-            }
-        }
-
-        if (curException != null){
-            throw curException;
-        }
-        return curParseInfo;
-
-    }
 
     protected boolean postBeforeAllProcessor(UniHttpRequest requestMetadata){
         if (isProcessorMethod(ProcessorMethod.BEFORE_HTTP_REQUEST)){
@@ -401,16 +331,16 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return true;
     }
 
-    private UniHttpResponseParseInfo doSyncInvoke(UniHttpRequest requestMetadata) throws Throwable{
+    private UniHttpResponseParseInfo doSyncInvoke(UniHttpRequest requestMetadata) throws Exception {
         if (!postBeforeAllProcessor(requestMetadata)){
-            return null;
+            return new UniHttpResponseParseInfo(true);
         }
 
         // request sync
         return doAfterSyncInvoke(requestMetadata);
     }
 
-    private UniHttpResponseParseInfo doAfterSyncInvoke(UniHttpRequest requestMetadata) throws Throwable {
+    private UniHttpResponseParseInfo doAfterSyncInvoke(UniHttpRequest requestMetadata) throws Exception {
         HttpRequestExecuteInfo executeInfo = new HttpRequestExecuteInfo();
         try {
             // post sending
@@ -438,7 +368,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    public UniHttpResponseParseInfo convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request,HttpFuture<Object> asyncFuture) throws Throwable {
+    public UniHttpResponseParseInfo convertUniHttpResponse(HttpRequestExecuteInfo executeInfo, UniHttpRequest request,HttpFuture<Object> asyncFuture) throws Exception {
         UniHttpResponse uniHttpResponse = executeInfo.getUniHttpResponse();
 
         // post after http response
@@ -448,7 +378,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
         if (executeInfo.getException() != null) {
             // request error not response info
-            return null;
+            return new UniHttpResponseParseInfo(true);
         }
 
         Method method = httpApiMethodInvocation.getMethod();
@@ -714,6 +644,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         config.setInclude(Arrays.asList(anno.include()));
         config.setExclude(Arrays.asList(anno.exclude()));
         config.setRetryStrategy(anno.retryStrategy());
+        config.setFastRetry(anno.fastRetry());
         return config;
     }
 

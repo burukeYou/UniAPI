@@ -89,7 +89,12 @@ public class BizUtil {
         return JSON.parseObject(JSON.toJSONString(argValue), new TypeReference<Map<String, String>>() {});
     }
 
+
     public static <T> T getBeanOrNew(Class<T> beanClass){
+        if (beanClass == null){
+            return null;
+        }
+
         T bean = SpringBeanContext.getBean(beanClass);
         if (bean != null){
             return bean;

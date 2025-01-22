@@ -20,8 +20,12 @@ public class UniHttpResponseParseInfo {
 
     private Object futureInnerValue;
 
+    private boolean notResponse;
+
     public UniHttpResponseParseInfo() {
     }
 
-
+    public UniHttpResponseParseInfo(boolean notResponse) {
+        this.notResponse = notResponse;
+    }
 }
