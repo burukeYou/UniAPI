@@ -1,5 +1,8 @@
 package com.burukeyou.demo.config;
 
+import java.lang.reflect.Type;
+import java.util.List;
+
 import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
@@ -11,9 +14,6 @@ import com.burukeyou.uniapi.support.arg.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.lang.reflect.Type;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -39,7 +39,7 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
     }
 
     @Override
-    public void postAfterHttpResponse(Throwable exception, UniHttpRequest request, UniHttpResponse response, HttpApiMethodInvocation<UserHttpApi> methodInvocation) throws Throwable {
+    public void postAfterHttpResponse(Throwable exception, UniHttpRequest request, UniHttpResponse response, HttpApiMethodInvocation<UserHttpApi> methodInvocation)  {
         log.info("请求日志: {}",request.toHttpProtocol());
         HttpApiProcessor.super.postAfterHttpResponse(exception, request, response, methodInvocation);
         log.info("响应日志: {}",response.toHttpProtocol());

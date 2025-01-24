@@ -79,17 +79,25 @@ public class AsyncTest {
     public void test045() throws InterruptedException {
         HttpFuture<BaseRsp<String>> future = userApi2.del045();
 
-        future.whenCompleteResponse((rsp, ex) -> {
+        future.whenComplete((rsp, ex) -> {
             System.out.println("333333333333333");
             if (ex != null) {
                 ex.printStackTrace();
             }
-
-            String bodyToString = rsp.getBodyToString();
-            BaseRsp<String> bodyResult = rsp.getBodyResult();
-            System.out.println("22222====str==>" + bodyToString);
-            System.out.println("2222===result===> " + bodyResult);
+            System.out.println("22222====str==>" + rsp);
         });
+
+//        future.whenCompleteResponse((rsp, ex) -> {
+//            System.out.println("333333333333333");
+//            if (ex != null) {
+//                ex.printStackTrace();
+//            }
+//
+//            String bodyToString = rsp.getBodyToString();
+//            BaseRsp<String> bodyResult = rsp.getBodyResult();
+//            System.out.println("22222====str==>" + bodyToString);
+//            System.out.println("2222===result===> " + bodyResult);
+//        });
 
         //HttpResponse<BaseRsp<String>> httpResponse = future.getHttpResponse();
 
@@ -105,11 +113,18 @@ public class AsyncTest {
         CompletableFuture<HttpResponse<BaseRsp<String>>> future = userApi2.del046();
 
         future.whenComplete((rsp, ex) -> {
-            System.out.println("2222222");
-            String bodyToString = rsp.getBodyToString();
-            BaseRsp<String> bodyResult = rsp.getBodyResult();
-            System.out.println("33333333333 => " + bodyToString);
-            System.out.println("44444444444 => " + bodyResult);
+            if (ex != null){
+                ex.printStackTrace();
+            }
+            try {
+                System.out.println("2222222");
+                String bodyToString = rsp.getBodyToString();
+                BaseRsp<String> bodyResult = rsp.getBodyResult();
+                System.out.println("33333333333 => " + bodyToString);
+                System.out.println("44444444444 => " + bodyResult);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
         });
 
         System.out.println("111111111111");
