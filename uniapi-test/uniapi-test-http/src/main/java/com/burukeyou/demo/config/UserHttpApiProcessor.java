@@ -1,8 +1,5 @@
 package com.burukeyou.demo.config;
 
-import java.lang.reflect.Type;
-import java.util.List;
-
 import com.burukeyou.demo.annotation.UserHttpApi;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
@@ -14,6 +11,9 @@ import com.burukeyou.uniapi.support.arg.Param;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Type;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -55,7 +55,8 @@ public class UserHttpApiProcessor implements HttpApiProcessor<UserHttpApi> {
     @Override
     public Object postAfterHttpResponseBodyResult(Object bodyResult, UniHttpResponse rsp, HttpApiMethodInvocation<UserHttpApi> methodInvocation) {
         if (bodyResult instanceof BaseRsp){
-            ((BaseRsp) bodyResult).setCode(99999);
+           // do some thing
+            ((BaseRsp)bodyResult).setExt("后置处理设置");
         }
         return bodyResult;
     }

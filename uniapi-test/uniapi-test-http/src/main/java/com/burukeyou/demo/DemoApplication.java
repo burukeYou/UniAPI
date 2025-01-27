@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  *  httApi的扫描路径
  */
-@UniAPIScan("com.burukeyou.demo.api")
+@UniAPIScan({"com.burukeyou.demo.api","com.burukeyou.api"})
 @SpringBootApplication
 public class DemoApplication {
 

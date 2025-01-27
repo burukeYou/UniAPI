@@ -1,13 +1,14 @@
 package com.burukeyou;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
+import com.alibaba.fastjson2.JSON;
+import com.burukeyou.api.RetryServiceAPI;
 import com.burukeyou.demo.DemoApplication;
-import com.burukeyou.demo.api.RetryServiceAPI;
 import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.StopWatch;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @SpringBootTest(classes = DemoApplication.class)
@@ -45,7 +52,7 @@ public class RetryTest {
     // 异步重试
     @Test
     public void test04() throws InterruptedException {
-        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get4(UUID.randomUUID().toString());
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get4(UUID.randomUUID().toString(), Objects::isNull);
 
         a.whenComplete((data,ex) -> {
             System.out.println("异步重试结果: ");
@@ -61,9 +68,109 @@ public class RetryTest {
     }
 
     @Test
-    public void test05() throws InterruptedException {
-        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get4(UUID.randomUUID().toString());
+    public void test040() throws InterruptedException {
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get40(UUID.randomUUID().toString());
+        a.whenComplete((data,ex) -> {
+            System.out.println("异步重试结果: ");
+            if (ex != null){
+                ex.printStackTrace();
+                return;
+            }
+            System.out.println(data);
+        });
 
+        System.out.println("等待结果");
+        Thread.currentThread().join();
+    }
+
+    @Test
+    public void test041() throws InterruptedException {
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get41(UUID.randomUUID().toString());
+        a.whenComplete((data,ex) -> {
+            System.out.println("异步重试结果: ");
+            if (ex != null){
+                ex.printStackTrace();
+                return;
+            }
+            System.out.println(data);
+        });
+
+        System.out.println("等待结果");
+        Thread.currentThread().join();
+    }
+
+    @Test
+    public void test042() throws InterruptedException {
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get42(UUID.randomUUID().toString());
+        a.whenComplete((data,ex) -> {
+            System.out.println("异步重试结果: ");
+            if (ex != null){
+                ex.printStackTrace();
+                return;
+            }
+            System.out.println(data);
+        });
+
+        System.out.println("等待结果");
+        Thread.currentThread().join();
+    }
+
+    @Test
+    public void test043() throws InterruptedException {
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get43(UUID.randomUUID().toString(),result -> result.getCode() > 10);
+        a.whenComplete((data,ex) -> {
+            System.out.println("异步重试结果: ");
+            if (ex != null){
+                ex.printStackTrace();
+                return;
+            }
+            System.out.println(data);
+        });
+
+        System.out.println("等待结果");
+        Thread.currentThread().join();
+    }
+
+    @Test
+    public void test044() throws InterruptedException {
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get44(UUID.randomUUID().toString(), invocation -> invocation.getBodyResult().getCode() > 10) ;
+        a.whenComplete((data,ex) -> {
+            System.out.println("异步重试结果: ");
+            if (ex != null){
+                ex.printStackTrace();
+                return;
+            }
+            System.out.println(data);
+        });
+
+        System.out.println("等待结果");
+        Thread.currentThread().join();
+    }
+
+
+    @Test
+    public void test045() throws InterruptedException {
+        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get45(UUID.randomUUID().toString(), new HttpRetryInterceptorPolicy<BaseRsp<String>>() {
+            @Override
+            public boolean beforeExecute(UniHttpRequest uniHttpRequest, HttpRetryInvocation invocation) throws Exception {
+                log.info("before curCount:{}",invocation.getCurExecuteCount());
+                HttpFastRetry httpFastRetry = invocation.getHttpFastRetry();
+                return HttpRetryInterceptorPolicy.super.beforeExecute(uniHttpRequest, invocation);
+            }
+
+            @Override
+            public boolean afterExecuteFail(Exception exception, UniHttpRequest uniHttpRequest, HttpRetryInvocation invocation) throws Exception {
+                log.info("after fail curCount:{}",invocation.getCurExecuteCount());
+                return HttpRetryInterceptorPolicy.super.afterExecuteFail(exception, uniHttpRequest, invocation);
+            }
+
+            @Override
+            public boolean afterExecuteSuccess(BaseRsp<String> bodyResult, UniHttpRequest uniHttpRequest, UniHttpResponse uniHttpResponse, HttpRetryInvocation invocation) {
+                log.info("after success: {} curCount:{}", JSON.toJSONString(bodyResult),invocation.getCurExecuteCount());
+                log.info("aaaa {}",uniHttpResponse.getBodyToString());
+                return ((BaseRsp)bodyResult).getCode() > 10;
+            }
+        }) ;
         a.whenComplete((data,ex) -> {
             System.out.println("异步重试结果: ");
             if (ex != null){

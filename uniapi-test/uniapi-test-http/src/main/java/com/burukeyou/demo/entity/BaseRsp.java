@@ -12,6 +12,8 @@ public class BaseRsp<T> implements Serializable {
 
     private T data;
 
+    private String ext;
+
     public BaseRsp() {
     }
 

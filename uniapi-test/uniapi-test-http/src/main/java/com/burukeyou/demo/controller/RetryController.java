@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -30,6 +31,10 @@ public class RetryController {
         return  BaseRsp.ok(key + "-9999");
     }
 
+    public synchronized static BaseRsp<String> getRandomResult(String key){
+        return  new BaseRsp<>(new Random().nextInt(40),"牛逼： " + key);
+    }
+
 
     @GetMapping("/rt01")
     @ResponseBody
@@ -43,6 +48,14 @@ public class RetryController {
     public BaseRsp<String> rt02(@RequestParam("key") String key){
         log.info("收到请求02:  key:{}", key);
         return  getResult(key);
+    }
+
+
+    @GetMapping("/rt03")
+    @ResponseBody
+    public BaseRsp<String> rt03(@RequestParam("key") String key){
+        log.info("收到请求03:  key:{}", key);
+        return  getRandomResult(key);
     }
 
 
