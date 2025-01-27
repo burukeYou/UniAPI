@@ -1,17 +1,12 @@
 package com.burukeyou.uniapi.http.support;
 
-import java.io.InputStream;
-import java.lang.reflect.Type;
+import com.burukeyou.uniapi.http.core.response.HttpResponse;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
-
-import com.burukeyou.uniapi.http.core.response.HttpResponse;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.support.function.B3Function;
-import com.burukeyou.uniapi.http.utils.BizUtil;
 
 /**
  * Http Future
@@ -21,7 +16,7 @@ import com.burukeyou.uniapi.http.utils.BizUtil;
 @SuppressWarnings("ALL")
 public class HttpFuture<T> extends CompletableFuture<T>  {
 
-    private  CompletableFuture<UniHttpResponse> asyncFuture;
+    private  CompletableFuture<Object> asyncFuture;
 
     private HttpResponse<T> response;
 
@@ -33,24 +28,6 @@ public class HttpFuture<T> extends CompletableFuture<T>  {
         this.complete(value);
     }
 
-    public HttpFuture(CompletableFuture<UniHttpResponse> asyncFuture,
-                      Type bodyResultType,
-                      B3Function<? super UniHttpResponse, ? super Throwable, ? super HttpFuture<T>,UniHttpResponseParseInfo> biFunction) {
-        this.asyncFuture = asyncFuture;
-        asyncFuture.whenComplete((info, ex) -> {
-            try {
-                UniHttpResponseParseInfo apply = biFunction.apply(info, ex,this);
-                this.response = (HttpResponse<T>)apply.getHttpResponse();
-                this.complete((T)apply.getMethodReturnValue());
-            }catch (Throwable e){
-                this.completeExceptionally(e);
-            }finally {
-                if(!InputStream.class.equals(bodyResultType)){
-                    BizUtil.closeQuietly(info);
-                }
-            }
-        });
-    }
 
     /**
      * Blocking to get body result
@@ -86,13 +63,11 @@ public class HttpFuture<T> extends CompletableFuture<T>  {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return asyncFuture.cancel(mayInterruptIfRunning);
+        boolean result = this.asyncFuture.cancel(mayInterruptIfRunning);
+        super.cancel(mayInterruptIfRunning);
+        return result;
     }
 
-    @Override
-    public boolean isCancelled() {
-        return asyncFuture.isCancelled();
-    }
 
     /**
      * When the request ends, if the exception message of the successful callback is null, HttpResponse is not null

@@ -1,13 +1,13 @@
 package com.burukeyou.uniapi.http.core.channel;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.support.map.IMap;
 import org.aopalliance.intercept.MethodInvocation;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * @author  caihzihao
@@ -46,5 +46,11 @@ public interface HttpApiMethodInvocation<T extends Annotation> extends MethodInv
      *
      */
     Type getBodyResultType();
+
+    /**
+     * Get the absolute name of the method, including the class name
+     */
+    String getMethodAbsoluteName();
+
 
 }

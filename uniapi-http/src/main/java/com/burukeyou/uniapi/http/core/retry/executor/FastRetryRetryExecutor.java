@@ -1,73 +1,94 @@
 package com.burukeyou.uniapi.http.core.retry.executor;
 
-import java.lang.annotation.Annotation;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.burukeyou.retry.core.FastRetryQueue;
 import com.burukeyou.retry.core.RetryQueue;
+import com.burukeyou.retry.core.support.FastRetryThreadPool;
+import com.burukeyou.retry.spring.utils.SystemUtil;
+import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
 import com.burukeyou.uniapi.http.core.retry.RetryExecutor;
-import com.burukeyou.uniapi.http.core.retry.UniHttpFastRetryTask;
+import com.burukeyou.uniapi.http.core.retry.UniHttpRetryTask;
 import com.burukeyou.uniapi.http.support.HttpFuture;
 import com.burukeyou.uniapi.http.support.UniHttpResponseParseInfo;
-import com.burukeyou.uniapi.http.support.config.HttpRetryConfig;
-import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.support.thread.UniAPIThreadFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.BeanFactory;
+
+import java.lang.annotation.Annotation;
+import java.util.concurrent.*;
 
 /**
  * @author  caizhihao
  */
+@Slf4j
 public class FastRetryRetryExecutor implements RetryExecutor {
 
     private static RetryQueue retryQueue;
 
-    private final HttpRetryConfig retryConfig;
+    private HttpFastRetry httpFastRetry;
+
     private final HttpApiMethodInvocation<Annotation> httpApiMethodInvocation;
 
     private final Class<?> methodReturnType;
 
-    public FastRetryRetryExecutor(HttpRetryConfig retryConfig, HttpApiMethodInvocation<Annotation> httpApiMethodInvocation, Class<?> methodReturnType) {
-        this.retryConfig = retryConfig;
+    private BeanFactory beanFactory;
+
+    public FastRetryRetryExecutor(BeanFactory beanFactory,
+                                  HttpFastRetry httpFastRetry,
+                                  HttpApiMethodInvocation<Annotation> httpApiMethodInvocation,
+                                  Class<?> methodReturnType) {
+        this.beanFactory = beanFactory;
+        this.httpFastRetry = httpFastRetry;
         this.httpApiMethodInvocation = httpApiMethodInvocation;
         this.methodReturnType = methodReturnType;
+
     }
 
-    public Object execute(UniHttpRequest requestMetadata, Callable<UniHttpResponseParseInfo> callable) {
+    public Object execute(UniHttpRequest requestMetadata, Callable<UniHttpResponseParseInfo> callable) throws Throwable  {
+        // init retry queue
         lazyInitRetryQueue();
 
-        @SuppressWarnings("unchecked")
-        HttpRetryStrategy<Object> retryStrategy = (HttpRetryStrategy<Object>) BizUtil.getBeanOrNew(retryConfig.getRetryStrategy());
-        UniHttpFastRetryTask fastRetryTask = new UniHttpFastRetryTask(retryConfig, retryStrategy, requestMetadata, httpApiMethodInvocation, callable);
-        CompletableFuture<UniHttpResponseParseInfo> fastRetryFuture = retryQueue.submit(fastRetryTask);
-        HttpFuture<Object> retryFuture = new HttpFuture<>();
-        fastRetryFuture.whenComplete((parseInfo, throwable) -> {
-            if (throwable != null){
-                retryFuture.completeExceptionally(throwable);
-            }else {
-                // success complete
-                if (Future.class.isAssignableFrom(methodReturnType) ){
-                    retryFuture.complete(parseInfo.getFutureInnerValue());
+        UniHttpRetryTask fastRetryTask = new UniHttpRetryTask(callable, httpFastRetry,beanFactory, httpApiMethodInvocation, requestMetadata,httpApiMethodInvocation);
+        CompletableFuture<Object> fastRetryFuture = retryQueue.submit(fastRetryTask);
+
+        if (!Future.class.isAssignableFrom(methodReturnType)){
+            return fastRetryFuture.get();
+        }
+
+        if (methodReturnType.equals(CompletableFuture.class) || methodReturnType.equals(Future.class)){
+            return fastRetryFuture;
+        }
+
+        if (methodReturnType.equals(HttpFuture.class)){
+            HttpFuture<Object> httpFuture = new HttpFuture<>();
+            fastRetryFuture.whenComplete((data,ex) -> {
+                if (ex != null){
+                    httpFuture.completeExceptionally(ex);
                 }else {
-                    retryFuture.complete(parseInfo.getMethodReturnValue());
+                    httpFuture.complete(data);
                 }
-            }
-        });
-        return Future.class.isAssignableFrom(methodReturnType) ? retryFuture : retryFuture.get();
+            });
+            return httpFuture;
+        }
+
+       throw new IllegalStateException("unknow error");
     }
 
     private void lazyInitRetryQueue() {
         if (retryQueue == null){
-            synchronized (RetryQueue.class){
-                retryQueue  = new FastRetryQueue(new ThreadPoolExecutor(8, 16,
-                        300L, TimeUnit.MILLISECONDS,
-                        new LinkedBlockingQueue<>(),
-                        r -> new Thread(r, "uniHttp-fast-retry-thread")));
+            synchronized (FastRetryRetryExecutor.class){
+                if (retryQueue == null){
+                    int cpuCount = SystemUtil.CPU_COUNT;
+                    log.info("[Uni-Http-Retry] init default retry queue cpuSize:{} ", cpuCount);
+                    ExecutorService executorService = new FastRetryThreadPool(
+                            4,
+                            cpuCount * 4,
+                            60, TimeUnit.SECONDS,
+                            new UniAPIThreadFactory("Uni-Http-Retry")
+                    );
+                    retryQueue = new FastRetryQueue(executorService);
+                }
             }
         }
     }

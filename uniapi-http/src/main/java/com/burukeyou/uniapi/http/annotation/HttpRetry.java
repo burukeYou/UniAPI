@@ -1,18 +1,10 @@
 package com.burukeyou.uniapi.http.annotation;
 
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import com.burukeyou.uniapi.http.core.retry.DefaultHttpRetryStrategy;
-import com.burukeyou.uniapi.http.core.retry.HttpRetryStrategy;
+import java.lang.annotation.*;
 
 /**
- * Retry config annotation, when an exception occurs or {@link #retryStrategy} is return true, will be retried.
+ * Retry config annotation, when an exception occurs, will be retried.
  *
  * @author caizhihao
  *
@@ -31,7 +23,7 @@ public @interface HttpRetry {
     /**
      * the delay in milliseconds between retries
      */
-    long delay() default 0;
+    long delay() default 300;
 
     /**
      * Retries are performed only when a specified exception type occurs，By default, all exceptions are retried
@@ -46,17 +38,4 @@ public @interface HttpRetry {
      * @return exception types to stop retry
      */
     Class<? extends Exception>[] exclude() default {};
-
-    /**
-     *  use custom result retry strategy,
-     *  this policy can determine whether a retry is needed based on the results
-     *
-     * @return the class of retry-result-policy
-     */
-    Class<? extends HttpRetryStrategy<?>> retryStrategy() default DefaultHttpRetryStrategy.class;
-
-    /**
-     * Whether to use FastRetry to perform a retry <a href="https://github.com/burukeYou/fast-retry">FastRetry</a>
-     */
-    boolean fastRetry() default false;
 }

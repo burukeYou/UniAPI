@@ -43,7 +43,7 @@ public class HttpApiAnnotationProxy  extends AbstractAnnotationInvokeProxy<HttpA
         if (annotationMeta.getHttpApi() != null){
             HttpInterface httpInterface = AnnotatedElementUtils.getMergedAnnotation(method, HttpInterface.class);
             if (httpInterface != null){
-                return new DefaultHttpApiInvoker(annotationMeta,targetClass,httpInterface,methodInvocation,httpClient,xmlSerializeConverter,jsonSerializeConverter).invoke();
+                return new DefaultHttpApiInvoker(annotationMeta.getProxySupport().getBeanFactory(),annotationMeta,targetClass,httpInterface,methodInvocation,httpClient,xmlSerializeConverter,jsonSerializeConverter).invoke();
             }
         }
         return null;

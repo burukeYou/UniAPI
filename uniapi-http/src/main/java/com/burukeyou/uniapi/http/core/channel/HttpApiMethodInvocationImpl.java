@@ -1,13 +1,5 @@
 package com.burukeyou.uniapi.http.core.channel;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.concurrent.Future;
-
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
@@ -16,6 +8,14 @@ import com.burukeyou.uniapi.support.map.IMap;
 import com.burukeyou.uniapi.support.map.ValueObjectHashMap;
 import lombok.Setter;
 import org.aopalliance.intercept.MethodInvocation;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author  caihzihao
@@ -76,6 +76,12 @@ public class HttpApiMethodInvocationImpl implements HttpApiMethodInvocation<Anno
             currentType =  ((ParameterizedType) currentType).getActualTypeArguments()[0];
         }
         return currentType;
+    }
+
+    @Override
+    public String getMethodAbsoluteName() {
+        Method method = methodInvocation.getMethod();
+        return method.getDeclaringClass().getName() + "." + method.getName();
     }
 
     private Class<?> getTypeClass(Type type){
