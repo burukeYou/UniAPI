@@ -46,8 +46,10 @@ public class UniApiFactoryBean extends BaseSpringAware implements FactoryBean<Ob
     }
 
     private void createLazyProxy() {
-        ProxySupport proxySupport = new ProxySupport(getEnvironment());
+        ProxySupport proxySupport = new ProxySupport();
         proxySupport.setTargetClass(targetClass);
+        proxySupport.setBeanFactory(beanFactory);
+        proxySupport.setEnvironment(getEnvironment());
 
         Optional<ApiProxyFactory> factory = proxyFactoryList.stream().filter(e -> e.isProxy(proxySupport)).findFirst();
         if (!factory.isPresent()){
