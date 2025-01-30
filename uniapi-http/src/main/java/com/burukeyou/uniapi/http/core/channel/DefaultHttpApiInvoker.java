@@ -53,7 +53,10 @@ import java.lang.reflect.WildcardType;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 /**
@@ -979,6 +982,9 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return deserializeJsonToObject(JSON.toJSONString(extract), bodyResultType);
         }
 
+        if (StrUtil.isBlank(bodyString)){
+            return null;
+        }
 
         Object bodyResult = deserializeJsonToObject(bodyString, bodyResultType);
         if (bodyResult == null){
@@ -991,7 +997,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             return bodyResult;
         }
         DocumentContext documentContext = JsonPath.parse(bodyString);
-        populateResponseModel(bodyResultClass, bodyResult, documentContext);
+        populateResponseModel(bodyResultClass, bodyResultType,bodyResult, documentContext);
         return bodyResult;
     }
 

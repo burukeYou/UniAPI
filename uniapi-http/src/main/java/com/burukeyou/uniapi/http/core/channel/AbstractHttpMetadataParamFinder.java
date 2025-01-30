@@ -20,6 +20,7 @@ import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.ObjReference;
 import com.burukeyou.uniapi.http.utils.BizUtil;
 import com.burukeyou.uniapi.support.arg.*;
+import com.burukeyou.uniapi.util.ClzUtil;
 import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
 import com.jayway.jsonpath.DocumentContext;
@@ -33,10 +34,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -166,7 +164,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 continue;
             }
 
-            if (param.isObject()){
+            if (param.isObjectOrMap()){
                 List<Cookie> tmpList = JSON.parseObject(JSON.toJSONString(argValue)).entrySet().stream()
                         .map(e -> new Cookie(e.getKey(), e.getValue().toString()))
                         .collect(Collectors.toList());
@@ -557,7 +555,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         if (classLoader == this.getClass().getClassLoader()){
             return true;
         }
-        return false;
+        return true;
     }
 
 
@@ -628,7 +626,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
     // ============================================ Model ============================================
 
-    public boolean populateResponseModel(Class<?> modelClass, Object model, DocumentContext documentContext){
+    public boolean populateResponseModel(Class<?> modelClass, Type modelType, Object model, DocumentContext documentContext){
         ObjReference<Boolean> populateFlag = ObjReference.of(false);
         ReflectionUtils.doWithFields(modelClass, field -> {
             if(Modifier.isStatic(field.getModifiers())){
@@ -643,13 +641,39 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 return;
             }
 
-            if (field.isAnnotationPresent(ModelBinding.class) || field.getType().isAnnotationPresent(ModelBinding.class)){
-                Object subModelValue = field.get(model);
-                if (subModelValue == null){
-                    subModelValue = newInstance(field.getType());
+            // ParameterizedType
+            // TypeVariable
+            Class<?> fieldActualClass = field.getType();
+            Type fieldActualType = field.getGenericType();
+            if (field.isAnnotationPresent(ModelBinding.class) || fieldActualClass.isAnnotationPresent(ModelBinding.class)){
+                if (!isObject(fieldActualClass)){
+                    return;
                 }
-                boolean subFlag = populateResponseModel(field.getType(), subModelValue, documentContext);
-                if (subFlag){
+
+                if (fieldActualType instanceof TypeVariable){
+                    int index = -1;
+                    TypeVariable<? extends Class<?>>[] typeVars = modelClass.getTypeParameters();
+                    for (int i = 0; i < modelClass.getTypeParameters().length; i++) {
+                        if (typeVars[i] == fieldActualType){
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    ParameterizedType parameterizedType = (ParameterizedType) modelType;
+                    Type argument = parameterizedType.getActualTypeArguments()[index];
+                    fieldActualClass = ClzUtil.resolveClass(argument);
+                    fieldActualType = argument;
+                }
+
+                Object subModelValue = field.get(model);
+                boolean nullFlag = false;
+                if (subModelValue == null){
+                    nullFlag = true;
+                    subModelValue = newInstance(fieldActualClass);
+                }
+                boolean subFlag = populateResponseModel(fieldActualClass, fieldActualType,subModelValue, documentContext);
+                if (nullFlag && subFlag){
                     field.set(model, subModelValue);
                 }
             }
@@ -691,7 +715,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         if (type.equals(String.class)){
             return fieldValue.toString();
         }
-        return deserializeJsonToObject(JSON.toJSONString(fieldValue), type);
+        return deserializeJsonToObject(JSON.toJSONString(fieldValue), field.getGenericType());
     }
 
 

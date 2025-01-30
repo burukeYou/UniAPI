@@ -109,7 +109,7 @@ public abstract class AbstractParam implements Param {
         if (type.isPrimitive() || type.isEnum()){
             return false;
         }
-        if (type.isArray() || Collection.class.isAssignableFrom(type)){
+        if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)){
             return false;
         }
         if (classLoader == this.getClass().getClassLoader()){
