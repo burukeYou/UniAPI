@@ -13,7 +13,6 @@ import java.util.function.BiConsumer;
  * @author  caizhihao
  * @param <T>
  */
-@SuppressWarnings("ALL")
 public class HttpFuture<T> extends CompletableFuture<T>  {
 
     private  CompletableFuture<Object> asyncFuture;
@@ -63,9 +62,10 @@ public class HttpFuture<T> extends CompletableFuture<T>  {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        boolean result = this.asyncFuture.cancel(mayInterruptIfRunning);
-        super.cancel(mayInterruptIfRunning);
-        return result;
+        if (this.asyncFuture != null) {
+            this.asyncFuture.cancel(mayInterruptIfRunning);
+        }
+        return super.cancel(mayInterruptIfRunning);
     }
 
 

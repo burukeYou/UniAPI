@@ -1,25 +1,26 @@
 package com.burukeyou.uniapi.http.core.conveter.request;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
-import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
+import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
 import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.support.arg.ParamWrapper;
 import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author  caizhihao
@@ -34,7 +35,7 @@ public class BodyJsonParHttpBodyConverter extends AbstractHttpRequestBodyConvert
     protected HttpBody doConvert(Param param, BodyJsonPar annotation) {
         boolean need = param.isObject() && (param.isAnnotationPresent(ModelBinding.class) || param.getType().isAnnotationPresent(ModelBinding.class));
         if (!need) {
-            return convertToBody(serialize2JsonString(param), annotation);
+            return convertToBody(param, annotation);
         }
 
         Class<?> modelClass = param.getType();
@@ -50,8 +51,7 @@ public class BodyJsonParHttpBodyConverter extends AbstractHttpRequestBodyConvert
         });
 
         if (ListsUtil.isEmpty(map)) {
-            String jsonValue = serialize2JsonString(param);
-            return convertToBody(jsonValue, annotation);
+            return convertToBody(param, annotation);
         }
 
         String originJsonString = serialize2JsonString(param);
@@ -62,29 +62,28 @@ public class BodyJsonParHttpBodyConverter extends AbstractHttpRequestBodyConvert
             JSONPath.set(jsonObject, jsonPathAnno.value(),value);
         });
 
-        return new HttpBodyJSON(wrapperJson(jsonObject.toJSONString(), annotation));
+        return new HttpBodyJSON(wrapperJson(new ParamWrapper(jsonObject), annotation));
     }
 
-    private String wrapperJson(String jsonValue, BodyJsonPar annotation) {
+    private String wrapperJson(Param param, BodyJsonPar annotation) {
         String jsonPath = annotation.value();
         if (StrUtil.isBlank(jsonPath)) {
-            return jsonValue;
+            return serialize2JsonString(param);
         }
         if (!jsonPath.startsWith("$")){
-            Map<String, String> map = Collections.singletonMap(jsonPath, jsonValue);
-            jsonValue = JSON.toJSONString(map);
+            Map<String, Object> map = Collections.singletonMap(jsonPath, param.getValue());
+            return JSON.toJSONString(map);
         }else {
-            jsonValue = JSON.toJSONString(createJsonForPath(jsonPath,jsonValue));
+            return JSON.toJSONString(createJsonForPath(jsonPath,param.getValue()));
         }
-        return jsonValue;
     }
 
     private static Object createJsonForPath(String jsonPath, Object value) {
         return JSONPath.set(new JSONObject(), jsonPath, value);
     }
 
-    private HttpBodyJSON convertToBody(String jsonValue, BodyJsonPar annotation) {
-       return  new HttpBodyJSON(wrapperJson(jsonValue, annotation));
+    private HttpBodyJSON convertToBody(Param param, BodyJsonPar annotation) {
+       return  new HttpBodyJSON(wrapperJson(param, annotation));
     }
 
 

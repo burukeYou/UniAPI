@@ -1,26 +1,15 @@
 package com.burukeyou.uniapi.support.arg;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
+import java.time.*;
+import java.util.*;
 
 /**
  * @author caizhihao
@@ -72,6 +61,10 @@ public abstract class AbstractParam implements Param {
             if (StringUtils.isBlank(value.toString())){
                 return true;
             }
+        }
+
+        if (type == null){
+            return false;
         }
 
         if (type.isArray() && objectArrayNotExist(value)){

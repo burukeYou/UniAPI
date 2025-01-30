@@ -218,13 +218,14 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         HttpRetry anno = getMergeAnnotationFormObjectOrMethodCache(HttpRetry.class);
         if (anno != null){
             retryExecutor = new SimpleRetryExecutor(anno, httpApiMethodInvocation, methodReturnType);
+        }else {
+            HttpFastRetry httpFastRetry = getMergeAnnotationFormObjectOrMethodCache(HttpFastRetry.class);
+            if (httpFastRetry != null){
+                retryExecutor = new FastRetryRetryExecutor(beanFactory,httpFastRetry, httpApiMethodInvocation, methodReturnType);
+            }
         }
 
-        HttpFastRetry httpFastRetry = getMergeAnnotationFormObjectOrMethodCache(HttpFastRetry.class);
-        if (httpFastRetry != null){
-             retryExecutor = new FastRetryRetryExecutor(beanFactory,httpFastRetry, httpApiMethodInvocation, methodReturnType);
-        }
-
+        // do invoke for retry
         if (retryExecutor != null){
             return retryExecutor.execute(requestMetadata,() -> doSyncInvoke(requestMetadata));
         }
