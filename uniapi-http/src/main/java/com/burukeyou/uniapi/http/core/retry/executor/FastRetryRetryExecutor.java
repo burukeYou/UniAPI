@@ -3,7 +3,6 @@ package com.burukeyou.uniapi.http.core.retry.executor;
 import com.burukeyou.retry.core.FastRetryQueue;
 import com.burukeyou.retry.core.RetryQueue;
 import com.burukeyou.retry.core.support.FastRetryThreadPool;
-import com.burukeyou.retry.spring.utils.SystemUtil;
 import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
@@ -33,6 +32,9 @@ public class FastRetryRetryExecutor implements RetryExecutor {
     private final Class<?> methodReturnType;
 
     private BeanFactory beanFactory;
+
+    public static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
+
 
     public FastRetryRetryExecutor(BeanFactory beanFactory,
                                   HttpFastRetry httpFastRetry,
@@ -79,7 +81,7 @@ public class FastRetryRetryExecutor implements RetryExecutor {
         if (retryQueue == null){
             synchronized (FastRetryRetryExecutor.class){
                 if (retryQueue == null){
-                    int cpuCount = SystemUtil.CPU_COUNT;
+                    int cpuCount = CPU_COUNT;
                     log.info("[Uni-Http-Retry] init default retry queue cpuSize:{} ", cpuCount);
                     ExecutorService executorService = new FastRetryThreadPool(
                             4,

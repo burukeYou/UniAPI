@@ -1,10 +1,10 @@
 package com.burukeyou.uniapi.http.core.retry;
 
 import com.burukeyou.retry.core.policy.RetryPolicy;
-import com.burukeyou.retry.spring.core.retrytask.AbstractRetryAnnotationTask;
 import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.retry.fastretry.AbstractRetryAnnotationTask;
 import com.burukeyou.uniapi.http.core.retry.invocation.impl.HttpRetryInvocationImpl;
 import com.burukeyou.uniapi.http.core.retry.invocation.impl.RetryResultInvocationImpl;
 import com.burukeyou.uniapi.http.core.retry.policy.AllResultPolicy;

@@ -1,11 +1,9 @@
 package com.burukeyou.uniapi.http.core.retry;
 
+import com.burukeyou.retry.core.enums.LogEnum;
 import com.burukeyou.retry.core.policy.RetryPolicy;
-import com.burukeyou.retry.spring.annotations.RetryWait;
-import com.burukeyou.retry.spring.core.interceptor.FastRetryInterceptor;
-import com.burukeyou.retry.spring.core.policy.LogEnum;
-import com.burukeyou.retry.spring.core.retrytask.FastRetryAdapter;
 import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
+import com.burukeyou.uniapi.http.core.retry.fastretry.FastRetryAdapter;
 
 /**
  * @author  caizhihao
@@ -21,12 +19,6 @@ public class HttpRetryAnnotationAdapter implements FastRetryAdapter {
     @Override
     public int maxAttempts() {
         return fastRetry.maxAttempts();
-    }
-
-    @Override
-    public RetryWait retryWait() {
-        RetryWait[] retryWaits = fastRetry.retryWait();
-        return  retryWaits.length > 0 ? retryWaits[0] : null;
     }
 
     @Override
@@ -67,10 +59,5 @@ public class HttpRetryAnnotationAdapter implements FastRetryAdapter {
     @Override
     public Class<? extends RetryPolicy> policy() {
         return fastRetry.policy().length > 0 ? fastRetry.policy()[0] : null;
-    }
-
-    @Override
-    public Class<? extends FastRetryInterceptor> interceptor() {
-        return null;
     }
 }

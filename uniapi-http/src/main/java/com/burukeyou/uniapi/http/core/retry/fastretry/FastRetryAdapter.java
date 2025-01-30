@@ -1,66 +1,54 @@
-package com.burukeyou.uniapi.http.annotation;
-
+package com.burukeyou.uniapi.http.core.retry.fastretry;
 
 import com.burukeyou.retry.core.enums.LogEnum;
-import com.burukeyou.uniapi.http.core.retry.policy.AllResultPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.BodyResultPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryPolicy;
-
-import java.lang.annotation.*;
+import com.burukeyou.retry.core.policy.RetryPolicy;
 
 /**
- * Retry annotation
- *
- * @author caizhihao
- *
+ * @author  caizhihao
  */
-@Target({ElementType.METHOD,ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface HttpFastRetry {
+public interface FastRetryAdapter {
 
     /**
      * @return the maximum number of attempts , if -1, it means unlimited
      */
-    int maxAttempts() default 3;
+    int maxAttempts();
 
     /**
      * How long will it take to start the next retry, unit is MILLISECONDS
      */
-    long delay() default 500;
+    long delay();
 
     /**
      * Flag to say that whether try again when an exception occurs
      * @return try again if true
      */
-    boolean retryIfException() default true;
+    boolean retryIfException();
 
     /**
      * Exception types that are retryable.
      *
      * @return exception types to retry
      */
-    Class<? extends Exception>[] include() default {};
+    Class<? extends Exception>[] include();
 
     /**
      * Exception types that are not retryable.
      *
      * @return exception types to stop retry
      */
-    Class<? extends Exception>[] exclude() default {};
+    Class<? extends Exception>[] exclude();
 
     /**
      * Flag to say that whether recover when an exception occurs
      *
      * @return throw exception if false, if true return null and print exception log
      */
-    boolean exceptionRecover() default false;
+    boolean exceptionRecover();
 
     /**
      * Flag to say that whether print every time execute retry exception log, just prevent printing too many logs
      */
-    LogEnum errLog() default LogEnum.EVERY;
+    LogEnum errLog();
 
     /**
      * Set whether to simplify the stack information of the printing exception,
@@ -69,18 +57,13 @@ public @interface HttpFastRetry {
      * and the complete exception information will still be printed
      * @see #errLog()
      */
-    boolean briefErrorLog() default false;
+    boolean briefErrorLog();
 
     /**
      *  use custom  retry strategy,
-     *  <p>Currently, the following policies are supported:</p>
-     *  <ul>
-     *      <li>{@link BodyResultPolicy}</li>
-     *      <li>{@link AllResultPolicy}</li>
-     *      <li>{@link HttpRetryInterceptorPolicy}</li>
-     *  </ul>
      * @return the class of retry-result-policy
      */
-    Class<? extends HttpRetryPolicy>[] policy() default {};
+    Class<? extends RetryPolicy> policy() ;
+
 
 }

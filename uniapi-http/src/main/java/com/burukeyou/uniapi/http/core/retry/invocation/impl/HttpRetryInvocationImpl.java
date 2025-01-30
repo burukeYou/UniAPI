@@ -1,6 +1,6 @@
 package com.burukeyou.uniapi.http.core.retry.invocation.impl;
 
-import com.burukeyou.retry.spring.core.retrytask.RetryCounter;
+import com.burukeyou.retry.core.entity.RetryCounter;
 import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
 import com.burukeyou.uniapi.http.core.channel.HttpApiMethodInvocation;
 import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
