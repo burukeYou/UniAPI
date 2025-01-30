@@ -106,7 +106,7 @@ public abstract class AbstractParam implements Param {
     public boolean isObject() {
         Class<?> type = getType();
         ClassLoader classLoader = type.getClassLoader();
-        if (type.isPrimitive() || type.isEnum()){
+        if (type.isPrimitive() || type.isEnum() || String.class.equals(type) || Integer.class.equals(type) || Long.class.equals(type)){
             return false;
         }
         if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)){

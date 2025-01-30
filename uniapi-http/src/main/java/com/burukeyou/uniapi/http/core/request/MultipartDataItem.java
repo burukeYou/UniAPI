@@ -1,11 +1,13 @@
 package com.burukeyou.uniapi.http.core.request;
 
-import java.io.File;
-import java.io.InputStream;
-
+import com.burukeyou.uniapi.http.support.HttpFile;
+import com.burukeyou.uniapi.util.StrUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.io.InputStream;
 
 @Setter
 @Getter
@@ -48,6 +50,12 @@ public class MultipartDataItem {
         if (StringUtils.isBlank(fileName) && fieldValue != null && File.class.isAssignableFrom(fieldValue.getClass())){
             fileName = ((File) fieldValue).getName();
         }
+        if (fieldValue != null && HttpFile.class.isAssignableFrom(fieldValue.getClass())){
+            HttpFile httpFile = (HttpFile) fieldValue;
+            fileName = StrUtil.isBlank(fileName) ? httpFile.getFileName() : fileName;
+            return new MultipartDataItem(key, httpFile.getFile(), true,fileName);
+        }
+
         return new MultipartDataItem(key, fieldValue, true,fileName);
     }
 
@@ -61,7 +69,7 @@ public class MultipartDataItem {
             return "";
         }
         if (fieldValue instanceof File){
-            return ((File) fieldValue).getAbsolutePath();
+            return ((File) fieldValue).getAbsolutePath() + "    fileName: "  + fileName;
         }
         if (fieldValue instanceof byte[]){
             return  "byte[]@ Length:" + ((byte[]) fieldValue).length  + "    fileName: "  + fileName;
@@ -83,7 +91,7 @@ public class MultipartDataItem {
         if (StringUtils.isNotBlank(fileName)){
             return fileName;
         }
-        if (fieldValue != null && fieldValue instanceof File){
+        if (fieldValue instanceof File){
             return ((File) fieldValue).getName();
         }
         return fileName;

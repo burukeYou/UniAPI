@@ -545,17 +545,17 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
     }
 
     public boolean isObject(Class<?> type) {
-        if (type.isPrimitive() || type.isEnum()){
+        if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)){
             return false;
         }
-        if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)){
+        if (type.isPrimitive() || type.isEnum() || String.class.equals(type) || Integer.class.equals(type) || Long.class.equals(type)){
             return false;
         }
         ClassLoader classLoader = type.getClassLoader();
         if (classLoader == this.getClass().getClassLoader()){
             return true;
         }
-        return true;
+        return false;
     }
 
 

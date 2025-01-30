@@ -1,5 +1,11 @@
 package com.burukeyou.uniapi.http.utils;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
+import com.burukeyou.uniapi.config.SpringBeanContext;
+import com.burukeyou.uniapi.http.support.HttpFile;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -12,17 +18,14 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.TypeReference;
-import com.burukeyou.uniapi.config.SpringBeanContext;
-import org.apache.commons.lang3.StringUtils;
 
-
-@SuppressWarnings("ALL")
 public class BizUtil {
 
     public static boolean isFileForClass(Class<?> clz){
-        return File.class.isAssignableFrom(clz) || byte[].class.equals(clz) || InputStream.class.isAssignableFrom(clz);
+        return File.class.isAssignableFrom(clz)
+                || byte[].class.equals(clz)
+                || InputStream.class.isAssignableFrom(clz)
+                || HttpFile.class.isAssignableFrom(clz);
     }
 
     /**
@@ -126,6 +129,7 @@ public class BizUtil {
         return name;
     }*/
 
+    @SuppressWarnings("all")
     public static <T> T convertValueType(Object value, Class<T> type) {
         if (value == null){
             return null;

@@ -6,9 +6,11 @@ import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
+import com.burukeyou.uniapi.http.support.HttpFile;
 import com.burukeyou.uniapi.http.utils.BizUtil;
 import com.burukeyou.uniapi.support.arg.ArgList;
 import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.util.StrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -35,7 +37,7 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
 
     private List<MultipartDataItem> processBodyMultiParAnnoItem(Param param, BodyMultiPartPar multipartParam) {
         List<MultipartDataItem> dataItems;
-        if (param.isObjectOrMap()){
+        if (param.isObjectOrMap() && !HttpFile.class.isAssignableFrom(param.getType())){
              dataItems = getHttpBodyMultipartFormData(param.getValue(), param.getType());
         }else {
              dataItems = Collections.singletonList(getOneMultipartDataItem(param, multipartParam));
@@ -66,7 +68,7 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
         List<MultipartDataItem> dataItems = new ArrayList<>();
         ArgList argList = paramFinder.autoGetArgList(argValue);
         for (Param param : argList) {
-            if (param.isObjectOrMap()){
+            if (param.isObjectOrMap() && !HttpFile.class.isAssignableFrom(param.getType())){
                 continue;
             }
 
@@ -82,31 +84,41 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
             String fileName = "";
             if (subBodyParAnno != null){
                 fileName = subBodyParAnno.fileName();
+                if (StrUtil.isNotBlank(subBodyParAnno.value())){
+                    fieldName = subBodyParAnno.value();
+                }
             }
 
             if (BizUtil.isFileForClass(fieldType)){
                 dataItems.add(MultipartDataItem.ofFile(fieldName,fieldValue,fileName));
                 continue;
-            }
-            if (param.isCollection(File.class)){
+            }else if (param.isCollection(File.class)){
                 for (File file : param.castListValue(File.class)) {
                     dataItems.add(MultipartDataItem.ofFile(fieldName,file,fileName));
                 }
-            }
-            if (param.isCollection(byte[].class)){
+                continue;
+            }else if (param.isCollection(byte[].class)){
                 for (byte[] bytes : param.castListValue(byte[].class)) {
                     dataItems.add(MultipartDataItem.ofFile(fieldName,bytes,fileName));
                 }
-            }
-            if (param.isCollection(InputStream.class)){
+                continue;
+            }else if (param.isCollection(InputStream.class)){
                 for (InputStream inputStream : param.castListValue(InputStream.class)) {
                     dataItems.add(MultipartDataItem.ofFile(fieldName,inputStream,fileName));
                 }
+                continue;
+            }else if (param.isCollection(HttpFile.class)){
+                for (HttpFile httpFile : param.castListValue(HttpFile.class)) {
+                    String uploadFileName = StrUtil.isNotBlank(httpFile.getFileName()) ? httpFile.getFileName() : fileName;
+                    dataItems.add(MultipartDataItem.ofFile(fieldName,httpFile.getFile(),uploadFileName));
+                }
+                continue;
             }
 
-            // not file
             if (param.isNormalValue()){
+                // not file
                 dataItems.add(MultipartDataItem.ofText(fieldName,fieldValue == null ? null : fieldValue.toString()));
+                continue;
             }
 
             // 复合对象
