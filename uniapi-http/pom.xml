@@ -69,6 +69,13 @@
       <optional>true</optional>
     </dependency>
 
+    <dependency>
+      <groupId>io.github.burukeyou</groupId>
+      <artifactId>fast-retry-core</artifactId>
+      <version>0.3.2</version>
+      <optional>true</optional>
+    </dependency>
+
   </dependencies>
 
 </project>
