@@ -8,7 +8,7 @@ import com.burukeyou.uniapi.http.core.retry.invocation.ResultInvocation;
  * @author caizhihao
  * @param <T>
  */
-public interface AllResultPolicy<T> extends HttpRetryPolicy {
+public interface HttpRetryResponsePolicy<T> extends HttpRetryPolicy {
 
     /**
      * is Retry

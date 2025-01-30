@@ -6,12 +6,12 @@ package com.burukeyou.uniapi.http.core.retry.policy;
  * @author caizhihao
  * @param <T>
  */
-public interface BodyResultPolicy<T> extends HttpRetryPolicy {
+public interface HttpRetryResultPolicy<T> extends HttpRetryPolicy {
 
     /**
      * is Retry
      * @param bodyResult            bodyResult
-     * @return                      true if retry
+     * @return                      If it returns true, the retry will continue, otherwise stop the retry
      */
     boolean canRetry(T bodyResult);
 

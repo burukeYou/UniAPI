@@ -4,6 +4,12 @@ import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
 import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
 
+/**
+ * Provide finer grained interception control for the retry lifecycle,
+ * including before retry, after retry success, and after retry failure
+ * @author  caizhihao
+ * @param <T>
+ */
 public interface HttpRetryInterceptorPolicy<T> extends HttpRetryPolicy {
 
     /**

@@ -2,8 +2,8 @@ package com.burukeyou.uniapi.http.annotation;
 
 
 import com.burukeyou.retry.core.enums.LogEnum;
-import com.burukeyou.uniapi.http.core.retry.policy.AllResultPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.BodyResultPolicy;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryResponsePolicy;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryResultPolicy;
 import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
 import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryPolicy;
 
@@ -75,8 +75,8 @@ public @interface HttpFastRetry {
      *  use custom  retry strategy,
      *  <p>Currently, the following policies are supported:</p>
      *  <ul>
-     *      <li>{@link BodyResultPolicy}</li>
-     *      <li>{@link AllResultPolicy}</li>
+     *      <li>{@link HttpRetryResultPolicy}</li>
+     *      <li>{@link HttpRetryResponsePolicy}</li>
      *      <li>{@link HttpRetryInterceptorPolicy}</li>
      *  </ul>
      * @return the class of retry-result-policy

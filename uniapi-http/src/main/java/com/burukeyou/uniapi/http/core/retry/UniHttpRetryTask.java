@@ -7,8 +7,8 @@ import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.retry.fastretry.AbstractRetryAnnotationTask;
 import com.burukeyou.uniapi.http.core.retry.invocation.impl.HttpRetryInvocationImpl;
 import com.burukeyou.uniapi.http.core.retry.invocation.impl.RetryResultInvocationImpl;
-import com.burukeyou.uniapi.http.core.retry.policy.AllResultPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.BodyResultPolicy;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryResponsePolicy;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryResultPolicy;
 import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
 import com.burukeyou.uniapi.http.support.UniHttpResponseParseInfo;
 import org.aopalliance.intercept.MethodInvocation;
@@ -51,14 +51,14 @@ public class UniHttpRetryTask extends AbstractRetryAnnotationTask<Object> {
             return false;
         }
 
-        if (retryPolicy instanceof BodyResultPolicy){
-            BodyResultPolicy<Object> resultPolicy = (BodyResultPolicy<Object>)retryPolicy;
+        if (retryPolicy instanceof HttpRetryResultPolicy){
+            HttpRetryResultPolicy<Object> resultPolicy = (HttpRetryResultPolicy<Object>)retryPolicy;
             doInvokeMethod();
             return resultPolicy.canRetry(result.getBodyResult());
         }
 
-        if (retryPolicy instanceof AllResultPolicy){
-            AllResultPolicy<Object> interceptorPolicy = (AllResultPolicy<Object>)retryPolicy;
+        if (retryPolicy instanceof HttpRetryResponsePolicy){
+            HttpRetryResponsePolicy<Object> interceptorPolicy = (HttpRetryResponsePolicy<Object>)retryPolicy;
             doInvokeMethod();
             return interceptorPolicy.canRetry(new RetryResultInvocationImpl<>(httpApiMethodInvocation,retryCounter,httpFastRetry,uniHttpRequest, result));
         }
