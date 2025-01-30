@@ -1,21 +1,11 @@
 package com.burukeyou;
 
-import com.alibaba.fastjson2.JSON;
-import com.burukeyou.demo.entity.BaseRsp;
-import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
-import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
-import com.burukeyou.uniapi.http.core.retry.invocation.ResultInvocation;
-import com.burukeyou.uniapi.http.core.retry.policy.AllResultPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.BodyResultPolicy;
-import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PolicyData {
 
-    public static class Policy1 implements BodyResultPolicy<BaseRsp<String>> {
+   /* public static class Policy1 implements BodyResultPolicy<BaseRsp<String>> {
 
         @Override
         public boolean canRetry(BaseRsp<String> stringBaseRsp) {
@@ -59,6 +49,6 @@ public class PolicyData {
             return bodyResult.getCode() > 10;
         }
     }
-
+*/
 
 }

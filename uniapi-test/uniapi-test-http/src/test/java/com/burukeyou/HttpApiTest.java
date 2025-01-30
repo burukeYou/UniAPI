@@ -67,8 +67,13 @@ public class HttpApiTest {
     @Test
     public void test4(){
         BaseRsp<Add4DTO> rsp = userApi.add4(new Add4DTO(1L, "jay"));
-        //BaseRsp<Add4DTO> rsp2 = userApi.add42(new Add4DTO(1L, "jay"),"男",999);
         System.out.println(JSON.toJSONString(rsp));
+    }
+
+    @Test
+    public void test42(){
+        BaseRsp<Add4DTO> rsp2 = userApi.add42(new Add4DTO(1L, "jay"),3,"男",999);
+        System.out.println(JSON.toJSONString(rsp2));
     }
 
     @Test

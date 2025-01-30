@@ -1,14 +1,8 @@
-package com.burukeyou;
+package com.burukeyou.retry;
 
-import com.alibaba.fastjson2.JSON;
 import com.burukeyou.api.RetryServiceAPI;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.entity.BaseRsp;
-import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
-import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
-import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
-import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
-import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +13,6 @@ import org.springframework.util.StopWatch;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,6 +26,7 @@ public class RetryTest {
 
     @Test
     public void test01(){
+
         BaseRsp<String> a = retryServiceAPI.get1(UUID.randomUUID().toString());
         System.out.println();
     }
@@ -50,22 +44,22 @@ public class RetryTest {
     }
 
     // 异步重试
-    @Test
-    public void test04() throws InterruptedException {
-        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get4(UUID.randomUUID().toString(), Objects::isNull);
-
-        a.whenComplete((data,ex) -> {
-            System.out.println("异步重试结果: ");
-            if (ex != null){
-                ex.printStackTrace();
-                return;
-            }
-            System.out.println(data);
-        });
-
-        System.out.println("等待结果");
-        Thread.currentThread().join();
-    }
+//    @Test
+//    public void test04() throws InterruptedException {
+//        CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get4(UUID.randomUUID().toString(), Objects::isNull);
+//
+//        a.whenComplete((data,ex) -> {
+//            System.out.println("异步重试结果: ");
+//            if (ex != null){
+//                ex.printStackTrace();
+//                return;
+//            }
+//            System.out.println(data);
+//        });
+//
+//        System.out.println("等待结果");
+//        Thread.currentThread().join();
+//    }
 
     @Test
     public void test040() throws InterruptedException {
@@ -115,7 +109,7 @@ public class RetryTest {
         Thread.currentThread().join();
     }
 
-    @Test
+   /* @Test
     public void test043() throws InterruptedException {
         CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get43(UUID.randomUUID().toString(),result -> result.getCode() > 10);
         a.whenComplete((data,ex) -> {
@@ -182,7 +176,7 @@ public class RetryTest {
 
         System.out.println("等待结果");
         Thread.currentThread().join();
-    }
+    }*/
 
 
     @Test

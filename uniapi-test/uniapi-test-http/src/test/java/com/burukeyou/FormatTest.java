@@ -1,10 +1,11 @@
 package com.burukeyou;
 
 import com.burukeyou.demo.DemoApplication;
-import com.burukeyou.demo.api.FormatServiceApi;
+import com.burukeyou.api.FormatServiceApi;
 import com.burukeyou.demo.entity.json.StuDTO;
 import com.burukeyou.demo.entity.json.StuReq;
 import com.burukeyou.demo.entity.xml.UserXmlDTO;
+import com.burukeyou.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +49,7 @@ public class FormatTest {
         System.out.println();
     }
 
+
     @Test
     public void test06() {
         StuReq req = new StuReq();
@@ -59,6 +61,38 @@ public class FormatTest {
         req.setDetail(new StuReq.Detail("a",4));
         req.setBbq(new StuReq.BBQ("b",887));
         api.get06(req);
+        System.out.println();
+    }
+
+
+    @Test
+    public void test07() {
+        BaseResultA<UserInfo> api07 = api.get07();
+        System.out.println();
+    }
+
+    @Test
+    public void test08() {
+        BaseResultC<StuInfoA, UserInfo> api08 = api.get08();
+        System.out.println();
+    }
+
+
+    @Test
+    public void test09() {
+        BaseResultD<BaseResultB<UserInfo>> api09 = api.get09();
+        System.out.println();
+    }
+
+    @Test
+    public void test10() {
+        BaseResultC<StuInfoA, BaseResultB<UserInfo>> api10 = api.get10();
+        System.out.println();
+    }
+
+    @Test
+    public void test11() {
+        BaseResultC<StuInfoA, BaseResultD<BaseResultB<UserInfo>>> api11 = api.get11();
         System.out.println();
     }
 }

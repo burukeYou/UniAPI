@@ -1,35 +1,23 @@
 package com.burukeyou.demo.api;
 
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.List;
-
 import com.burukeyou.demo.annotation.UserHttpApi;
-import com.burukeyou.demo.entity.Add4DTO;
-import com.burukeyou.demo.entity.Add6DTO;
-import com.burukeyou.demo.entity.Add9DTO;
-import com.burukeyou.demo.entity.BaseRsp;
-import com.burukeyou.demo.entity.U2DTO;
+import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
 import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
-import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
-import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
-import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
-import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
-import com.burukeyou.uniapi.http.annotation.param.ComposePar;
-import com.burukeyou.uniapi.http.annotation.param.CookiePar;
-import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
-import com.burukeyou.uniapi.http.annotation.param.PathPar;
-import com.burukeyou.uniapi.http.annotation.param.QueryPar;
+import com.burukeyou.uniapi.http.annotation.param.*;
 import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import org.springframework.http.MediaType;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
 
 @UserHttpApi
 public interface UserServiceApi {
@@ -49,6 +37,7 @@ public interface UserServiceApi {
 
     @PostHttpInterface("/user-web/add4")
     BaseRsp<Add4DTO> add42(@BodyJsonPar Add4DTO req,
+                          @BodyJsonPar("level") Integer level,
                           @BodyJsonPar("sex") String sex,
                           @BodyJsonPar("$.bbq.kk.age") Integer age);
 
