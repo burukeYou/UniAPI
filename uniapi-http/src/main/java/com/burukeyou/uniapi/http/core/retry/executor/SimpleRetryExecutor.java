@@ -8,6 +8,7 @@ import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.retry.RetryExecutor;
 import com.burukeyou.uniapi.http.support.HttpFuture;
 import com.burukeyou.uniapi.http.support.UniHttpResponseParseInfo;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.util.concurrent.Callable;
@@ -17,6 +18,7 @@ import java.util.concurrent.Future;
  * simple sync retry
  * @author  caizhihao
  */
+@Slf4j
 public class SimpleRetryExecutor implements RetryExecutor {
 
     private final HttpRetry retryConfig;
@@ -24,31 +26,46 @@ public class SimpleRetryExecutor implements RetryExecutor {
 
     private final Class<?> methodReturnType;
 
-    public SimpleRetryExecutor(HttpRetry retryConfig, HttpApiMethodInvocation<Annotation> httpApiMethodInvocation, Class<?> methodReturnType) {
+    private Boolean isAsync;
+
+    public SimpleRetryExecutor(HttpRetry retryConfig,
+                               HttpApiMethodInvocation<Annotation> httpApiMethodInvocation,
+                               Class<?> methodReturnType,Boolean isAsync) {
         this.retryConfig = retryConfig;
         this.httpApiMethodInvocation = httpApiMethodInvocation;
         this.methodReturnType = methodReturnType;
+        this.isAsync = isAsync;
     }
 
     public Object execute(UniHttpRequest requestMetadata, Callable<UniHttpResponseParseInfo> callable) throws Throwable {
-        //  sync  retry
-        if (!Future.class.isAssignableFrom(methodReturnType)) {
-            return doInvokeForSyncRetry(retryConfig,requestMetadata,httpApiMethodInvocation,callable).getMethodReturnValue();
+        // async retry
+        if (Future.class.isAssignableFrom(methodReturnType)){
+            HttpFuture<Object> retryFuture = new HttpFuture<>();
+            DefaultHttpApiInvoker.runAsync(() -> {
+                try {
+                    UniHttpResponseParseInfo parseInfo = doInvokeForSyncRetry(retryConfig,requestMetadata,httpApiMethodInvocation,callable);
+                    retryFuture.complete(parseInfo.getFutureInnerValue());
+                } catch (Throwable e) {
+                    retryFuture.completeExceptionally(e);
+                }
+            });
+            return retryFuture;
         }
 
-        // async retry
-        HttpFuture<Object> retryFuture = new HttpFuture<>();
+        //
+        if (void.class == methodReturnType && Boolean.TRUE.equals(isAsync)){
+            DefaultHttpApiInvoker.runAsync(() -> {
+                try {
+                    doInvokeForSyncRetry(retryConfig,requestMetadata,httpApiMethodInvocation,callable);
+                } catch (Throwable e) {
+                    log.info("simpleRetry Exception method:{}",httpApiMethodInvocation.getMethodAbsoluteName(),e);
+                }
+            });
+            return null;
+        }
 
-        DefaultHttpApiInvoker.runAsync(() -> {
-            try {
-                UniHttpResponseParseInfo parseInfo = doInvokeForSyncRetry(retryConfig,requestMetadata,httpApiMethodInvocation,callable);
-                retryFuture.complete(parseInfo.getFutureInnerValue());
-            } catch (Throwable e) {
-                retryFuture.completeExceptionally(e);
-            }
-        });
-
-        return retryFuture;
+        //  sync  retry
+        return doInvokeForSyncRetry(retryConfig,requestMetadata,httpApiMethodInvocation,callable).getMethodReturnValue();
     }
 
     private UniHttpResponseParseInfo doInvokeForSyncRetry(HttpRetry retryConfig,

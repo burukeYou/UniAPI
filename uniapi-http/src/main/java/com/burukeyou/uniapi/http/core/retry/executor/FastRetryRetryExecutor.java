@@ -35,15 +35,18 @@ public class FastRetryRetryExecutor implements RetryExecutor {
 
     public static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
 
+    private Boolean isAsync;
 
     public FastRetryRetryExecutor(BeanFactory beanFactory,
                                   HttpFastRetry httpFastRetry,
                                   HttpApiMethodInvocation<Annotation> httpApiMethodInvocation,
-                                  Class<?> methodReturnType) {
+                                  Class<?> methodReturnType,
+                                  Boolean isAsync) {
         this.beanFactory = beanFactory;
         this.httpFastRetry = httpFastRetry;
         this.httpApiMethodInvocation = httpApiMethodInvocation;
         this.methodReturnType = methodReturnType;
+        this.isAsync = isAsync;
 
     }
 
@@ -53,6 +56,10 @@ public class FastRetryRetryExecutor implements RetryExecutor {
 
         UniHttpRetryTask fastRetryTask = new UniHttpRetryTask(callable, httpFastRetry,beanFactory, httpApiMethodInvocation, requestMetadata,httpApiMethodInvocation);
         CompletableFuture<Object> fastRetryFuture = retryQueue.submit(fastRetryTask);
+
+        if (void.class == methodReturnType && Boolean.TRUE.equals(isAsync)){
+            return null;
+        }
 
         if (!Future.class.isAssignableFrom(methodReturnType)){
             return fastRetryFuture.get();

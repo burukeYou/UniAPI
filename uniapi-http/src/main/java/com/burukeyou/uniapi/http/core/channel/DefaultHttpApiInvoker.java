@@ -208,16 +208,16 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
 
     private Object doInvoke(UniHttpRequest requestMetadata) throws Throwable {
         Class<?> methodReturnType = methodInvocation.getMethod().getReturnType();
-        boolean isAsync = Future.class.isAssignableFrom(methodReturnType);
+        boolean isAsync = Future.class.isAssignableFrom(methodReturnType) || (void.class == methodReturnType && apiConfigContext.isAsyncRequest());
 
         RetryExecutor retryExecutor = null;
         HttpRetry anno = getMergeAnnotationFormObjectOrMethodCache(HttpRetry.class);
         if (anno != null){
-            retryExecutor = new SimpleRetryExecutor(anno, httpApiMethodInvocation, methodReturnType);
+            retryExecutor = new SimpleRetryExecutor(anno, httpApiMethodInvocation, methodReturnType,isAsync);
         }else {
             HttpFastRetry httpFastRetry = getMergeAnnotationFormObjectOrMethodCache(HttpFastRetry.class);
             if (httpFastRetry != null){
-                retryExecutor = new FastRetryRetryExecutor(beanFactory,httpFastRetry, httpApiMethodInvocation, methodReturnType);
+                retryExecutor = new FastRetryRetryExecutor(beanFactory,httpFastRetry, httpApiMethodInvocation, methodReturnType,isAsync);
             }
         }
 
