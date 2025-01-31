@@ -94,7 +94,7 @@ public class FastRetryRetryExecutor implements RetryExecutor {
                             4,
                             cpuCount * 4,
                             60, TimeUnit.SECONDS,
-                            new UniAPIThreadFactory("Uni-Http-Retry")
+                            new UniAPIThreadFactory("UniHttp-Retry")
                     );
                     retryQueue = new FastRetryQueue(executorService);
                 }

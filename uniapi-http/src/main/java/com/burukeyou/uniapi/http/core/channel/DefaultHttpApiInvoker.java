@@ -248,7 +248,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             synchronized (DefaultHttpApiInvoker.class){
                 if (asyncThreadPool == null){
                     int cupCount = Runtime.getRuntime().availableProcessors();
-                    asyncThreadPool = new UniApiThreadPool(cupCount, cupCount * 20, 60L, TimeUnit.SECONDS, new UniAPIThreadFactory("[uniHttp-async]"));
+                    asyncThreadPool = new UniApiThreadPool(cupCount, cupCount * 10, 60L, TimeUnit.SECONDS, new UniAPIThreadFactory("[UniHttp-async]"));
                 }
             }
         }
