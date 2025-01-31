@@ -22,26 +22,21 @@ import com.burukeyou.uniapi.http.extension.processor.EmptyHttpApiProcessor;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.*;
 import com.burukeyou.uniapi.http.utils.BizUtil;
+import com.burukeyou.uniapi.http.utils.OkHttpUtil;
 import com.burukeyou.uniapi.support.ClassUtil;
 import com.burukeyou.uniapi.support.arg.MethodArgList;
 import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.support.thread.UniAPIThreadFactory;
 import com.burukeyou.uniapi.support.thread.UniApiThreadPool;
-import com.burukeyou.uniapi.util.FileBizUtil;
-import com.burukeyou.uniapi.util.StrUtil;
-import com.burukeyou.uniapi.util.TimeUtil;
+import com.burukeyou.uniapi.util.*;
 import com.jayway.jsonpath.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import okio.BufferedSink;
-import okio.Okio;
-import okio.Source;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,14 +45,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author caizhihao
@@ -85,8 +80,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     private BeanFactory beanFactory;
 
     private static volatile UniApiThreadPool asyncThreadPool;
-
-    private static final ExecutorService POOL = Executors.newCachedThreadPool(r -> new Thread(r,"uniHttp-async-thread"));
 
     public DefaultHttpApiInvoker(BeanFactory beanFactory,
                                  HttpApiAnnotationMeta annotationMeta,
@@ -378,7 +371,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                 methodReturnValue = new DefaultHttpFileResponse(uniHttpResponse, httpResponse.getOriginBodyPrintString(), httpResponse.getBodyResult());
             }
         }else if (Future.class.isAssignableFrom(methodReturnType)){
-            Class<?> futureInnerClass = getTypeClass(getParameterizedTypeFirst(method.getGenericReturnType()));
+            Class<?> futureInnerClass = getTypeClass(ClzUtil.getParameterizedTypeFirstArg(method.getGenericReturnType()));
              if (HttpResponse.class.equals(futureInnerClass)){
                  futureInnerValue = httpResponse;
              }else if (HttpFileResponse.class.equals(futureInnerClass)){
@@ -510,7 +503,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             requestBody = RequestBody.create(mediaTypeJson, body.toStringBody());
         }else if (body instanceof HttpBodyBinary) {
             InputStream inputStream = ((HttpBodyBinary) body).getFile();
-            requestBody = RequestBody.create(mediaTypeJson, streamToByteArray(inputStream));
+            requestBody = RequestBody.create(mediaTypeJson, FileBizUtil.streamToByteArray(inputStream));
         } else if (body instanceof HttpBodyFormData) {
             FormBody.Builder builder = new FormBody.Builder();
             HttpBodyFormData formDataBody = (HttpBodyFormData) body;
@@ -534,7 +527,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
                         builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
                     } else if (fileValue instanceof InputStream) {
                         InputStream inputStream = (InputStream) fileValue;
-                        RequestBody fileBody = this.create(MultipartBody.FORM, inputStream);
+                        RequestBody fileBody = OkHttpUtil.create(MultipartBody.FORM, inputStream);
                         builder.addFormDataPart(dataItem.getKey(), fileName, fileBody);
                     } else if (fileValue instanceof byte[]) {
                         byte[] bytes = (byte[]) fileValue;
@@ -547,48 +540,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
             requestBody = builder.build();
         }
         return requestBody;
-    }
-
-    /**
-     * Returns a new request body that transmits the content of {@code file}.
-     */
-    public RequestBody create(final MediaType contentType, final InputStream inputStream) {
-        if (inputStream == null) throw new NullPointerException("inputStream == null");
-        return new RequestBody() {
-            @Override
-            public MediaType contentType() {
-                return contentType;
-            }
-
-            @Override
-            public long contentLength() {
-                return -1;
-            }
-
-            @Override
-            public void writeTo(BufferedSink sink) throws IOException {
-                try (Source source = Okio.source(inputStream)) {
-                    sink.writeAll(source);
-                }
-            }
-        };
-    }
-
-
-    public static byte[] streamToByteArray(InputStream is) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] b = new byte[1024];
-            int len;
-            while ((len = is.read(b)) != -1) {
-                bos.write(b, 0, len);
-            }
-            byte[] array = bos.toByteArray();
-            bos.close();
-            return array;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 
@@ -831,25 +782,6 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
     }
 
 
-    protected Type getBodyResultType(MethodInvocation methodInvocation) {
-        Method method = methodInvocation.getMethod();
-        Class<?> currentClass = method.getReturnType();
-        Type currentType = method.getGenericReturnType();
-        if (Future.class.isAssignableFrom(currentClass)){
-            currentType = getParameterizedTypeFirst(currentType);
-            currentClass = getTypeClass(currentType);
-        }
-
-        if (HttpResponse.class.isAssignableFrom(currentClass)) {
-            currentType = getParameterizedTypeFirst(currentType);
-        }
-        return currentType;
-    }
-
-    private Type getParameterizedTypeFirst(Type type) {
-      return  ((ParameterizedType) type).getActualTypeArguments()[0];
-    }
-
     private Class<?> getTypeClass(Type type){
         if (type instanceof Class) {
             return (Class<?>) type;
@@ -882,7 +814,7 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         }
 
         if (savePath != null) {
-            if (isFileForPath(savePath)) {
+            if (PathUtil.isFileForPath(savePath)) {
                 return savePath;
             }
             savePath = joinPath(savePath, fileName);
@@ -911,42 +843,8 @@ public class DefaultHttpApiInvoker extends AbstractHttpMetadataParamFinder imple
         return savePath;
     }
 
-    protected boolean isFileForPath(String path) {
-        return Paths.get(path).getFileName().toString().contains(".");
-    }
-
-
     protected  String joinPath(Object... paths) {
-        if(paths == null || paths.length == 0) {
-            return "";
-        }
-        if (paths.length == 1) {
-            return paths[0].toString();
-        }
-
-        List<String> cleanPaths = new ArrayList<>();
-        String firstPath = paths[0].toString();
-        // 第一个拆后不拆前
-        if (firstPath.endsWith(File.separator)) {
-            firstPath = firstPath.substring(0, firstPath.length() - 1);
-        }
-        for (int i = 1; i < paths.length; i++) {
-            String path = paths[i].toString();
-            if (path.startsWith(File.separator)) {
-                path = path.substring(1);
-            }
-            if (path.endsWith(File.separator)) {
-                path = path.substring(0, path.length() - 1);
-            }
-            cleanPaths.add(path);
-        }
-
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(firstPath).append(File.separator);
-        for (String cleanPath : cleanPaths) {
-            stringBuilder.append(cleanPath).append(File.separator);
-        }
-        return stringBuilder.toString();
+      return PathUtil.joinPath(paths);
     }
 
     protected String getUUID() {

@@ -1,21 +1,13 @@
 package com.burukeyou.uniapi.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author caizhihao
@@ -303,4 +295,21 @@ public class FileBizUtil {
                 new File(content).exists() ||
                 content.length() < 100;
     }
+
+    public static byte[] streamToByteArray(InputStream is) {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            int len;
+            while ((len = is.read(b)) != -1) {
+                bos.write(b, 0, len);
+            }
+            byte[] array = bos.toByteArray();
+            bos.close();
+            return array;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

@@ -34,4 +34,8 @@ public class ClzUtil {
 
         throw new IllegalArgumentException("Unsupported type resolve : " + type);
     }
+
+    public static Type getParameterizedTypeFirstArg(Type type) {
+        return  ((ParameterizedType) type).getActualTypeArguments()[0];
+    }
 }
