@@ -1,8 +1,14 @@
 package com.burukeyou.retry;
 
+import com.alibaba.fastjson2.JSON;
 import com.burukeyou.api.RetryServiceAPI;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,7 +115,7 @@ public class RetryTest {
         Thread.currentThread().join();
     }
 
-   /* @Test
+   @Test
     public void test043() throws InterruptedException {
         CompletableFuture<BaseRsp<String>> a = retryServiceAPI.get43(UUID.randomUUID().toString(),result -> result.getCode() > 10);
         a.whenComplete((data,ex) -> {
@@ -124,6 +130,7 @@ public class RetryTest {
         System.out.println("等待结果");
         Thread.currentThread().join();
     }
+
 
     @Test
     public void test044() throws InterruptedException {
@@ -176,7 +183,7 @@ public class RetryTest {
 
         System.out.println("等待结果");
         Thread.currentThread().join();
-    }*/
+    }
 
 
     @Test

@@ -1,11 +1,21 @@
 package com.burukeyou;
 
+import com.alibaba.fastjson2.JSON;
+import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.uniapi.http.annotation.HttpFastRetry;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
+import com.burukeyou.uniapi.http.core.response.UniHttpResponse;
+import com.burukeyou.uniapi.http.core.retry.invocation.HttpRetryInvocation;
+import com.burukeyou.uniapi.http.core.retry.invocation.ResultInvocation;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryInterceptorPolicy;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryResponsePolicy;
+import com.burukeyou.uniapi.http.core.retry.policy.HttpRetryResultPolicy;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PolicyData {
 
-   /* public static class Policy1 implements BodyResultPolicy<BaseRsp<String>> {
+    public static class Policy1 implements HttpRetryResultPolicy<BaseRsp<String>> {
 
         @Override
         public boolean canRetry(BaseRsp<String> stringBaseRsp) {
@@ -14,7 +24,7 @@ public class PolicyData {
         }
     }
 
-    public static class Policy2 implements AllResultPolicy<BaseRsp<String>> {
+    public static class Policy2 implements HttpRetryResponsePolicy<BaseRsp<String>> {
 
         private int a = 0;
 
@@ -22,6 +32,9 @@ public class PolicyData {
         public boolean canRetry(ResultInvocation<BaseRsp<String>> invocation) {
             a++;
             BaseRsp<String> bodyResult = invocation.getBodyResult();
+            UniHttpRequest request = invocation.getRequest();
+            UniHttpResponse response = invocation.getResponse();
+            long curExecuteCount = invocation.getCurExecuteCount();
             log.info("Policy2: {} 当前执行次数:{} a:{}", JSON.toJSONString(bodyResult), invocation.getCurExecuteCount(),a);
             return bodyResult == null || bodyResult.getCode() > 8;
         }
@@ -49,6 +62,6 @@ public class PolicyData {
             return bodyResult.getCode() > 10;
         }
     }
-*/
+
 
 }
