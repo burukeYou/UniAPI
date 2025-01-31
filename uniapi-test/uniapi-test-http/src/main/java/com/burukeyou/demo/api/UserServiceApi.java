@@ -13,6 +13,7 @@ import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.support.HttpFile;
 import org.springframework.http.MediaType;
 
 import java.io.File;
@@ -65,6 +66,13 @@ public interface UserServiceApi {
                           @BodyMultiPartPar(value = "userImg",fileName = "牛逼.pdf") byte[] file,
                           @BodyMultiPartPar(value = "logoImg",fileName = "和.mp4") InputStream logoImg,
                           @BodyMultiPartPar(value = "logoImg",fileName = "娃啊.xlsx") File file2);
+
+    @PostHttpInterface("/user-web/add9")
+    BaseRsp<String> add92(@BodyMultiPartPar("reqNo") String value,
+                          @BodyMultiPartPar(value = "userImg",fileName = "牛逼.pdf") byte[] file,
+                          @BodyMultiPartPar(value = "logoImg",fileName = "和.mp4") InputStream logoImg,
+                          @BodyMultiPartPar(value = "logoImg",fileName = "娃啊.xlsx") File file2,
+                          @BodyMultiPartPar(value = "xxx1") HttpFile httpFile);
 
     @PostHttpInterface("/user-web/add10")
     HttpResponse<byte[]> add10();

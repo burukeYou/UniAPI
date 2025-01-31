@@ -6,6 +6,7 @@ import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
 import com.burukeyou.demo.entity.*;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
+import com.burukeyou.uniapi.http.support.HttpFile;
 import okhttp3.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -134,7 +135,17 @@ public class HttpApiTest {
     public void test91() throws IOException {
         File file1 = getLocalFile("img/a.txt");
         File file2 = getLocalFile("img/b.txt");
+        HttpFile httpFile = new HttpFile("user.xmls", "hah".getBytes());
         BaseRsp<String> rsp = userApi.add91("Sb", "123".getBytes(), Files.newInputStream(file1.toPath()),file2);
+        System.out.println(JSON.toJSONString(rsp));
+    }
+
+    @Test
+    public void test92() throws IOException {
+        File file1 = getLocalFile("img/a.txt");
+        File file2 = getLocalFile("img/b.txt");
+        HttpFile httpFile = new HttpFile("user.xmls", "hah".getBytes());
+        BaseRsp<String> rsp = userApi.add92("Sb", "123".getBytes(), Files.newInputStream(file1.toPath()),file2,httpFile);
         System.out.println(JSON.toJSONString(rsp));
     }
 
