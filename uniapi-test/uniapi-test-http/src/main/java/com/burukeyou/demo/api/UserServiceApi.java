@@ -1,13 +1,29 @@
 package com.burukeyou.demo.api;
 
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
+
 import com.burukeyou.demo.annotation.UserHttpApi;
-import com.burukeyou.demo.entity.*;
+import com.burukeyou.demo.entity.Add4DTO;
+import com.burukeyou.demo.entity.Add6DTO;
+import com.burukeyou.demo.entity.Add9DTO;
+import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
 import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
-import com.burukeyou.uniapi.http.annotation.param.*;
+import com.burukeyou.uniapi.http.annotation.param.BodyBinaryPar;
+import com.burukeyou.uniapi.http.annotation.param.BodyFormPar;
+import com.burukeyou.uniapi.http.annotation.param.BodyJsonPar;
+import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
+import com.burukeyou.uniapi.http.annotation.param.ComposePar;
+import com.burukeyou.uniapi.http.annotation.param.CookiePar;
+import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
+import com.burukeyou.uniapi.http.annotation.param.PathPar;
+import com.burukeyou.uniapi.http.annotation.param.QueryPar;
 import com.burukeyou.uniapi.http.annotation.request.DeleteHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.GetHttpInterface;
 import com.burukeyou.uniapi.http.annotation.request.PostHttpInterface;
@@ -15,10 +31,6 @@ import com.burukeyou.uniapi.http.annotation.request.PutHttpInterface;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.support.HttpFile;
 import org.springframework.http.MediaType;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.List;
 
 @UserHttpApi
 public interface UserServiceApi {
@@ -73,6 +85,14 @@ public interface UserServiceApi {
                           @BodyMultiPartPar(value = "logoImg",fileName = "和.mp4") InputStream logoImg,
                           @BodyMultiPartPar(value = "logoImg",fileName = "娃啊.xlsx") File file2,
                           @BodyMultiPartPar(value = "xxx1") HttpFile httpFile);
+
+    @PostHttpInterface("/user-web/add9")
+    BaseRsp<String> add93(
+                        @BodyMultiPartPar(value = "logoImg",fileName = "和.mp4") List<InputStream> files,
+                        @BodyMultiPartPar(value = "userImg") File[] files2,
+                        @BodyMultiPartPar(value = "bbqImg") List<HttpFile> files3,
+                        @BodyMultiPartPar(value = "sbImg",fileName = "娃啊.xlsx") byte[] files4,
+                        @BodyMultiPartPar(value = "xxx1") List<byte[]> files5);
 
     @PostHttpInterface("/user-web/add10")
     HttpResponse<byte[]> add10();

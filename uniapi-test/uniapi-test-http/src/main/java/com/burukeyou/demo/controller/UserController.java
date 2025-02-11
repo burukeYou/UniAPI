@@ -115,10 +115,13 @@ public class UserController {
     //  Content-Type:  multipart/form-data
     @PostMapping("/add9")
     @ResponseBody
-    public BaseRsp<String> add9(@RequestPart("userImg") MultipartFile file,
-                                @RequestPart("logoImg") MultipartFile[] file2,
+    public BaseRsp<String> add9(@RequestPart(value = "userImg",required = false) MultipartFile file,
+                                @RequestPart(value = "logoImg",required = false) MultipartFile[] file2,
+                                @RequestPart(value = "bbqImg",required = false) MultipartFile[] file3,
+                                @RequestPart(value = "sbImg",required = false) MultipartFile[] file4,
+                                @RequestPart(value = "xxx1",required = false) MultipartFile[] file5,
                                 Add4DTO formData,
-                                @RequestParam("reqNo") String reqNo) throws IOException {
+                                @RequestParam(value = "reqNo",required = false) String reqNo) throws IOException {
         log.info("收到请求9- data:{} size1:{} size2:{}",JSON.toJSONString(formData),file.getBytes().length,file2.length);
         return BaseRsp.ok("1");
     }

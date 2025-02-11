@@ -1,10 +1,23 @@
 package com.burukeyou;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+
 import com.alibaba.fastjson2.JSON;
 import com.burukeyou.demo.DemoApplication;
 import com.burukeyou.demo.api.SimpleServiceApi;
 import com.burukeyou.demo.api.UserServiceApi;
-import com.burukeyou.demo.entity.*;
+import com.burukeyou.demo.entity.Add4DTO;
+import com.burukeyou.demo.entity.Add6DTO;
+import com.burukeyou.demo.entity.Add9DTO;
+import com.burukeyou.demo.entity.BaseRsp;
+import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.core.response.HttpResponse;
 import com.burukeyou.uniapi.http.support.HttpFile;
 import okhttp3.Cookie;
@@ -15,14 +28,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.FileCopyUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
 
 
 @SpringBootTest(classes = DemoApplication.class)
@@ -45,6 +50,15 @@ public class HttpApiTest {
             throw new RuntimeException(e);
         }
     }
+
+    private InputStream getLocalFileInputstream(String path) {
+        try {
+            return new FileInputStream(getLocalFile(path));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Test
     public void test1(){
@@ -148,6 +162,28 @@ public class HttpApiTest {
         BaseRsp<String> rsp = userApi.add92("Sb", "123".getBytes(), Files.newInputStream(file1.toPath()),file2,httpFile);
         System.out.println(JSON.toJSONString(rsp));
     }
+
+    @Test
+    public void test93() throws IOException {
+        HttpFile httpFile = new HttpFile("user.xmls", "hah".getBytes());
+        HttpFile httpFile2 = new HttpFile("user2.xls", "sb33".getBytes());
+        List<HttpFile> list2 = Arrays.asList(httpFile2, httpFile);
+
+        File file4 = getLocalFile("img/a.txt");
+        File file5 = getLocalFile("img/b.txt");
+        List<File> list = Arrays.asList(file4, file5);
+
+
+        InputStream i1 = getLocalFileInputstream("img/a.txt");
+        InputStream i2 = getLocalFileInputstream("img/a.txt");
+        List<InputStream> list1 = Arrays.asList(i1, i2);
+
+        List<byte[]> list3 = Arrays.asList("1".getBytes(), "2".getBytes());
+
+        BaseRsp<String> rsp = userApi.add93(list1,list.toArray(new File[]{}),list2,"8888".getBytes(),list3);
+        System.out.println(JSON.toJSONString(rsp));
+    }
+
 
     @Test
     public void test10(){
