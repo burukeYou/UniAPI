@@ -1,5 +1,11 @@
 package com.burukeyou.uniapi.http.core.conveter.request;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
@@ -10,15 +16,10 @@ import com.burukeyou.uniapi.http.support.HttpFile;
 import com.burukeyou.uniapi.http.utils.BizUtil;
 import com.burukeyou.uniapi.support.arg.ArgList;
 import com.burukeyou.uniapi.support.arg.Param;
+import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author  caizhihao
@@ -38,11 +39,34 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
     private List<MultipartDataItem> processBodyMultiParAnnoItem(Param param, BodyMultiPartPar multipartParam) {
         List<MultipartDataItem> dataItems;
         if (param.isObjectOrMap() && !HttpFile.class.isAssignableFrom(param.getType())){
-             dataItems = getHttpBodyMultipartFormData(param.getValue(), param.getType());
+             dataItems = buildItemForObjOrMap(param.getValue(), param.getType());
+        }else if (param.isCollection() && byte[].class != param.getType()){
+            List<Object> itemList = param.castListValue(Object.class);
+            dataItems = buildItemForCollection(itemList,multipartParam);
         }else {
              dataItems = Collections.singletonList(getOneMultipartDataItem(param, multipartParam));
         }
         return dataItems;
+    }
+
+    private List<MultipartDataItem> buildItemForCollection(List<Object> itemList, BodyMultiPartPar multipartParam) {
+        if (ListsUtil.isEmpty(itemList)){
+            return Collections.emptyList();
+        }
+        List<MultipartDataItem> items = new ArrayList<>(itemList.size());
+        for (Object item : itemList) {
+            if (item == null){
+                continue;
+            }
+            MultipartDataItem multipartDataItem = null;
+            if (isFileType(item.getClass())){
+                multipartDataItem = MultipartDataItem.ofFile(multipartParam.value(), item, multipartParam.fileName());
+            }else {
+                multipartDataItem = MultipartDataItem.ofText(multipartParam.value(), item.toString());
+            }
+            items.add(multipartDataItem);
+        }
+        return items;
     }
 
     private static MultipartDataItem getOneMultipartDataItem(Param param, BodyMultiPartPar multipartParam) {
@@ -52,7 +76,7 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
             throw new BaseUniHttpException("use @BodyMultiPartPar for type " + param.getType().getName() + "must have name");
         }
         MultipartDataItem multipartDataItem = null;
-        if (isFileType(param)){
+        if (isFileType(param.getType())){
             multipartDataItem = MultipartDataItem.ofFile(multipartParam.value(), argValue, multipartParam.fileName());
         }else {
             multipartDataItem = MultipartDataItem.ofText(multipartParam.value(), argValue.toString());
@@ -60,11 +84,11 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
         return multipartDataItem;
     }
 
-    private static boolean isFileType(Param param) {
-        return BizUtil.isFileForClass(param.getType());
+    private static boolean isFileType(Class<?> clz) {
+        return BizUtil.isFileForClass(clz);
     }
 
-    private  List<MultipartDataItem>  getHttpBodyMultipartFormData(Object argValue, Class<?> argClass) {
+    private  List<MultipartDataItem> buildItemForObjOrMap(Object argValue, Class<?> argClass) {
         List<MultipartDataItem> dataItems = new ArrayList<>();
         ArgList argList = paramFinder.autoGetArgList(argValue);
         for (Param param : argList) {
