@@ -1,11 +1,15 @@
 package com.burukeyou.uniapi.http.support;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 import com.burukeyou.uniapi.http.core.ssl.SslConfig;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.Serializable;
-import java.util.*;
 
 @Getter
 @Setter
@@ -21,8 +25,10 @@ public class HttpApiConfigContext implements Serializable {
 
     private HttpResponseConfig httpResponseConfig;
 
+    private HttpProxyConfig httpProxyConfig;
+
     public boolean isNotClientConfig(){
-        Object[] arr = {httpCallConfig,sslConfig,httpRequestConfig};
+        Object[] arr = {httpCallConfig,sslConfig,httpRequestConfig,httpProxyConfig};
         return  Arrays.stream(arr).allMatch(Objects::isNull);
     }
 

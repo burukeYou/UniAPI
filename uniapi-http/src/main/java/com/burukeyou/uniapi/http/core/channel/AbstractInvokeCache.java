@@ -7,6 +7,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +25,13 @@ import com.burukeyou.uniapi.http.core.ssl.SslConnectionContextFactory;
 import com.burukeyou.uniapi.http.extension.processor.HttpApiProcessor;
 import com.burukeyou.uniapi.http.support.HttpApiConfigContext;
 import com.burukeyou.uniapi.http.support.HttpCallConfig;
+import com.burukeyou.uniapi.http.support.HttpProxyConfig;
 import com.burukeyou.uniapi.http.support.HttpRequestConfig;
+import com.burukeyou.uniapi.util.StrUtil;
 import okhttp3.ConnectionSpec;
+import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -139,6 +145,31 @@ public abstract class AbstractInvokeCache {
             if (requestConfig.getFollowSslRedirect() != null){
                 newBuilder.followSslRedirects(requestConfig.getFollowSslRedirect());
             }
+        }
+
+        HttpProxyConfig proxyConfig = apiConfigContext.getHttpProxyConfig();
+        if (proxyConfig != null && StrUtil.isNotBlank(proxyConfig.getAddress())){
+            String host;
+            String port = "80";
+            String address = proxyConfig.getAddress();
+            Proxy.Type proxyType = proxyConfig.getType();
+            if (address.contains(":") | address.contains("：")){
+                String[] split = address.split("[:：]");
+                host = split[0].trim();
+                port = split[1].trim();
+            }else {
+                host = address.trim();
+            }
+            Proxy proxy = new Proxy(proxyType,new InetSocketAddress(host,Integer.parseInt(port)));
+            newBuilder.proxy(proxy);
+            if (Proxy.Type.HTTP.equals(proxyType) && StrUtil.isNotBlank(proxyConfig.getUsername())){
+                    newBuilder.proxyAuthenticator((route, response) -> {
+                        String credential = Credentials.basic(proxyConfig.getUsername(),proxyConfig.getPassword());
+                        Request.Builder builder = response.request().newBuilder().header("Proxy-Authorization", credential);
+                        return builder.build();
+                    });
+            }
+            // todo socks authenticator
         }
 
         return newBuilder.build();
