@@ -1,25 +1,57 @@
 package com.burukeyou.uniapi.http.core.channel;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONException;
 import com.alibaba.fastjson2.JSONObject;
 import com.burukeyou.uniapi.http.annotation.HttpApi;
 import com.burukeyou.uniapi.http.annotation.JsonPathMapping;
 import com.burukeyou.uniapi.http.annotation.ModelBinding;
-import com.burukeyou.uniapi.http.annotation.param.*;
+import com.burukeyou.uniapi.http.annotation.param.ComposePar;
+import com.burukeyou.uniapi.http.annotation.param.CookiePar;
+import com.burukeyou.uniapi.http.annotation.param.HeaderPar;
+import com.burukeyou.uniapi.http.annotation.param.PathPar;
+import com.burukeyou.uniapi.http.annotation.param.QueryPar;
 import com.burukeyou.uniapi.http.annotation.request.HttpInterface;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverter;
 import com.burukeyou.uniapi.http.core.conveter.request.HttpRequestBodyConverterChain;
 import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.exception.UniHttpRequestParamException;
-import com.burukeyou.uniapi.http.core.request.*;
+import com.burukeyou.uniapi.http.core.request.HttpBody;
+import com.burukeyou.uniapi.http.core.request.HttpBodyBinary;
+import com.burukeyou.uniapi.http.core.request.HttpBodyFormData;
+import com.burukeyou.uniapi.http.core.request.HttpBodyJSON;
+import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
+import com.burukeyou.uniapi.http.core.request.HttpBodyXML;
+import com.burukeyou.uniapi.http.core.request.HttpUrl;
+import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
+import com.burukeyou.uniapi.http.core.request.UniHttpRequest;
 import com.burukeyou.uniapi.http.core.serialize.json.JsonSerializeConverter;
 import com.burukeyou.uniapi.http.core.serialize.xml.XmlSerializeConverter;
 import com.burukeyou.uniapi.http.support.Cookie;
 import com.burukeyou.uniapi.http.support.MediaTypeEnum;
 import com.burukeyou.uniapi.http.support.ObjReference;
 import com.burukeyou.uniapi.http.utils.BizUtil;
-import com.burukeyou.uniapi.support.arg.*;
+import com.burukeyou.uniapi.support.arg.ArgList;
+import com.burukeyou.uniapi.support.arg.ClassFieldArgList;
+import com.burukeyou.uniapi.support.arg.MapArgList;
+import com.burukeyou.uniapi.support.arg.MethodArgList;
+import com.burukeyou.uniapi.support.arg.Param;
 import com.burukeyou.uniapi.util.ClzUtil;
 import com.burukeyou.uniapi.util.ListsUtil;
 import com.burukeyou.uniapi.util.StrUtil;
@@ -33,10 +65,6 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author caizhihao
@@ -323,9 +351,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
     public Map<String, String> findHeaders(ArgList argList) {
         String[] headers = httpInterface.headers();
-        Map<String, String> fixHeaders = Arrays.stream(headers)
-                .filter(e -> e.contains("="))
-                .collect(Collectors.toMap(e -> e.split("=")[0].trim(), e -> getEnvironmentValue(e.split("=")[1].trim())));
+        Map<String, String> fixHeaders = getKeyPairMapFromArray(headers);
 
         for (Param methodArg : argList) {
             HeaderPar annotation = methodArg.getAnnotation(HeaderPar.class);
@@ -366,6 +392,18 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
         return fixHeaders;
     }
 
+    private Map<String, String> getKeyPairMapFromArray(String[] array) {
+        Map<String, String> fixHeaders = new HashMap<>();
+        for (String pair : array) {
+            String[] split = pair.split("[=:：]", 2);
+            if (split.length != 2){
+                continue;
+            }
+            fixHeaders.put(split[0].trim(), getEnvironmentValue(split[1].trim()));
+        }
+        return fixHeaders;
+    }
+
     public Map<String,String> getHeaderParamForObj(Object obj){
         Map<String,String> map = new HashMap<>();
         for (Param param : autoGetArgList(obj)) {
@@ -386,9 +424,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
 
     public Map<String,Object> findQueryParam(ArgList argList) {
         String[] params = httpInterface.params();
-        Map<String, String> queryParam = Arrays.stream(params)
-                .filter(e-> e.contains("="))
-                .collect(Collectors.toMap(e -> e.split("=")[0], e -> getEnvironmentValue(e.split("=")[1])));
+        Map<String, String> queryParam =  getKeyPairMapFromArray(params);
 
         String paramStr = httpInterface.paramStr();
         if (StringUtils.isNotBlank(paramStr) && paramStr.contains("=")){
