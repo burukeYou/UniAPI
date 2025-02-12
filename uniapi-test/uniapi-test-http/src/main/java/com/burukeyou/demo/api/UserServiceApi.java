@@ -141,8 +141,8 @@ public interface UserServiceApi {
     File add12(@ResponseFile(overwrite = false) String savePath);
 
     @PostHttpInterface(path = "/user-web/update",
-            headers = {"clientType=sys-app","userId=99","aaa=${server.port}"},
-            params = {"name=周杰伦","age=1","appId=${server.port}"},
+            headers = {"clientType=sys-app","userId:99","aaa：${server.port}"},
+            params = {"name: 周杰伦","age=1","appId=${server.port}"},
             paramStr = "a=1&b=2&c=3&d=哈哈&e=%E7%89%9B%E9%80%BC"
     )
     BaseRsp<String> update0();
