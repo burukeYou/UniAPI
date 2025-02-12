@@ -486,7 +486,7 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 continue;
             }
 
-            String tmpFiledName = annotation.value();
+            String tmpFiledName = StrUtil.isNotBlank(annotation.value()) ? annotation.value() : methodArg.getName();
             Object value = getActualArgValue(methodArg.getValue());
             if (value == null){
                 queryMap.put(tmpFiledName,null);
