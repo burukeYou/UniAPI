@@ -201,13 +201,15 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
             }
 
             if (String.class.equals(param.getType())){
-                if (StringUtils.isNotBlank(annotation.value())){
-                    // 指定了name 当成单个cookie处理
-                    cookies.add(new Cookie(annotation.value(),argValue.toString()));
+                String cookieStr = argValue.toString();
+                if (StrUtil.isNotBlank(annotation.value()) || !cookieStr.contains("=")){
+                    //  当成单个cookie处理
+                    String cookieName = StrUtil.isNotBlank(annotation.value()) ? annotation.value() : param.getName();
+                    cookies.add(new Cookie(cookieName,cookieStr));
                 }else {
-                    cookies.addAll(parseCookie(argValue.toString()));
+                    // 当成 cookie string 处理
+                    cookies.addAll(parseCookie(cookieStr));
                 }
-                continue;
             }
         }
 
@@ -359,14 +361,13 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 continue;
             }
 
-            // populate header model
-            populateRequestModel(methodArg);
-
             Object argValue = methodArg.getValue();
             String tmpFiledName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : methodArg.getName();
             boolean isObjFlag = isObjOrMap(methodArg.getType());
-            if (StringUtils.isBlank(tmpFiledName) && !isObjFlag){
-                throw new IllegalArgumentException("use @HeaderPar please specify parameter name");
+
+            if (isObjFlag){
+                // populate header model for object
+                populateRequestModel(methodArg);
             }
 
             Object value = getActualArgValue(argValue);
@@ -441,26 +442,26 @@ public abstract class AbstractHttpMetadataParamFinder extends AbstractInvokeCach
                 continue;
             }
 
-            // populate model
-            populateRequestModel(param);
 
             String tmpFiledName = StringUtils.isNotBlank(annotation.value()) ? annotation.value() : param.getName();
-            boolean needFlag = isObjOrMap(param.getType());
-            if ((!needFlag || param.isCollection()) && StringUtils.isBlank(tmpFiledName)){
-                throw new IllegalArgumentException("use @QueryPar please specify parameter name");
+            boolean isObjMap = isObjOrMap(param.getType());
+
+            if (isObjMap){
+                // populate model
+                populateRequestModel(param);
             }
 
             Object argValue = param.getValue();
             Object value = getActualArgValue(argValue);
             if (value == null){
-                if (!needFlag){
+                if (!isObjMap){
                     queryMap.put(tmpFiledName,null);
                 }
                 // 为复杂对象直接忽略
                 continue;
             }
 
-            if (!needFlag){
+            if (!isObjMap){
                 if (param.isCollection()){
                     value = param.castListValue(Object.class)
                             .stream()

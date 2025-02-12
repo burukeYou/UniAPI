@@ -123,23 +123,23 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+          <showWarnings>true</showWarnings>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0</version>
         <configuration>
           <skip>true</skip>
-        </configuration>
-      </plugin>
-
-      <!-- Deployment      -->
-      <plugin>
-        <groupId>org.sonatype.central</groupId>
-        <artifactId>central-publishing-maven-plugin</artifactId>
-        <version>0.3.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <publishingServerId>${sno.serviceId}</publishingServerId>
-          <tokenAuth>true</tokenAuth>
-          <deploymentName>${dp.name}</deploymentName>
         </configuration>
       </plugin>
 

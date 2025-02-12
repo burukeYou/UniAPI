@@ -8,11 +8,11 @@ import java.lang.annotation.*;
  *
  * <pre>
  * Support parameter types for tags：
+ *       Custom Object
  *       Map
  *       {@link com.burukeyou.uniapi.http.support.Cookie}
  *       Collection Cookie
- *       String (specify name)           Treat as a single cookie key value pair
- *       String (not specify name)       Treat as a complete cookie string
+ *       String , It is automatically recognized whether it is a single cookie or multiple cookies string
  *</pre>
  *
  * @author caizhihao
