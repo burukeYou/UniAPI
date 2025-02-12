@@ -3,6 +3,7 @@ package com.burukeyou.demo.api;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.Proxy;
 import java.util.List;
 
 import com.burukeyou.demo.annotation.UserHttpApi;
@@ -12,6 +13,7 @@ import com.burukeyou.demo.entity.Add9DTO;
 import com.burukeyou.demo.entity.BaseRsp;
 import com.burukeyou.demo.entity.U2DTO;
 import com.burukeyou.uniapi.http.annotation.HttpCallCfg;
+import com.burukeyou.uniapi.http.annotation.HttpProxyCfg;
 import com.burukeyou.uniapi.http.annotation.HttpResponseCfg;
 import com.burukeyou.uniapi.http.annotation.ModelBinding;
 import com.burukeyou.uniapi.http.annotation.ResponseFile;
@@ -34,6 +36,12 @@ import org.springframework.http.MediaType;
 
 @UserHttpApi
 public interface UserServiceApi {
+
+    @GetHttpInterface(url = "http://www.baidu.com")
+    //@HttpProxyCfg(address = "106.42.30.243:82")
+    //@HttpProxyCfg(type = Proxy.Type.SOCKS,address = "142.54.237.38:4145") // socks4
+    @HttpProxyCfg(type = Proxy.Type.SOCKS,address = "192.252.211.193:4145") // socks5
+    String add();
 
     @GetHttpInterface("/user-web/add")
     BaseRsp<String> add(@QueryPar("name") String name);

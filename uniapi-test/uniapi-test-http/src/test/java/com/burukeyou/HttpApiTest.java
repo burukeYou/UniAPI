@@ -59,6 +59,11 @@ public class HttpApiTest {
         }
     }
 
+    @Test
+    public void test0(){
+        String add = userApi.add();
+    }
+
 
     @Test
     public void test1(){
