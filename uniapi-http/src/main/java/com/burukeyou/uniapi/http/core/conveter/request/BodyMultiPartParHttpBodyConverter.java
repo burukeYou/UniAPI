@@ -8,7 +8,6 @@ import java.util.List;
 
 import com.burukeyou.uniapi.http.annotation.param.BodyMultiPartPar;
 import com.burukeyou.uniapi.http.core.channel.AbstractHttpMetadataParamFinder;
-import com.burukeyou.uniapi.http.core.exception.BaseUniHttpException;
 import com.burukeyou.uniapi.http.core.request.HttpBody;
 import com.burukeyou.uniapi.http.core.request.HttpBodyMultipart;
 import com.burukeyou.uniapi.http.core.request.MultipartDataItem;
@@ -42,14 +41,15 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
              dataItems = buildItemForObjOrMap(param.getValue(), param.getType());
         }else if (param.isCollection() && byte[].class != param.getType()){
             List<Object> itemList = param.castListValue(Object.class);
-            dataItems = buildItemForCollection(itemList,multipartParam);
+            String keyName = StrUtil.isNotBlank(multipartParam.value()) ? multipartParam.value() : param.getName();
+            dataItems = buildItemForCollection(itemList,multipartParam.fileName(),keyName);
         }else {
              dataItems = Collections.singletonList(getOneMultipartDataItem(param, multipartParam));
         }
         return dataItems;
     }
 
-    private List<MultipartDataItem> buildItemForCollection(List<Object> itemList, BodyMultiPartPar multipartParam) {
+    private List<MultipartDataItem> buildItemForCollection(List<Object> itemList,String fileName,String keyName) {
         if (ListsUtil.isEmpty(itemList)){
             return Collections.emptyList();
         }
@@ -60,9 +60,9 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
             }
             MultipartDataItem multipartDataItem = null;
             if (isFileType(item.getClass())){
-                multipartDataItem = MultipartDataItem.ofFile(multipartParam.value(), item, multipartParam.fileName());
+                multipartDataItem = MultipartDataItem.ofFile(keyName, item,fileName);
             }else {
-                multipartDataItem = MultipartDataItem.ofText(multipartParam.value(), item.toString());
+                multipartDataItem = MultipartDataItem.ofText(keyName, item.toString());
             }
             items.add(multipartDataItem);
         }
@@ -71,15 +71,12 @@ public class BodyMultiPartParHttpBodyConverter extends AbstractHttpRequestBodyCo
 
     private static MultipartDataItem getOneMultipartDataItem(Param param, BodyMultiPartPar multipartParam) {
         Object argValue = param.getValue();
-        boolean nameExistFlag = StringUtils.isNotBlank(multipartParam.value());
-        if (!nameExistFlag){
-            throw new BaseUniHttpException("use @BodyMultiPartPar for type " + param.getType().getName() + "must have name");
-        }
-        MultipartDataItem multipartDataItem = null;
+        String keyName =  StringUtils.isNotBlank(multipartParam.value()) ? multipartParam.value() : param.getName();
+        MultipartDataItem multipartDataItem;
         if (isFileType(param.getType())){
-            multipartDataItem = MultipartDataItem.ofFile(multipartParam.value(), argValue, multipartParam.fileName());
+            multipartDataItem = MultipartDataItem.ofFile(keyName, argValue, multipartParam.fileName());
         }else {
-            multipartDataItem = MultipartDataItem.ofText(multipartParam.value(), argValue.toString());
+            multipartDataItem = MultipartDataItem.ofText(keyName, argValue.toString());
         }
         return multipartDataItem;
     }
