@@ -12,6 +12,8 @@ import java.lang.annotation.*;
  *      Map
  *      Normal Text value
  *      File value, support byte[]、InputStream、File
+ *      Text Collection
+ *      File Collection
  *</pre>
  *
  */
